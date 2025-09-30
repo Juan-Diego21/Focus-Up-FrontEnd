@@ -1,1 +1,34 @@
 @import "tailwindcss";
+
+/* SweetAlert2 Custom Styles */
+.swal2-popup {
+  font-family: 'Inter', sans-serif !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.swal2-backdrop {
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+.swal2-confirm {
+  background-color: #0690cf !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.swal2-confirm:hover {
+  background-color: #068fcf9a !important;
+}
+
+.swal2-title {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.swal2-html-container {
+  color: #ffffff !important;
+}
