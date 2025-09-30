@@ -1,9 +1,19 @@
-import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import React, { useState, useEffect } from "react";
 import type { RegisterRequest } from "../types/user";
+import { User, Mail, Lock, Calendar, MapPin, Users, Eye, EyeOff } from "lucide-react";
+
+const countries = [
+  "Colombia", "México", "Argentina", "Estados Unidos", "Canadá", "España",
+  "Brasil", "Chile", "Perú", "Alemania", "Francia", "Italia", "Reino Unido", "Japón"
+];
+
+const genders = [
+  "Masculino", "Femenino", "Otro", "Prefiero no decir"
+];
+
+const usernameRegex = /^[a-zA-Z0-9_-]+$/;
 
 export const RegisterPage: React.FC = () => {
-  const { register } = useAuth();
   const [formData, setFormData] = useState<RegisterRequest>({
     nombre_usuario: "",
     correo: "",
@@ -13,48 +23,108 @@ export const RegisterPage: React.FC = () => {
     genero: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const [usernameError, setUsernameError] = useState<string>("");
+
+  // Load saved form data on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem("registrationFormData");
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        // Convert fecha_nacimiento back to Date object
+        if (parsedData.fecha_nacimiento) {
+          parsedData.fecha_nacimiento = new Date(parsedData.fecha_nacimiento);
+        }
+        setFormData(parsedData);
+      } catch (error) {
+        console.error("Error loading saved form data:", error);
+      }
+    }
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "fecha_nacimiento" ? new Date(value) : value,
-    }));
+    let newFormData = { ...formData };
+
+    if (name === "fecha_nacimiento") {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        newFormData = {
+          ...newFormData,
+          [name]: date,
+        };
+      }
+    } else if (name === "nombre_usuario") {
+      if (!usernameRegex.test(value) && value !== "") {
+        setUsernameError("El nombre de usuario solo puede contener letras, números, guion bajo y guion.");
+      } else {
+        setUsernameError("");
+      }
+      newFormData = {
+        ...newFormData,
+        [name]: value,
+      };
+    } else {
+      newFormData = {
+        ...newFormData,
+        [name]: value,
+      };
+    }
+
+    setFormData(newFormData);
+    // Save to localStorage for persistence
+    localStorage.setItem("registrationFormData", JSON.stringify(newFormData));
     setError("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (usernameError) {
+      setError("Corrige los errores en el formulario antes de continuar.");
+      return;
+    }
 
     if (formData.password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
 
-    setLoading(true);
-    setError("");
+    // Store form data in localStorage for later use
+    localStorage.setItem("registrationData", JSON.stringify(formData));
 
-    try {
-      await register(formData);
-    } catch (err: any) {
-      setError(err.message || "Error al registrar usuario");
-    } finally {
-      setLoading(false);
-    }
+    // Redirect to confirmation page
+    window.location.href = "/confirmation";
   };
 
   return (
     <div className="bg-[#171717] min-h-screen flex items-center justify-center font-inter p-5">
-      <img
-        src="/img/Back.png"
-        alt="Volver atrás"
-        className="absolute mt-5 ml-5 w-6 h-6 top-2.5 left-2.5 cursor-pointer"
+      <button
         onClick={() => window.history.back()}
-      />
+        className="absolute top-5 left-5 p-2 bg-none cursor-pointer"
+        aria-label="Volver atrás"
+      >
+        <svg
+          className="w-7 h-7 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </button>
 
       <div className="w-full max-w-md px-5">
         <div className="bg-[#232323] p-8 rounded-xl shadow-lg text-center">
@@ -66,90 +136,203 @@ export const RegisterPage: React.FC = () => {
           />
 
           {/* Formulario */}
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-500 text-white px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium">
                 {error}
+              </div>
+            )}
+            {success && (
+              <div className="bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium">
+                {success}
               </div>
             )}
 
             {/* Nombre de usuario */}
-            <div>
-              <input
-                type="text"
-                name="nombre_usuario"
-                placeholder="Nombre de usuario"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white"
-                required
-                value={formData.nombre_usuario}
-                onChange={handleChange}
-                disabled={loading}
-              />
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre de usuario <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  name="nombre_usuario"
+                  placeholder="Nombre de usuario"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${usernameError ? 'border-red-500' : 'border-gray-300'}`}
+                  required
+                  value={formData.nombre_usuario}
+                  onChange={handleChange}
+                  disabled={false}
+                />
+              </div>
+              {usernameError && (
+                <p className="text-red-500 text-sm mt-1">{usernameError}</p>
+              )}
             </div>
 
             {/* Email */}
-            <div>
-              <input
-                type="email"
-                name="correo"
-                placeholder="Correo electrónico"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white"
-                required
-                value={formData.correo}
-                onChange={handleChange}
-                disabled={loading}
-              />
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Correo electrónico <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  name="correo"
+                  placeholder="Correo electrónico"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  required
+                  value={formData.correo}
+                  onChange={handleChange}
+                  disabled={false}
+                />
+              </div>
             </div>
 
             {/* Contraseña */}
-            <div>
-              <input
-                type="password"
-                name="password"
-                placeholder="Contraseña"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                disabled={loading}
-              />
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contraseña <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Contraseña"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={false}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             {/* Confirmar Contraseña */}
-            <div>
-              <input
-                type="password"
-                placeholder="Confirmar Contraseña"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-              />
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirmar Contraseña <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirmar Contraseña"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={false}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
-            {/* Botón Registro */}
+            {/* Fecha de nacimiento */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fecha de nacimiento
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="date"
+                  name="fecha_nacimiento"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={!isNaN(formData.fecha_nacimiento.getTime()) ? formData.fecha_nacimiento.toISOString().split('T')[0] : ""}
+                  onChange={handleChange}
+                  disabled={false}
+                />
+              </div>
+            </div>
+
+            {/* País */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                País
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  name="pais"
+                  placeholder="País"
+                  list="countries"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={formData.pais}
+                  onChange={handleChange}
+                  disabled={false}
+                />
+                <datalist id="countries">
+                  {countries.map((country) => (
+                    <option key={country} value={country} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            {/* Género */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Género
+              </label>
+              <div className="relative">
+                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  name="genero"
+                  placeholder="Género"
+                  list="genders"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={formData.genero}
+                  onChange={handleChange}
+                  disabled={false}
+                />
+                <datalist id="genders">
+                  {genders.map((gender) => (
+                    <option key={gender} value={gender} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            {/* Botón Siguiente */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-[#0690cf] text-white py-3 rounded-lg font-medium hover:bg-[#068fcf9a] transition cursor-pointer text-center disabled:opacity-50"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
-              {loading ? "Registrando..." : "Registrarse"}
+              Siguiente
             </button>
 
             {/* Separador */}
             <div className="relative flex items-center justify-center text-gray-400">
               <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4">o</span>
+              <span className="mx-4 bg-[#232323] px-2">o</span>
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
 
             {/* Botón Google */}
             <button
               type="button"
-              className="w-full bg-white text-gray-800 py-3 rounded-lg font-medium border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-300 transition cursor-pointer"
+              className="w-full bg-white text-gray-800 py-3 rounded-lg font-medium border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer shadow-md"
             >
-              <img src="/img/google.png" alt="Logo de Google" className="w-5" />
+              <img src="/img/google.png" alt="Logo de Google" className="w-5 h-5" />
               Continuar con Google
             </button>
           </form>

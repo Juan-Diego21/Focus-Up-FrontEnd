@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Mail } from "lucide-react";
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -16,12 +17,25 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="bg-[#171717] min-h-screen flex items-center justify-center p-5">
-      <img
-        src="/img/Back.png"
-        alt="Volver atrás"
-        className="absolute mt-5 ml-5 w-6 h-6 top-2.5 left-2.5 cursor-pointer"
+      <button
         onClick={() => window.history.back()}
-      />
+        className="absolute top-5 left-5 p-2 bg-none cursor-pointer"
+        aria-label="Volver atrás"
+      >
+        <svg
+          className="w-7 h-7 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </button>
 
       <div className="w-full max-w-md px-5">
         <div className="bg-[#232323] p-8 rounded-xl shadow-lg text-center">
@@ -31,27 +45,33 @@ export const ForgotPasswordPage: React.FC = () => {
             className="w-72 mx-auto pb-10"
           />
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <p className="text-[#fffffff3] text-center mb-10 text-[18px] font-medium">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <p className="text-gray-700 text-center mb-8 text-lg font-medium">
               Ingresa el correo electrónico asociado a tu cuenta
             </p>
 
-            <div>
-              <input
-                type="email"
-                placeholder="Correo electrónico"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  placeholder="Correo electrónico"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="block w-full bg-[#0690cf] text-white py-3 rounded-lg font-medium hover:bg-[#068fcf9a] transition-colors text-center cursor-pointer disabled:opacity-50"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {loading ? "Enviando..." : "Continuar"}
             </button>

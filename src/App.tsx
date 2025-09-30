@@ -1,10 +1,10 @@
-import React from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { RequireAuth } from "./components/auth/RequireAuth";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
-import { RegisterSurveyPage } from "./pages/RegisterSurveyPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ConfirmationPage } from "./pages/ConfirmationPage";
+import { SurveyPage } from "./pages/SurveyPage";
 import { DashboardPage } from "./pages/DashboardPage";
 
 function App() {
@@ -19,8 +19,10 @@ function App() {
               return <LoginPage />;
             case "/register":
               return <RegisterPage />;
-            case "/register-survey":
-              return <RegisterSurveyPage />;
+            case "/confirmation":
+              return <ConfirmationPage />;
+            case "/survey":
+              return <SurveyPage />;
             case "/forgot-password":
               return <ForgotPasswordPage />;
             case "/dashboard":

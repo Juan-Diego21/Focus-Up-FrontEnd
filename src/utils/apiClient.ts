@@ -1,67 +1,39 @@
+import axios from "axios";
+import type { AxiosInstance, AxiosResponse } from "axios";
 import { API_BASE_URL } from "./constants";
 import type { ApiError } from "../types/api";
 
-class ApiClient {
-  private baseURL: string;
+const apiClient: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL;
-  }
+// Request interceptor for JWT (to be implemented later)
+apiClient.interceptors.request.use(
+  (config) => {
+    // Add JWT token here when authentication is implemented
+    // const token = getToken();
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`;
+    // }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-    const config: RequestInit = {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      ...options,
+// Response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response: AxiosResponse) => response.data,
+  (error) => {
+    const apiError: ApiError = {
+      message: error.response?.data?.message || "Error de servidor",
+      statusCode: error.response?.status || 500,
+      error: error.response?.data?.error || "Unknown error",
     };
-
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
-
-      if (!response.ok) {
-        const error: ApiError = {
-          message: data.message || "Error de servidor",
-          statusCode: response.status,
-          error: data.error || "Unknown error",
-        };
-        throw error;
-      }
-
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw {
-          message: error.message,
-          statusCode: 500,
-          error: "Network Error",
-        } as ApiError;
-      }
-      throw error;
-    }
+    return Promise.reject(apiError);
   }
+);
 
-  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
-  }
-
-  async post<T>(
-    endpoint: string,
-    data?: any,
-    options?: RequestInit
-  ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  }
-}
-
-export const apiClient = new ApiClient(API_BASE_URL);
+export { apiClient };

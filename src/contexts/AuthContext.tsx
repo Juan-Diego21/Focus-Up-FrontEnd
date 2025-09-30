@@ -39,11 +39,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token) {
         try {
           // Verificar token llamando al endpoint de perfil
-          const userProfile = await apiClient.get<User>(API_ENDPOINTS.PROFILE, {
+          const userProfile = await apiClient.get(API_ENDPOINTS.PROFILE, {
             headers: { Authorization: `Bearer ${token}` },
-          });
+          }) as User;
           setUser(userProfile);
-        } catch (error) {
+        } catch {
           // Token inválido, limpiar almacenamiento
           localStorage.removeItem("token");
           setToken(null);
@@ -58,10 +58,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginRequest): Promise<void> => {
     try {
-      const response = await apiClient.post<AuthResponse>(
+      const response = await apiClient.post(
         API_ENDPOINTS.LOGIN,
         credentials
-      );
+      ) as AuthResponse;
 
       const { token: newToken, user: userData } = response;
 
@@ -76,10 +76,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: RegisterRequest): Promise<void> => {
     try {
-      const response = await apiClient.post<AuthResponse>(
+      // Transform data to match backend expectations
+      const payload = {
+        nombre_usuario: userData.nombre_usuario,
+        correo: userData.correo,
+        contrasena: userData.password,
+        fecha_nacimiento: userData.fecha_nacimiento.toISOString().split('T')[0], // YYYY-MM-DD
+        pais: userData.pais || undefined,
+        genero: userData.genero || undefined,
+      };
+
+      const response = await apiClient.post(
         API_ENDPOINTS.USERS,
-        userData
-      );
+        payload
+      ) as AuthResponse;
 
       const { token: newToken, user: userDataResponse } = response;
 
