@@ -81,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
       {/* Sidebar Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-2 bg-[#232323] border border-[#232323] rounded-full shadow-lg hover:bg-[#2a2a2a] transition-all duration-200 cursor-pointer"
+        className="fixed top-4 left-4 z-50 p-2 bg-none rounded-lg hover:bg-[#2a2a2a] transition-all duration-200 cursor-pointer"
         aria-label="Mostrar/Ocultar menú"
       >
         <Bars3Icon className="w-6 h-6 text-white" />
@@ -101,10 +101,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
           />
           <div className="text-center">
             <h3 className="text-white text-lg font-semibold tracking-tight">
-              Usuario #{user?.id_usuario ? user.id_usuario.toString().padStart(6, '0') : "000000"}
+              {user?.nombre_usuario || "Cargando..."}
             </h3>
             <p className="text-gray-400 text-xs">
-              {user?.nombre_usuario || "Cargando..."}
+              #{user?.id_usuario ? user.id_usuario.toString().padStart(6, '0') : "000000"}
             </p>
           </div>
         </div>

@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const verifyToken = async () => {
       if (token) {
         const storedUserId = localStorage.getItem("userId");
+        const storedUserData = localStorage.getItem("userData");
 
         try {
           console.log("🔍 Verifying stored token...");
@@ -53,12 +54,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Ensure userId is present and valid
           if (userProfile && userProfile.id_usuario) {
             setUser(userProfile);
+            // Update stored user data with fresh profile data
+            localStorage.setItem("userData", JSON.stringify(userProfile));
             console.log("👤 User set with ID:", userProfile.id_usuario);
           } else {
             console.error("❌ User profile missing id_usuario");
             // Clear invalid token
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
+            localStorage.removeItem("userData");
             setToken(null);
             setUser(null);
           }
@@ -67,8 +71,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.error("📊 Error response:", error?.response?.data);
           console.error("📊 Error status:", error?.response?.status);
 
-          // Try to create fallback user with stored userId
-          if (storedUserId) {
+          // Try to restore user data from localStorage as fallback
+          if (storedUserData) {
+            try {
+              const parsedUserData = JSON.parse(storedUserData) as User;
+              console.log("🔄 Restoring user data from localStorage:", parsedUserData);
+              setUser(parsedUserData);
+              console.log("✅ User data restored from localStorage");
+            } catch (parseError) {
+              console.error("❌ Failed to parse stored user data:", parseError);
+              // Fallback to basic user with stored userId
+              if (storedUserId) {
+                console.log("🔄 Creating fallback user with stored userId:", storedUserId);
+                setUser({
+                  id_usuario: parseInt(storedUserId),
+                  nombre_usuario: "Usuario",
+                  correo: "usuario@ejemplo.com",
+                  fecha_nacimiento: new Date(),
+                });
+                console.log("✅ Fallback user created with stored userId");
+              } else {
+                // Clear invalid data
+                localStorage.removeItem("token");
+                localStorage.removeItem("userId");
+                localStorage.removeItem("userData");
+                setToken(null);
+                setUser(null);
+                console.log("🧹 Cleared invalid token and user data");
+              }
+            }
+          } else if (storedUserId) {
+            // No stored user data, but have userId - create basic user
             console.log("🔄 Creating fallback user with stored userId:", storedUserId);
             setUser({
               id_usuario: parseInt(storedUserId),
@@ -81,6 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Clear invalid token and user data
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
+            localStorage.removeItem("userData");
             setToken(null);
             setUser(null);
             console.log("🧹 Cleared invalid token and user data");
@@ -119,9 +153,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const newToken = response.token;
         const userData = response.user;
 
-        // Store token and userId in localStorage
+        // Store token, userId, and complete user data in localStorage
         localStorage.setItem("token", newToken);
         localStorage.setItem("userId", userData.id_usuario.toString());
+        localStorage.setItem("userData", JSON.stringify(userData));
         setToken(newToken);
 
         // Set user data directly from login response
@@ -197,6 +232,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = (): void => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
+    localStorage.removeItem("userData");
     setToken(null);
     setUser(null);
   };
