@@ -1,136 +1,195 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "../components/ui/Sidebar";
+import { Card } from "../components/ui/Card";
 
-interface StudyMethod {
-  id: string;
-  title: string;
-  description: string;
-  benefits: string[];
-  icon: string;
-  gradient: string;
+interface Benefit {
+  id_beneficio: number;
+  descripcion_beneficio: string;
+  fecha_creacion?: string;
+  fecha_actualizacion?: string;
 }
 
-const studyMethods: StudyMethod[] = [
-  {
-    id: "pomodoro",
-    title: "Método Pomodoro",
-    description: "Técnica de gestión del tiempo. Divide el tiempo de estudio en intervalos de trabajo y descanso.",
-    benefits: ["Mejora la productividad", "Aumenta la concentración", "Reduce la fatiga mental"],
-    icon: "/img/Pomodoro.png",
-    gradient: "from-blue-900/60 to-blue-800/40"
-  },
-  {
-    id: "mind-maps",
-    title: "Mapas Mentales",
-    description: "Organiza visualmente las ideas. Crea mapas mentales para conectar ideas clave.",
-    benefits: ["Facilita el aprendizaje significativo", "Ayuda a visualizar conceptos", "Fomenta la creatividad"],
-    icon: "/img/Mentales.png",
-    gradient: "from-purple-900/60 to-purple-800/40"
-  },
-  {
-    id: "spaced-repetition",
-    title: "Repaso Espaciado",
-    description: "Reforzamiento a largo plazo. Revisa la información en intervalos regulares.",
-    benefits: ["Mejora la retención a largo plazo", "Evita el olvido rápido", "Optimiza el tiempo de estudio"],
-    icon: "/img/RepasoEspaciado.png",
-    gradient: "from-green-900/60 to-green-800/40"
-  },
-  {
-    id: "active-recall",
-    title: "Práctica Activa",
-    description: "Aprende haciendo. Pon a prueba tu conocimiento respondiendo preguntas o resolviendo problemas.",
-    benefits: ["Profundiza la comprensión", "Fortalece la memoria", "Desarrolla habilidades prácticas"],
-    icon: "/img/Practica.png",
-    gradient: "from-yellow-900/60 to-yellow-800/40"
-  },
-  {
-    id: "feynman",
-    title: "Método Feynman",
-    description: "Aprender explicando. Intenta explicar el tema como si se lo enseñaras a alguien más.",
-    benefits: ["Identifica lagunas en la comprensión", "Fortalece el aprendizaje", "Mejora la comunicación"],
-    icon: "/img/feiman.png",
-    gradient: "from-pink-900/60 to-pink-800/40"
-  },
-  {
-    id: "cornell",
-    title: "Método Cornell",
-    description: "Notas efectivas. Toma notas de manera estructurada. Facilita el repaso y la comprensión.",
-    benefits: ["Mejora la organización", "Facilita el repaso", "Aumenta la claridad al estudiar"],
-    icon: "/img/notas-adhesivas.png",
-    gradient: "from-gray-800/80 to-gray-700/60"
-  }
-];
+interface StudyMethod {
+  id_metodo: number;
+  nombre_metodo: string;
+  descripcion: string;
+  fecha_creacion?: string;
+  fecha_actualizacion?: string;
+  beneficios: Benefit[];
+}
+
 
 export const StudyMethodsLibraryPage: React.FC = () => {
+  console.log("StudyMethodsLibraryPage component rendered");
+
+  const [studyMethods, setStudyMethods] = useState<StudyMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
+
+  // Fetch study methods and their benefits
+  useEffect(() => {
+    const fetchStudyMethods = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        // Fetch all study methods
+        const methodsResponse = await fetch("http://localhost:3001/api/v1/metodos-estudio");
+        if (!methodsResponse.ok) {
+          throw new Error("Error al cargar métodos de estudio");
+        }
+        const apiResponse = await methodsResponse.json();
+        console.log("API Response for methods:", apiResponse);
+
+        // Extract the data array from the response - more robust approach
+        const methods: StudyMethod[] = apiResponse?.data || [];
+
+        console.log("Extracted methods:", methods);
+        console.log("Methods length:", methods.length);
+
+        if (methods.length === 0) {
+          console.warn("No study methods received from API. Full response:", apiResponse);
+        }
+
+        // For each method, fetch its benefits
+        const methodsWithBenefits = await Promise.all(
+          methods.map(async (method) => {
+            try {
+              console.log(`Fetching benefits for method ${method.id_metodo}`);
+              const benefitsResponse = await fetch(
+                `http://localhost:3001/api/v1/metodos-estudio/${method.id_metodo}/beneficios`
+              );
+              if (benefitsResponse.ok) {
+                const benefits = await benefitsResponse.json();
+                console.log(`Benefits for method ${method.id_metodo}:`, benefits);
+                return { ...method, beneficios: Array.isArray(benefits) ? benefits : [] };
+              } else {
+                console.warn(`Failed to fetch benefits for method ${method.id_metodo}, status: ${benefitsResponse.status}`);
+                // If benefits fetch fails, return method with empty benefits
+                return { ...method, beneficios: [] };
+              }
+            } catch (error) {
+              console.error(`Error fetching benefits for method ${method.id_metodo}:`, error);
+              return { ...method, beneficios: [] };
+            }
+          })
+        );
+
+        console.log("Final methods with benefits:", methodsWithBenefits);
+        setStudyMethods(methodsWithBenefits);
+      } catch (err) {
+        console.error("Error fetching study methods:", err);
+        setError("Error al cargar los métodos de estudio. Por favor, intenta de nuevo.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudyMethods();
+  }, []);
+
   const handleViewStepByStep = (method: StudyMethod) => {
-    console.log(`Viewing step by step for ${method.title}`);
-    // TODO: Implement step by step view
+    console.log(`Viewing step by step for ${method.nombre_metodo}`);
+    // TODO: Implement step by step view navigation
   };
 
   const handleAddToSession = (method: StudyMethod) => {
-    console.log(`Adding ${method.title} to concentration session`);
+    console.log(`Adding ${method.nombre_metodo} to concentration session`);
     // TODO: Implement add to session functionality
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
-      <Sidebar currentPage="study-methods" />
-
-      <div className="flex justify-center items-center min-h-screen">
-        <main className="w-full max-w-6xl p-6 md:p-10 transition-all">
-          <h1 className="text-3xl font-bold text-white mb-10 tracking-tight text-center bg-gradient-to-r from-white to-gray-300 bg-clip-text">
-            Biblioteca de Métodos de Estudio
-          </h1>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {studyMethods.map((method) => (
-              <div
-                key={method.id}
-                className={`flex flex-col h-full rounded-lg shadow-lg p-6 bg-gradient-to-br ${method.gradient} border border-gray-800 backdrop-blur-md`}
-              >
-                <div className="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3">
-                  <img
-                    src={method.icon}
-                    alt={method.title}
-                    className="w-10 h-10 rounded bg-gray-900/60 p-1"
-                  />
-                  <h2 className="text-xl font-semibold text-white">{method.title}</h2>
-                </div>
-
-                <div className="mb-4 border-b border-gray-700 pb-3">
-                  <p className="text-gray-200 text-base">{method.description}</p>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-400 mb-2">Beneficios</h3>
-                  <ul className="list-disc list-inside space-y-1 text-gray-300 text-sm">
-                    {method.benefits.map((benefit, index) => (
-                      <li key={index}>{benefit}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="flex gap-2 mt-auto">
-                  <button
-                    onClick={() => handleViewStepByStep(method)}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
-                  >
-                    Ver paso a paso
-                  </button>
-                  <button
-                    onClick={() => handleAddToSession(method)}
-                    className="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
-                  >
-                    Añadir a sesión
-                  </button>
-                </div>
-              </div>
-            ))}
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+        <Sidebar currentPage="study-methods" />
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white text-lg">Cargando métodos de estudio...</p>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+        <Sidebar currentPage="study-methods" />
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
+            <p className="text-gray-400 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 cursor-pointer"
+            >
+              Intentar de nuevo
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  try {
+    console.log("Rendering StudyMethodsLibraryPage with:", { loading, error, studyMethodsLength: studyMethods.length });
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+        <Sidebar currentPage="study-methods" />
+
+        <div className="flex justify-center items-center min-h-screen">
+          <main className="w-full max-w-7xl p-6 md:p-10 transition-all">
+            <div className="mb-10">
+              <h1 className="text-4xl font-bold text-white mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
+                Biblioteca de Métodos de Estudio
+              </h1>
+              <p className="text-gray-400 text-center text-lg max-w-2xl mx-auto">
+                Descubre técnicas probadas para mejorar tu concentración y eficiencia en el estudio
+              </p>
+            </div>
+
+            {studyMethods.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500 text-6xl mb-4">📚</div>
+                <h3 className="text-white text-xl font-semibold mb-2">No hay métodos disponibles</h3>
+                <p className="text-gray-400">Los métodos de estudio estarán disponibles pronto.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {studyMethods.map((method) => (
+                  <Card
+                    key={method.id_metodo}
+                    method={method}
+                    onViewStepByStep={handleViewStepByStep}
+                    onAddToSession={handleAddToSession}
+                  />
+                ))}
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+    );
+  } catch (renderError) {
+    console.error("Error rendering StudyMethodsLibraryPage:", renderError);
+    return (
+      <div className="min-h-screen bg-red-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h1 className="text-2xl font-bold mb-4">Error de Renderizado</h1>
+          <p>Hubo un error al cargar la página. Revisa la consola para más detalles.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Recargar página
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default StudyMethodsLibraryPage;
