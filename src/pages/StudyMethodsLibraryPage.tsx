@@ -51,32 +51,9 @@ export const StudyMethodsLibraryPage: React.FC = () => {
           console.warn("No study methods received from API. Full response:", apiResponse);
         }
 
-        // For each method, fetch its benefits
-        const methodsWithBenefits = await Promise.all(
-          methods.map(async (method) => {
-            try {
-              console.log(`Fetching benefits for method ${method.id_metodo}`);
-              const benefitsResponse = await fetch(
-                `http://localhost:3001/api/v1/metodos-estudio/${method.id_metodo}/beneficios`
-              );
-              if (benefitsResponse.ok) {
-                const benefits = await benefitsResponse.json();
-                console.log(`Benefits for method ${method.id_metodo}:`, benefits);
-                return { ...method, beneficios: Array.isArray(benefits) ? benefits : [] };
-              } else {
-                console.warn(`Failed to fetch benefits for method ${method.id_metodo}, status: ${benefitsResponse.status}`);
-                // If benefits fetch fails, return method with empty benefits
-                return { ...method, beneficios: [] };
-              }
-            } catch (error) {
-              console.error(`Error fetching benefits for method ${method.id_metodo}:`, error);
-              return { ...method, beneficios: [] };
-            }
-          })
-        );
-
-        console.log("Final methods with benefits:", methodsWithBenefits);
-        setStudyMethods(methodsWithBenefits);
+        // Benefits are already included in the main API response
+        console.log("Methods with benefits from API:", methods);
+        setStudyMethods(methods);
       } catch (err) {
         console.error("Error fetching study methods:", err);
         setError("Error al cargar los métodos de estudio. Por favor, intenta de nuevo.");
