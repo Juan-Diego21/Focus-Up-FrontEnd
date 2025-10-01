@@ -4,4 +4,5 @@ export const API_ENDPOINTS = {
   USERS: "/users",
   LOGIN: "/users/login",
   PROFILE: "/users/profile",
+  DELETE_ACCOUNT: "/users/delete",
 } as const;

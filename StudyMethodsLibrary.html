@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biblioteca de Métodos de Estudio</title>
+    <link rel="icon" href="img/Logo-marca.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#2563eb",
+              primaryhover: "#1d4ed8",
+              card: "#23272f",
+              cardborder: "#23272f",
+              accent: "#ffa200",
+              accenthover: "#ffa200cb",
+              sidebar: "#181a20",
+              sidebarGradient: "#20232a",
+              sidebarHover: "#23272f",
+              sidebarBorder: "#23272f",
+            },
+            boxShadow: {
+              card: "0 4px 32px 0 rgba(0,0,0,0.18)",
+              sidebar: "0 2px 16px 0 rgba(0,0,0,0.18)",
+            },
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-feature-settings: "ss01" on, "cv01" on;
+      }
+      .sidebar-overlay {
+        background: none;
+        position: fixed;
+        inset: 0;
+        z-index: 39;
+        transition: opacity 0.3s;
+      }
+      .sidebar-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .sidebar-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .card-blur-bg {
+        background: rgba(36, 39, 46, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: 1rem;
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.18);
+      }
+      .main-blur-bg {
+        background: linear-gradient(to bottom, #23272f 60%, #181a20 100%);
+        border-radius: 1.5rem;
+        box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen font-sans bg-gradient-to-b from-gray-900 to-gray-950"
+  >
+    <!-- Sidebar Toggle Button (top-left) -->
+    <button
+      id="sidebarToggle"
+      class="fixed top-4 left-4 z-50 p-2 bg-none border border-cardborder rounded-full shadow-card hover:bg-sidebarHover transition-all cursor-pointer"
+      aria-label="Mostrar/Ocultar menú"
+      type="button"
+    >
+      <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+    </button>
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="fixed top-0 left-0 h-screen w-64 bg-gradient-to-b from-sidebar to-sidebarGradient shadow-sidebar flex flex-col p-6 z-40 border-r border-sidebarBorder transition-transform duration-300 -translate-x-full"
+      style="will-change: transform"
+    >
+      <div class="flex flex-col items-center mb-10">
+        <img
+          src="img/user.png"
+          alt="Foto de usuario"
+          class="w-16 h-16 rounded-full mb-3 border-4 border-card shadow"
+        />
+        <div class="text-center">
+          <h3 class="text-white text-lg font-semibold tracking-tight">
+            Usuario
+          </h3>
+          <p class="text-[#b0b3b8] text-xs">ID-789456</p>
+        </div>
+      </div>
+      <nav class="flex-1">
+        <ul class="space-y-1">
+          <li>
+            <a
+              href="index.html"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="home"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Inicio</span>
+            </a>
+          </li>
+          <li>
+            <div
+              id="configCuentaBtn"
+              class="flex items-center justify-between px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover group cursor-pointer select-none"
+              role="button"
+              tabindex="0"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <div class="flex items-center gap-3 pointer-events-none">
+                <i
+                  data-lucide="settings"
+                  class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+                ></i>
+                <span class="font-medium">Configuración de cuenta</span>
+              </div>
+              <span class="dropdown-btn transition-transform rounded-lg">
+                <i class="w-4 h-4 text-[#b0b3b8] transition-transform"></i>
+              </span>
+            </div>
+            <div id="submenu" class="ml-8 mt-2 space-y-1 hidden">
+              <a
+                href="ajustes_perfil.html"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-sidebarHover transition-all text-[#b0b3b8] hover:text-accent cursor-pointer"
+                id="editarPerfil"
+              >
+                <i data-lucide="user" class="w-4 h-4"></i>
+                <span class="text-sm">Editar perfil</span>
+              </a>
+              <a
+                class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-sidebarHover transition-all text-[#b0b3b8] hover:text-red-400 cursor-pointer"
+                id="eliminarCuenta"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                <span class="text-sm">Eliminar cuenta</span>
+              </a>
+            </div>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="sliders-horizontal"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Preferencias</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="bell"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Notificaciones</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="reportes.html"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="bar-chart-3"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Reportes</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <a
+        href="login.html"
+        class="mt-8 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all font-medium shadow cursor-pointer"
+      >
+        <i data-lucide="log-out" class="w-5 h-5"></i>
+        Cerrar Sesión
+      </a>
+    </aside>
+    <div class="flex justify-center items-center min-h-screen">
+      <main
+        class="w-full max-w-6xl p-6 md:p-10 transition-all main-blur-bg rounded-2xl shadow-lg"
+      >
+        <h1
+          class="text-3xl font-bold text-white mb-10 tracking-tight text-center"
+        >
+          Biblioteca de Métodos de Estudio
+        </h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Card: Método Pomodoro -->
+          <div
+            class="flex flex-col h-full rounded-lg shadow-lg p-6 bg-gradient-to-br from-blue-900/60 to-blue-800/40 border border-gray-800 card-blur-bg"
+          >
+            <div
+              class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3"
+            >
+              <img
+                src="img/Pomodoro.png"
+                alt="Método Pomodoro"
+                class="w-10 h-10 rounded bg-gray-900/60 p-1"
+              />
+              <h2 class="text-xl font-semibold text-white">Método Pomodoro</h2>
+            </div>
+            <div class="mb-4 border-b border-gray-700 pb-3">
+              <p class="text-gray-200 text-base">
+                Técnica de gestión del tiempo. Divide el tiempo de estudio en
+                intervalos de trabajo y descanso.
+              </p>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-400 mb-2">
+                Beneficios
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                <li>Mejora la productividad</li>
+                <li>Aumenta la concentración</li>
+                <li>Reduce la fatiga mental</li>
+              </ul>
+            </div>
+            <div class="flex gap-2 mt-auto">
+              <button
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryhover transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Ver paso a paso
+              </button>
+              <button
+                class="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Añadir a sesión de concentración
+              </button>
+            </div>
+          </div>
+          <!-- Card: Mapas Mentales -->
+          <div
+            class="flex flex-col h-full rounded-lg shadow-lg p-6 bg-gradient-to-br from-purple-900/60 to-purple-800/40 border border-gray-800 card-blur-bg"
+          >
+            <div
+              class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3"
+            >
+              <img
+                src="img/Mentales.png"
+                alt="Mapas Mentales"
+                class="w-10 h-10 rounded bg-gray-900/60 p-1"
+              />
+              <h2 class="text-xl font-semibold text-white">Mapas Mentales</h2>
+            </div>
+            <div class="mb-4 border-b border-gray-700 pb-3">
+              <p class="text-gray-200 text-base">
+                Organiza visualmente las ideas. Crea mapas mentales para
+                conectar ideas clave.
+              </p>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-400 mb-2">
+                Beneficios
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                <li>Facilita el aprendizaje significativo</li>
+                <li>Ayuda a visualizar conceptos</li>
+                <li>Fomenta la creatividad</li>
+              </ul>
+            </div>
+            <div class="flex gap-2 mt-auto">
+              <button
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryhover transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Ver paso a paso
+              </button>
+              <button
+                class="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Añadir a sesión de concentración
+              </button>
+            </div>
+          </div>
+          <!-- Card: Repaso Espaciado -->
+          <div
+            class="flex flex-col h-full rounded-lg shadow-lg p-6 bg-gradient-to-br from-green-900/60 to-green-800/40 border border-gray-800 card-blur-bg"
+          >
+            <div
+              class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3"
+            >
+              <img
+                src="img/RepasoEspaciado.png"
+                alt="Repaso Espaciado"
+                class="w-10 h-10 rounded bg-gray-900/60 p-1"
+              />
+              <h2 class="text-xl font-semibold text-white">Repaso Espaciado</h2>
+            </div>
+            <div class="mb-4 border-b border-gray-700 pb-3">
+              <p class="text-gray-200 text-base">
+                Reforzamiento a largo plazo. Revisa la información en intervalos
+                regulares.
+              </p>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-400 mb-2">
+                Beneficios
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                <li>Mejora la retención a largo plazo</li>
+                <li>Evita el olvido rápido</li>
+                <li>Optimiza el tiempo de estudio</li>
+              </ul>
+            </div>
+            <div class="flex gap-2 mt-auto">
+              <button
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryhover transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Ver paso a paso
+              </button>
+              <button
+                class="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Añadir a sesión de concentración
+              </button>
+            </div>
+          </div>
+          <!-- Card: Práctica Activa -->
+          <div
+            class="flex flex-col h-full rounded-lg shadow-lg p-6 bg-gradient-to-br from-yellow-900/60 to-yellow-800/40 border border-gray-800 card-blur-bg"
+          >
+            <div
+              class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3"
+            >
+              <img
+                src="img/Practica.png"
+                alt="Práctica Activa"
+                class="w-10 h-10 rounded bg-gray-900/60 p-1"
+              />
+              <h2 class="text-xl font-semibold text-white">Práctica Activa</h2>
+            </div>
+            <div class="mb-4 border-b border-gray-700 pb-3">
+              <p class="text-gray-200 text-base">
+                Aprende haciendo. Pon a prueba tu conocimiento respondiendo
+                preguntas o resolviendo problemas.
+              </p>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-400 mb-2">
+                Beneficios
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                <li>Profundiza la comprensión</li>
+                <li>Fortalece la memoria</li>
+                <li>Desarrolla habilidades prácticas</li>
+              </ul>
+            </div>
+            <div class="flex gap-2 mt-auto">
+              <button
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryhover transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Ver paso a paso
+              </button>
+              <button
+                class="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Añadir a sesión de concentración
+              </button>
+            </div>
+          </div>
+          <!-- Card: Método Feynman -->
+          <div
+            class="flex flex-col h-full rounded-lg shadow-lg p-6 bg-gradient-to-br from-pink-900/60 to-pink-800/40 border border-gray-800 card-blur-bg"
+          >
+            <div
+              class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3"
+            >
+              <img
+                src="img/feiman.png"
+                alt="Método Feynman"
+                class="w-10 h-10 rounded bg-gray-900/60 p-1"
+              />
+              <h2 class="text-xl font-semibold text-white">Método Feynman</h2>
+            </div>
+            <div class="mb-4 border-b border-gray-700 pb-3">
+              <p class="text-gray-200 text-base">
+                Aprender explicando. Intenta explicar el tema como si se lo
+                enseñaras a alguien más.
+              </p>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-400 mb-2">
+                Beneficios
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                <li>Identifica lagunas en la comprensión</li>
+                <li>Fortalece el aprendizaje</li>
+                <li>Mejora la comunicación</li>
+              </ul>
+            </div>
+            <div class="flex gap-2 mt-auto">
+              <button
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryhover transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Ver paso a paso
+              </button>
+              <button
+                class="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Añadir a sesión de concentración
+              </button>
+            </div>
+          </div>
+          <!-- Card: Método Cornell -->
+          <div
+            class="flex flex-col h-full rounded-lg shadow-lg p-6 bg-gradient-to-br from-gray-800/80 to-gray-700/60 border border-gray-800 card-blur-bg"
+          >
+            <div
+              class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3"
+            >
+              <img
+                src="img/notas-adhesivas.png"
+                alt="Método Cornell"
+                class="w-10 h-10 rounded bg-gray-900/60 p-1"
+              />
+              <h2 class="text-xl font-semibold text-white">Método Cornell</h2>
+            </div>
+            <div class="mb-4 border-b border-gray-700 pb-3">
+              <p class="text-gray-200 text-base">
+                Notas efectivas. Toma notas de manera estructurada. Facilita el
+                repaso y la comprensión.
+              </p>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-sm font-semibold text-gray-400 mb-2">
+                Beneficios
+              </h3>
+              <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                <li>Mejora la organización</li>
+                <li>Facilita el repaso</li>
+                <li>Aumenta la claridad al estudiar</li>
+              </ul>
+            </div>
+            <div class="flex gap-2 mt-auto">
+              <button
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryhover transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Ver paso a paso
+              </button>
+              <button
+                class="flex-1 px-4 py-2 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              >
+                Añadir a sesión de concentración
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (window.lucide) window.lucide.createIcons();
+        // Sidebar toggle logic
+        const sidebar = document.getElementById("sidebar");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        let sidebarOpen = false;
+        sidebarToggle.addEventListener("click", () => {
+          sidebarOpen = !sidebarOpen;
+          if (sidebarOpen) {
+            sidebar.classList.remove("-translate-x-full");
+          } else {
+            sidebar.classList.add("-translate-x-full");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

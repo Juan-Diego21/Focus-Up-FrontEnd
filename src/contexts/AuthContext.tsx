@@ -37,6 +37,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const verifyToken = async () => {
       if (token) {
+        const storedUserId = localStorage.getItem("userId");
+
         try {
           console.log("🔍 Verifying stored token...");
           console.log("🌐 Profile URL:", `${API_BASE_URL}${API_ENDPOINTS.PROFILE}`);
@@ -47,22 +49,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             headers: { Authorization: `Bearer ${token}` },
           }) as User;
           console.log("✅ Token verified, user profile loaded:", userProfile);
-          setUser(userProfile);
+
+          // Ensure userId is present and valid
+          if (userProfile && userProfile.id_usuario) {
+            setUser(userProfile);
+            console.log("👤 User set with ID:", userProfile.id_usuario);
+          } else {
+            console.error("❌ User profile missing id_usuario");
+            // Clear invalid token
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            setToken(null);
+            setUser(null);
+          }
         } catch (error: any) {
           console.error("❌ Token verification failed:", error);
           console.error("📊 Error response:", error?.response?.data);
           console.error("📊 Error status:", error?.response?.status);
 
-          // Instead of clearing everything, try to create a basic user object
-          // This allows the user to stay logged in even if profile endpoint has issues
-          console.log("🔄 Creating fallback user object...");
-          setUser({
-            id_usuario: 0,
-            nombre_usuario: "Usuario",
-            correo: "usuario@ejemplo.com", // We don't have the email from token alone
-            fecha_nacimiento: new Date(),
-          });
-          console.log("✅ Fallback user created, authentication maintained");
+          // Try to create fallback user with stored userId
+          if (storedUserId) {
+            console.log("🔄 Creating fallback user with stored userId:", storedUserId);
+            setUser({
+              id_usuario: parseInt(storedUserId),
+              nombre_usuario: "Usuario",
+              correo: "usuario@ejemplo.com",
+              fecha_nacimiento: new Date(),
+            });
+            console.log("✅ Fallback user created with stored userId");
+          } else {
+            // Clear invalid token and user data
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            setToken(null);
+            setUser(null);
+            console.log("🧹 Cleared invalid token and user data");
+          }
         }
       } else {
         console.log("ℹ️ No stored token found");
@@ -87,80 +109,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log("📧 Input:", credentials.correo);
       console.log("📝 Is Email:", isEmail);
       console.log("📦 Payload being sent:", payload);
-      console.log("🌐 Full URL:", `${API_BASE_URL}${API_ENDPOINTS.LOGIN}`);
 
-      // Temporary: Try with fetch instead of axios to isolate the issue
-      const fetchResponse = await fetch(`${API_BASE_URL}${API_ENDPOINTS.LOGIN}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-        mode: "cors", // Explicitly set CORS mode
-        body: JSON.stringify(payload),
-      });
-
-      console.log("📡 Fetch response status:", fetchResponse.status);
-      console.log("📡 Fetch response headers:", Object.fromEntries(fetchResponse.headers.entries()));
-
-      const responseData = await fetchResponse.json();
-      console.log("📡 Fetch response data:", responseData);
-
-      if (!fetchResponse.ok) {
-        throw {
-          message: responseData.message || "Login failed",
-          statusCode: fetchResponse.status,
-          error: responseData.error || "Unknown error",
-        };
-      }
-
-      const response = responseData as AuthResponse;
+      // Use axios consistently with the rest of the application
+      const response = await apiClient.post(API_ENDPOINTS.LOGIN, payload) as AuthResponse;
 
       console.log("✅ Login response:", response);
 
-      if (response.success && response.token) {
+      if (response.success && response.token && response.user) {
         const newToken = response.token;
+        const userData = response.user;
 
-        // Guardar token en localStorage
+        // Store token and userId in localStorage
         localStorage.setItem("token", newToken);
+        localStorage.setItem("userId", userData.id_usuario.toString());
         setToken(newToken);
 
-        // Fetch user profile after login
-        try {
-          console.log("🔍 Fetching user profile...");
-          const userProfile = await apiClient.get(API_ENDPOINTS.PROFILE, {
-            headers: { Authorization: `Bearer ${newToken}` },
-          }) as User;
-          console.log("👤 User profile fetched:", userProfile);
-          setUser(userProfile);
-        } catch (profileError) {
-          console.error("❌ Failed to fetch user profile:", profileError);
-          // Create a basic user object from the login response if profile fetch fails
-          // This ensures authentication still works even if profile endpoint has issues
-          setUser({
-            id_usuario: 0, // Temporary ID
-            nombre_usuario: "Usuario", // Default name
-            correo: credentials.correo,
-            fecha_nacimiento: new Date(),
-          });
-        }
+        // Set user data directly from login response
+        console.log("👤 Setting user from login response:", userData);
+        setUser(userData);
 
-        console.log("🎉 Login successful, token saved");
+        console.log("🎉 Login successful, token and user data saved");
 
         // Redirect to dashboard after successful login
         window.location.href = "/dashboard";
       } else {
         throw {
           message: response.message || "Login failed",
-          statusCode: fetchResponse.status,
+          statusCode: 400,
           error: "Authentication failed",
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Login failed:");
       console.error("🔍 Error details:", error);
-      console.error("📊 Error response:", (error as any)?.response?.data);
-      console.error("📊 Error status:", (error as any)?.response?.status);
+      console.error("📊 Error response:", error?.response?.data);
+      console.error("📊 Error status:", error?.response?.status);
       throw error;
     }
   };
@@ -213,6 +196,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = (): void => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     setToken(null);
     setUser(null);
   };
