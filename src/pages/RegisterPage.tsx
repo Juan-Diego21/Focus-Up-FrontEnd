@@ -105,7 +105,7 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#171717] min-h-screen flex items-center justify-center font-inter p-5">
+    <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center font-inter p-5">
       <button
         onClick={() => window.history.back()}
         className="absolute top-5 left-5 p-2 bg-none cursor-pointer"
@@ -127,7 +127,7 @@ export const RegisterPage: React.FC = () => {
       </button>
 
       <div className="w-full max-w-md px-5">
-        <div className="bg-[#232323] p-8 rounded-xl shadow-lg text-center">
+        <div className="bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md p-8 rounded-xl shadow-2xl text-center border border-[#333]/50">
           {/* Logo */}
           <img
             src="/img/Logo.png"
@@ -323,7 +323,7 @@ export const RegisterPage: React.FC = () => {
             {/* Separador */}
             <div className="relative flex items-center justify-center text-gray-400">
               <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4 bg-[#232323] px-2">o</span>
+              <span className="mx-4 bg-none px-2">o</span>
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
 

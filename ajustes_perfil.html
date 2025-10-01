@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ajustes de Perfil</title>
+    <link rel="icon" href="img/Logo-marca.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#2563eb",
+              primaryhover: "#1d4ed8",
+              card: "#23272f",
+              cardborder: "#23272f",
+              accent: "#ffa200",
+              accenthover: "#ffa200cb",
+              sidebar: "#181a20",
+              sidebarGradient: "#20232a",
+              sidebarHover: "#23272f",
+              sidebarBorder: "#23272f",
+            },
+            boxShadow: {
+              card: "0 4px 32px 0 rgba(0,0,0,0.18)",
+              sidebar: "0 2px 16px 0 rgba(0,0,0,0.18)",
+            },
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-feature-settings: "ss01" on, "cv01" on;
+      }
+      .sidebar-overlay {
+        background: none;
+        position: fixed;
+        inset: 0;
+        z-index: 39;
+        transition: opacity 0.3s;
+      }
+      .sidebar-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .sidebar-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .main-blur-bg {
+        background: linear-gradient(to bottom, #23272f 60%, #181a20 100%);
+        border-radius: 1.5rem;
+        box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen font-sans bg-gradient-to-b from-gray-900 to-gray-950"
+  >
+    <!-- Sidebar Toggle Button (top-left) -->
+    <button
+      id="sidebarToggle"
+      class="fixed top-4 left-4 z-50 p-2 bg-none border border-cardborder rounded-full shadow-card hover:bg-sidebarHover transition-all cursor-pointer"
+      aria-label="Mostrar/Ocultar menú"
+      type="button"
+    >
+      <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+    </button>
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="fixed top-0 left-0 h-screen w-64 bg-gradient-to-b from-sidebar to-sidebarGradient shadow-sidebar flex flex-col p-6 z-40 border-r border-sidebarBorder transition-transform duration-300 -translate-x-full"
+      style="will-change: transform"
+    >
+      <div class="flex flex-col items-center mb-10">
+        <img
+          src="img/user.png"
+          alt="Foto de usuario"
+          class="w-16 h-16 rounded-full mb-3 border-4 border-card shadow"
+        />
+        <div class="text-center">
+          <h3 class="text-white text-lg font-semibold tracking-tight">
+            Usuario
+          </h3>
+          <p class="text-[#b0b3b8] text-xs">ID-789456</p>
+        </div>
+      </div>
+      <nav class="flex-1">
+        <ul class="space-y-1">
+          <li>
+            <a
+              href="index.html"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="home"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Inicio</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="ajustes_perfil.html"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="user-cog"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Ajustes de perfil</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="sliders-horizontal"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Preferencias</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="bell"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Notificaciones</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="reportes.html"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-sidebarHover hover:text-accent group cursor-pointer"
+            >
+              <i
+                data-lucide="bar-chart-3"
+                class="w-5 h-5 text-[#b0b3b8] group-hover:text-accent"
+              ></i>
+              <span class="font-medium">Reportes</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <a
+        href="login.html"
+        class="mt-8 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all font-medium shadow cursor-pointer"
+      >
+        <i data-lucide="log-out" class="w-5 h-5"></i>
+        Cerrar Sesión
+      </a>
+    </aside>
+    <!-- Main content -->
+    <div class="flex justify-center items-center min-h-screen">
+      <main
+        id="mainContent"
+        class="w-full max-w-lg p-8 transition-all main-blur-bg rounded-2xl shadow-lg"
+      >
+        <h1 class="text-3xl font-bold text-white mb-8 text-center">
+          Ajustes de Perfil
+        </h1>
+        <form>
+          <!-- Nombre de Usuario -->
+          <div class="mb-5">
+            <label for="username" class="block text-gray-200 mb-2"
+              >Nombre de Usuario</label
+            >
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Tu nombre de usuario"
+              class="w-full p-2 rounded-md bg-gray-800 text-gray-100 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autocomplete="username"
+            />
+          </div>
+          <!-- Cambiar contraseña -->
+          <div class="mb-8">
+            <a
+              href="forgot.html"
+              class="inline-block py-2 px-4 rounded-md bg-primary hover:bg-primaryhover text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Cambiar contraseña
+            </a>
+          </div>
+          <!-- Fecha de Nacimiento -->
+          <div class="mb-5">
+            <label for="birthdate" class="block text-gray-200 mb-2"
+              >Fecha de Nacimiento</label
+            >
+            <input
+              type="date"
+              id="birthdate"
+              name="birthdate"
+              class="w-full p-2 rounded-md bg-gray-800 text-gray-100 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <!-- Horario de Estudio más Habitual -->
+          <div class="mb-8">
+            <label for="study_time" class="block text-gray-200 mb-2"
+              >Horario de Estudio más Habitual</label
+            >
+            <input
+              type="time"
+              id="study_time"
+              name="study_time"
+              class="w-full p-2 rounded-md bg-gray-800 text-gray-100 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <!-- Distracciones más comunes -->
+          <div class="mb-5">
+            <label class="block text-gray-200 mb-2">
+              ¿Cuáles consideras que son tus 2 distracciones más comunes?
+            </label>
+            <div class="relative w-full mb-4">
+              <select
+                name="distraccion1"
+                id="distraccion1"
+                class="w-full h-10 px-3 py-2 font-normal bg-gray-800 text-gray-100 rounded-md cursor-pointer outline-none appearance-none border border-blue-500 focus:border-blue-600 transition-colors pr-8"
+              >
+                <option value="" disabled selected hidden class="text-gray-400">
+                  Selecciona una distracción
+                </option>
+                <option value="option1">Redes sociales</option>
+                <option value="option2">Mensajería instantánea</option>
+                <option value="option3">Notificaciones del teléfono</option>
+                <option value="option4">Correo electrónico</option>
+                <option value="option5">Plataformas de video</option>
+                <option value="option6">Juegos móviles o en línea</option>
+                <option value="option7">Scroll infinito</option>
+                <option value="option8">Compras online</option>
+                <option value="option9">Ruidos externos</option>
+                <option value="option10">
+                  Interrupciones de otras personas
+                </option>
+                <option value="option11">Hambre o sed</option>
+                <option value="option12">Falta de comodidad</option>
+                <option value="option13">
+                  Desorden en el espacio de trabajo
+                </option>
+                <option value="option14">Mascotas</option>
+                <option value="option15">Pensamientos intrusivos</option>
+                <option value="option16">Sueño/fatiga</option>
+                <option value="option17">Aburrimiento</option>
+                <option value="option18">Multitarea</option>
+                <option value="option19">Día soñando despierto</option>
+                <option value="option20">Estrés o ansiedad</option>
+              </select>
+              <div
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              >
+                <img src="./img/Lista.png" alt="" class="w-5 h-5" />
+              </div>
+            </div>
+            <div class="relative w-full">
+              <select
+                name="distraccion2"
+                id="distraccion2"
+                class="w-full h-10 px-3 py-2 font-normal bg-gray-800 text-gray-100 rounded-md cursor-pointer outline-none appearance-none border border-blue-500 focus:border-blue-600 transition-colors pr-8"
+              >
+                <option value="" disabled selected hidden class="text-gray-400">
+                  Selecciona una distracción
+                </option>
+                <option value="option1">Redes sociales</option>
+                <option value="option2">Mensajería instantánea</option>
+                <option value="option3">Notificaciones del teléfono</option>
+                <option value="option4">Correo electrónico</option>
+                <option value="option5">Plataformas de video</option>
+                <option value="option6">Juegos móviles o en línea</option>
+                <option value="option7">Scroll infinito</option>
+                <option value="option8">Compras online</option>
+                <option value="option9">Ruidos externos</option>
+                <option value="option10">
+                  Interrupciones de otras personas
+                </option>
+                <option value="option11">Hambre o sed</option>
+                <option value="option12">Falta de comodidad</option>
+                <option value="option13">
+                  Desorden en el espacio de trabajo
+                </option>
+                <option value="option14">Mascotas</option>
+                <option value="option15">Pensamientos intrusivos</option>
+                <option value="option16">Sueño/fatiga</option>
+                <option value="option17">Aburrimiento</option>
+                <option value="option18">Multitarea</option>
+                <option value="option19">Día soñando despierto</option>
+                <option value="option20">Estrés o ansiedad</option>
+              </select>
+              <div
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              >
+                <img src="./img/Lista.png" alt="" class="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+          <!-- Objetivo principal -->
+          <div class="mb-8">
+            <label class="block text-gray-200 mb-2">
+              ¿Cuál es tu objetivo principal al utilizar Focus Up?
+            </label>
+            <div class="relative w-full">
+              <select
+                name="objetivo"
+                id="objetivo"
+                class="w-full h-10 px-3 py-2 font-normal bg-gray-800 text-gray-100 rounded-md cursor-pointer outline-none appearance-none border border-blue-500 focus:border-blue-600 transition-colors pr-8"
+              >
+                <option value="" disabled selected hidden class="text-gray-400">
+                  Selecciona una opción
+                </option>
+                <option value="option1">Estudio y Aprendizaje</option>
+                <option value="option2">Trabajo y Productividad</option>
+                <option value="option3">
+                  Tareas Domésticas y Organización Personal
+                </option>
+                <option value="option4">
+                  Creatividad y Proyectos Personales
+                </option>
+                <option value="option5">Salud Mental y Bienestar</option>
+              </select>
+              <div
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              >
+                <img src="./img/Lista.png" alt="" class="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+          <!-- Botones -->
+          <div class="flex flex-col sm:flex-row gap-4">
+            <button
+              type="submit"
+              class="w-full sm:w-auto py-2 px-4 rounded-md bg-primary hover:bg-primaryhover text-white font-semibold text-center transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Guardar Cambios
+            </button>
+            <a
+              href="index.html"
+              class="w-full sm:w-auto py-2 px-4 rounded-md bg-gray-600 text-white font-semibold text-center hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Cancelar
+            </a>
+          </div>
+        </form>
+      </main>
+    </div>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        if (window.lucide) window.lucide.createIcons();
+        // Sidebar toggle y centrado del main
+        const sidebar = document.getElementById("sidebar");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const mainContent = document.getElementById("mainContent");
+        if (sidebar && sidebarToggle && mainContent) {
+          sidebarToggle.addEventListener("click", () => {
+            sidebar.classList.toggle("-translate-x-full");
+            sidebar.classList.toggle("translate-x-0");
+            if (sidebar.classList.contains("-translate-x-full")) {
+              mainContent.classList.add("justify-center", "items-center");
+              mainContent.classList.remove("ml-64");
+            } else {
+              mainContent.classList.remove("justify-center", "items-center");
+              mainContent.classList.add("ml-64");
+            }
+          });
+          // Estado inicial
+          if (sidebar.classList.contains("-translate-x-full")) {
+            mainContent.classList.add("justify-center", "items-center");
+            mainContent.classList.remove("ml-64");
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

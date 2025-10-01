@@ -20,6 +20,11 @@ export interface RegisterRequest extends LoginRequest {
 }
 
 export interface AuthResponse {
+  success: boolean;
+  message: string;
   token: string;
+  userId: number;
+  username: string;
   user: User;
+  timestamp: string;
 }
