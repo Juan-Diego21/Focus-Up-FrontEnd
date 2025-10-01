@@ -99,7 +99,7 @@ export const SurveyPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#171717] min-h-screen flex items-center justify-center font-inter p-5">
+    <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center font-inter p-5">
       <button
         onClick={() => window.history.back()}
         className="absolute top-5 left-5 p-2 bg-none cursor-pointer"
@@ -120,7 +120,7 @@ export const SurveyPage: React.FC = () => {
         </svg>
       </button>
       <div className="w-full max-w-lg px-5">
-        <div className="bg-[#232323] p-8 rounded-xl shadow-lg">
+        <div className="bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md p-8 rounded-xl shadow-2xl border border-[#333]/50">
           {/* Logo */}
           <img
             src="/img/Logo.png"

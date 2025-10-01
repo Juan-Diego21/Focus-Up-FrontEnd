@@ -114,11 +114,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
             <li>
               <button
                 onClick={() => navigateTo("/dashboard")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-blue-400 group cursor-pointer ${
-                  currentPage === "dashboard" ? "bg-[#2a2a2a] text-blue-400" : ""
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-[#ffa200] group cursor-pointer ${
+                  currentPage === "dashboard" ? "bg-[#2a2a2a] text-[#ffa200]" : ""
                 }`}
               >
-                <HomeIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-400" />
+                <HomeIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
                 <span className="font-medium">Inicio</span>
               </button>
             </li>
@@ -130,8 +130,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
                   className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <Cog6ToothIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-400" />
-                    <span className="font-medium text-left">Configuración de cuenta</span>
+                    <Cog6ToothIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
+                    <span className="font-medium text-left hover:text-[#ffa200]">Configuración de cuenta</span>
                   </div>
                   <ChevronDownIcon
                     className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
                   <div className="ml-8 mt-2 space-y-1">
                     <button
                       onClick={() => navigateTo("/profile")}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-blue-400 cursor-pointer"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer"
                     >
                       <UserIcon className="w-4 h-4" />
                       <span className="text-sm">Editar perfil</span>
@@ -164,27 +164,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
             <li>
               <button
                 onClick={() => navigateTo("/preferences")}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-blue-400 group cursor-pointer"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-[#ffa200] group cursor-pointer"
               >
-                <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-400" />
+                <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
                 <span className="font-medium">Preferencias</span>
               </button>
             </li>
             <li>
               <button
                 onClick={() => navigateTo("/notifications")}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-blue-400 group cursor-pointer"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-[#ffa200] group cursor-pointer"
               >
-                <BellIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-400" />
+                <BellIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
                 <span className="font-medium">Notificaciones</span>
               </button>
             </li>
             <li>
               <button
                 onClick={() => navigateTo("/reports")}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-blue-400 group cursor-pointer"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-[#ffa200] group cursor-pointer"
               >
-                <ChartBarIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-400" />
+                <ChartBarIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
                 <span className="font-medium">Reportes</span>
               </button>
             </li>

@@ -73,12 +73,12 @@ export const StudyMethodsLibraryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#171717] font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
       <Sidebar currentPage="study-methods" />
 
       <div className="flex justify-center items-center min-h-screen">
         <main className="w-full max-w-6xl p-6 md:p-10 transition-all">
-          <h1 className="text-3xl font-bold text-white mb-10 tracking-tight text-center">
+          <h1 className="text-3xl font-bold text-white mb-10 tracking-tight text-center bg-gradient-to-r from-white to-gray-300 bg-clip-text">
             Biblioteca de Métodos de Estudio
           </h1>
 

@@ -7,6 +7,7 @@ import { ConfirmationPage } from "./pages/ConfirmationPage";
 import { SurveyPage } from "./pages/SurveyPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { StudyMethodsLibraryPage } from "./pages/StudyMethodsLibraryPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -26,6 +27,12 @@ function App() {
               return <SurveyPage />;
             case "/forgot-password":
               return <ForgotPasswordPage />;
+            case "/profile":
+              return (
+                <RequireAuth>
+                  <ProfilePage />
+                </RequireAuth>
+              );
             case "/study-methods":
               return (
                 <RequireAuth>
