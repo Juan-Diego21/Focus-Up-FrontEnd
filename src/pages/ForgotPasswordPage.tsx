@@ -1,18 +1,34 @@
 import React, { useState } from "react";
 import { Mail } from "lucide-react";
+import { apiClient } from "../utils/apiClient";
+import { API_ENDPOINTS } from "../utils/constants";
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Lógica para enviar código de verificación
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+
+    try {
+      // Llamada a la API para solicitar el código de restablecimiento
+      await apiClient.post(API_ENDPOINTS.REQUEST_PASSWORD_RESET, {
+        emailOrUsername: email,
+      });
+
+      // Guardar el email en localStorage para usarlo en el siguiente paso
+      localStorage.setItem("resetEmail", email);
+
+      // Redirigir al siguiente paso
       window.location.href = "/forgot-password-code";
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || "Error al enviar el código de verificación");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,6 +83,10 @@ export const ForgotPasswordPage: React.FC = () => {
                 />
               </div>
             </div>
+
+            {error && (
+              <p className="text-red-500 text-sm mt-2">{error}</p>
+            )}
 
             <button
               type="submit"

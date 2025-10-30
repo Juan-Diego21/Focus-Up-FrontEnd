@@ -3,6 +3,8 @@ import { RequireAuth } from "./components/auth/RequireAuth";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ForgotPasswordCodePage } from "./pages/ForgotPasswordCodePage";
+import { ForgotPasswordResetPage } from "./pages/ForgotPasswordResetPage";
 import { ConfirmationPage } from "./pages/ConfirmationPage";
 import { SurveyPage } from "./pages/SurveyPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -27,6 +29,10 @@ function App() {
               return <SurveyPage />;
             case "/forgot-password":
               return <ForgotPasswordPage />;
+            case "/forgot-password-code":
+              return <ForgotPasswordCodePage />;
+            case "/forgot-password-reset":
+              return <ForgotPasswordResetPage />;
             case "/profile":
               return (
                 <RequireAuth>
