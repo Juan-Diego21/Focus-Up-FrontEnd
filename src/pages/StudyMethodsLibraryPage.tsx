@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar } from "../components/ui/Sidebar";
 import { Card } from "../components/ui/Card";
+import { API_BASE_URL, API_ENDPOINTS } from "../utils/constants";
 
 interface Benefit {
   id_beneficio: number;
@@ -16,6 +17,8 @@ interface StudyMethod {
   fecha_creacion?: string;
   fecha_actualizacion?: string;
   beneficios: Benefit[];
+  url_imagen?: string;
+  color_hexa?: string;
 }
 
 
@@ -33,26 +36,41 @@ export const StudyMethodsLibraryPage: React.FC = () => {
         setLoading(true);
         setError("");
 
-        // Fetch all study methods
-        const methodsResponse = await fetch("http://localhost:3001/api/v1/metodos-estudio");
+        // Obtener token del localStorage para autenticación
+        const token = localStorage.getItem("token");
+        if (!token) {
+          // Redirigir al login si no hay token
+          window.location.href = "/login";
+          throw new Error("No se encontró token de autenticación. Redirigiendo al login...");
+        }
+
+        // Fetch all study methods con token de autorización
+        const methodsResponse = await fetch(`${API_BASE_URL}${API_ENDPOINTS.STUDY_METHODS}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!methodsResponse.ok) {
+          if (methodsResponse.status === 401) {
+            // Token expirado o inválido, limpiar datos y redirigir al login
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            localStorage.removeItem("userData");
+            window.location.href = "/login";
+            throw new Error("Sesión expirada. Redirigiendo al login...");
+          }
           throw new Error("Error al cargar métodos de estudio");
         }
         const apiResponse = await methodsResponse.json();
-        console.log("API Response for methods:", apiResponse);
 
         // Extract the data array from the response - more robust approach
         const methods: StudyMethod[] = apiResponse?.data || [];
-
-        console.log("Extracted methods:", methods);
-        console.log("Methods length:", methods.length);
 
         if (methods.length === 0) {
           console.warn("No study methods received from API. Full response:", apiResponse);
         }
 
-        // Benefits are already included in the main API response
-        console.log("Methods with benefits from API:", methods);
         setStudyMethods(methods);
       } catch (err) {
         console.error("Error fetching study methods:", err);

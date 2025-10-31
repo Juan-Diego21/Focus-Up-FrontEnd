@@ -153,6 +153,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const newToken = response.token;
         const userData = response.user;
 
+        // Validar que el usuario tenga id_usuario válido
+        if (!userData.id_usuario) {
+          throw {
+            message: "ID de usuario inválido",
+            statusCode: 400,
+            error: "Invalid user ID in response",
+          };
+        }
+
         // Store token, userId, and complete user data in localStorage
         localStorage.setItem("token", newToken);
         localStorage.setItem("userId", userData.id_usuario.toString());
