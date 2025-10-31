@@ -6,17 +6,12 @@ interface RequireAuthProps {
   children: React.ReactNode;
 }
 
+// ✅ Componente que requiere autenticación para acceder al contenido
 export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
-  const { isAuthenticated, loading, user, token } = useAuth();
-
-  console.log("🔐 RequireAuth check:");
-  console.log("⏳ Loading:", loading);
-  console.log("🔑 Token exists:", !!token);
-  console.log("👤 User exists:", !!user);
-  console.log("✅ Is authenticated:", isAuthenticated);
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    console.log("⏳ Showing loading spinner...");
+    // ✅ Mostrar spinner de carga mientras se verifica la autenticación
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -25,7 +20,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    console.log("❌ User not authenticated, showing login required...");
+    // ✅ Mostrar mensaje de acceso requerido si no está autenticado
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="max-w-md w-full text-center">
@@ -46,6 +41,6 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
     );
   }
 
-  console.log("✅ User authenticated, rendering protected content...");
+  // ✅ Renderizar contenido protegido si está autenticado
   return <>{children}</>;
 };

@@ -58,15 +58,11 @@ export const SurveyPage: React.FC = () => {
           distracciones: distracciones,
         };
 
-        console.log("SurveyPage payload:", extendedPayload);
-        console.log("Sending registration request from SurveyPage...");
-
-        // Use apiClient directly to send extended payload
+        // ✅ Enviar solicitud de registro con datos extendidos
         const { apiClient } = await import("../utils/apiClient");
         const { API_ENDPOINTS } = await import("../utils/constants");
 
-        const response = await apiClient.post(API_ENDPOINTS.USERS, extendedPayload);
-        console.log("SurveyPage registration response:", response);
+        await apiClient.post(API_ENDPOINTS.USERS, extendedPayload);
 
         // Show SweetAlert2 success modal with custom styling
         await Swal.fire({
@@ -89,9 +85,8 @@ export const SurveyPage: React.FC = () => {
         window.location.href = "/login";
       }
     } catch (error: unknown) {
-      const err = error as any;
-      const errorMessage = err?.response?.data?.error || err?.message || "Error al registrar usuario";
-      console.error("Error registering:", error);
+      const apiError = error as { response?: { data?: { error?: string } }; message?: string };
+      const errorMessage = apiError?.response?.data?.error || apiError?.message || "Error al registrar usuario";
       setError(errorMessage);
     } finally {
       setLoading(false);

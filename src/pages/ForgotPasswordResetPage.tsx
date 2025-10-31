@@ -60,8 +60,9 @@ export const ForgotPasswordResetPage: React.FC = () => {
 
       // Redirigir al login
       window.location.href = "/login";
-    } catch (err: any) {
-      setError(err.message || "Error al restablecer la contraseña");
+    } catch (err: unknown) {
+      const apiError = err as { message?: string };
+      setError(apiError.message || "Error al restablecer la contraseña");
     } finally {
       setLoading(false);
     }

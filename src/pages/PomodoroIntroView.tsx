@@ -23,7 +23,7 @@ export const PomodoroIntroView: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Obtener datos del método Pomodoro
+  // ✅ Obtener datos del método de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -52,10 +52,9 @@ export const PomodoroIntroView: React.FC = () => {
           throw new Error("Error al cargar datos del método");
         }
 
-      const methodData = await response.json();
-      setMethod(methodData.data || methodData);
-      } catch (err) {
-        console.error("Error fetching method data:", err);
+        const methodData = await response.json();
+        setMethod(methodData.data || methodData);
+      } catch {
         setError("Error al cargar los datos del método");
       } finally {
         setLoading(false);

@@ -50,7 +50,7 @@ export const PomodoroExecutionView: React.FC = () => {
     },
   ];
 
-  // Obtener datos del método
+  // ✅ Obtener datos del método de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -81,8 +81,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
         const methodData = await response.json();
         setMethod(methodData);
-      } catch (err) {
-        console.error("Error fetching method data:", err);
+      } catch {
         setError("Error al cargar los datos del método");
       } finally {
         setLoading(false);

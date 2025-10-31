@@ -24,8 +24,9 @@ export const ForgotPasswordPage: React.FC = () => {
 
       // Redirigir al siguiente paso
       window.location.href = "/forgot-password-code";
-    } catch (err: any) {
-      setError(err.message || "Error al enviar el código de verificación");
+    } catch (err: unknown) {
+      const apiError = err as { message?: string };
+      setError(apiError.message || "Error al enviar el código de verificación");
     } finally {
       setLoading(false);
     }
