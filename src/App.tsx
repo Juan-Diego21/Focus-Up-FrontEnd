@@ -5,6 +5,8 @@ import { RegisterPage } from "./pages/RegisterPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ForgotPasswordCodePage } from "./pages/ForgotPasswordCodePage";
 import { ForgotPasswordResetPage } from "./pages/ForgotPasswordResetPage";
+import { PomodoroIntroView } from "./pages/PomodoroIntroView";
+import { PomodoroExecutionView } from "./pages/PomodoroExecutionView";
 import { ConfirmationPage } from "./pages/ConfirmationPage";
 import { SurveyPage } from "./pages/SurveyPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -47,6 +49,21 @@ function App() {
               );
             case "/dashboard":
             default:
+              // Manejar rutas con parámetros dinámicos primero
+              if (path.startsWith("/pomodoro/intro/")) {
+                return (
+                  <RequireAuth>
+                    <PomodoroIntroView />
+                  </RequireAuth>
+                );
+              }
+              if (path.startsWith("/pomodoro/execute/")) {
+                return (
+                  <RequireAuth>
+                    <PomodoroExecutionView />
+                  </RequireAuth>
+                );
+              }
               return (
                 <RequireAuth>
                   <DashboardPage />

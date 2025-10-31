@@ -84,8 +84,13 @@ export const StudyMethodsLibraryPage: React.FC = () => {
   }, []);
 
   const handleViewStepByStep = (method: StudyMethod) => {
-    console.log(`Viewing step by step for ${method.nombre_metodo}`);
-    // TODO: Implement step by step view navigation
+    // Navegar a la vista intro del método Pomodoro
+    if (method.nombre_metodo.toLowerCase().includes('pomodoro')) {
+      window.location.href = `/pomodoro/intro/${method.id_metodo}`;
+    } else {
+      console.log(`Viewing step by step for ${method.nombre_metodo}`);
+      // TODO: Implement step by step view navigation for other methods
+    }
   };
 
   const handleAddToSession = (method: StudyMethod) => {
