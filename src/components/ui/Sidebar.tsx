@@ -38,32 +38,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
     setShowDeleteModal(true);
   };
 
+  // ✅ Función para confirmar eliminación de cuenta
   const confirmDeleteAccount = async () => {
     if (!user?.id_usuario) {
-      console.error("❌ No user ID available for deletion");
       setShowDeleteModal(false);
       return;
     }
 
     setDeleteLoading(true);
     try {
-      console.log("🗑️ Deleting account for user ID:", user.id_usuario);
       await apiClient.delete(`${API_ENDPOINTS.USERS}/${user.id_usuario}`);
-      console.log("✅ Account deleted successfully");
 
-      // Show success alert
+      // ✅ Mostrar alerta de éxito
       setShowSuccessAlert(true);
       setShowDeleteModal(false);
 
-      // Logout and redirect after a short delay
+      // ✅ Cerrar sesión y redirigir después de un breve retraso
       setTimeout(() => {
         logout();
         window.location.href = "/login";
       }, 2000);
 
-    } catch (error: any) {
-      console.error("❌ Account deletion failed:", error);
-      // Still logout and redirect even if API fails
+    } catch {
+      // ✅ Cerrar sesión y redirigir incluso si falla la API
       setShowDeleteModal(false);
       logout();
       window.location.href = "/login";
@@ -81,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
       {/* Sidebar Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-2 bg-none rounded-lg hover:bg-[#2a2a2a] transition-all duration-200 cursor-pointer"
+        className="fixed top-4 left-4 z-50 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-200 cursor-pointer"
         aria-label="Mostrar/Ocultar menú"
       >
         <Bars3Icon className="w-6 h-6 text-white" />

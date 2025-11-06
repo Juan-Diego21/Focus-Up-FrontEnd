@@ -30,8 +30,8 @@ export const LoginPage: React.FC = () => {
     try {
       await login(formData);
     } catch (err: unknown) {
-      const error = err as any;
-      const errorMessage = error?.response?.data?.error || error?.message || "Error al iniciar sesión";
+      const apiError = err as { response?: { data?: { error?: string } }; message?: string };
+      const errorMessage = apiError?.response?.data?.error || apiError?.message || "Error al iniciar sesión";
       setError(errorMessage);
     } finally {
       setLoading(false);

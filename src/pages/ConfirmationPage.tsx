@@ -37,14 +37,11 @@ export const ConfirmationPage: React.FC = () => {
           genero: formData.genero || "",
         };
 
-        console.log("ConfirmationPage payload:", payload);
-        console.log("Sending registration request from ConfirmationPage...");
-
+        // ✅ Enviar solicitud de registro con datos básicos
         const { apiClient } = await import("../utils/apiClient");
         const { API_ENDPOINTS } = await import("../utils/constants");
 
-        const response = await apiClient.post(API_ENDPOINTS.USERS, payload);
-        console.log("ConfirmationPage registration response:", response);
+        await apiClient.post(API_ENDPOINTS.USERS, payload);
 
         // Show SweetAlert2 success modal with custom styling
         await Swal.fire({
@@ -67,9 +64,8 @@ export const ConfirmationPage: React.FC = () => {
         window.location.href = "/login";
       }
     } catch (error: unknown) {
-      const err = error as any;
-      const errorMessage = err?.response?.data?.error || err?.message || "Error al registrar usuario";
-      console.error("Error registering:", error);
+      const apiError = error as { response?: { data?: { error?: string } }; message?: string };
+      const errorMessage = apiError?.response?.data?.error || apiError?.message || "Error al registrar usuario";
       setError(errorMessage);
     } finally {
       setLoading(false);
