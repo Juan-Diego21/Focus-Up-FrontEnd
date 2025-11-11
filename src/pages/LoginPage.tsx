@@ -59,7 +59,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Campo para correo electrónico o nombre de usuario */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correo electrónico o nombre de usuario
               </label>
               <div className="relative">
@@ -79,7 +79,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Campo para contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Contraseña
               </label>
               <div className="relative">

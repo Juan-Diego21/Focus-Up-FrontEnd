@@ -63,12 +63,12 @@ export const ForgotPasswordPage: React.FC = () => {
           />
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <p className="text-gray-700 text-center mb-8 text-lg font-medium">
+            <p className="text-gray-400 text-center mb-8 text-lg font-medium">
               Ingresa el correo electrónico asociado a tu cuenta
             </p>
 
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correo electrónico
               </label>
               <div className="relative">

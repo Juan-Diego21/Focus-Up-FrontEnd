@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { RegisterRequest } from "../types/user";
-import { User, Mail, Lock, Calendar, MapPin, Users, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-const countries = [
-  "Colombia", "México", "Argentina", "Estados Unidos", "Canadá", "España",
-  "Brasil", "Chile", "Perú", "Alemania", "Francia", "Italia", "Reino Unido", "Japón"
-];
-
-const genders = [
-  "Masculino", "Femenino", "Otro", "Prefiero no decir"
-];
 
 const usernameRegex = /^[a-zA-Z0-9_-]+$/;
 
@@ -150,7 +142,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Nombre de usuario */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Nombre de usuario <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -173,7 +165,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Email */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correo electrónico <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -193,7 +185,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Contraseña <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -220,7 +212,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Confirmar Contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Confirmar Contraseña <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -244,73 +236,6 @@ export const RegisterPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Fecha de nacimiento */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha de nacimiento
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="date"
-                  name="fecha_nacimiento"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={!isNaN(formData.fecha_nacimiento.getTime()) ? formData.fecha_nacimiento.toISOString().split('T')[0] : ""}
-                  onChange={handleChange}
-                  disabled={false}
-                />
-              </div>
-            </div>
-
-            {/* País */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                País
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="pais"
-                  placeholder="País"
-                  list="countries"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={formData.pais}
-                  onChange={handleChange}
-                  disabled={false}
-                />
-                <datalist id="countries">
-                  {countries.map((country) => (
-                    <option key={country} value={country} />
-                  ))}
-                </datalist>
-              </div>
-            </div>
-
-            {/* Género */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Género
-              </label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="genero"
-                  placeholder="Género"
-                  list="genders"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={formData.genero}
-                  onChange={handleChange}
-                  disabled={false}
-                />
-                <datalist id="genders">
-                  {genders.map((gender) => (
-                    <option key={gender} value={gender} />
-                  ))}
-                </datalist>
-              </div>
-            </div>
 
             {/* Botón Siguiente */}
             <button
