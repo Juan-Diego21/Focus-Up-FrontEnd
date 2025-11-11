@@ -38,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
     setShowDeleteModal(true);
   };
 
-  // ✅ Función para confirmar eliminación de cuenta
+  // Función para confirmar eliminación de cuenta
   const confirmDeleteAccount = async () => {
     if (!user?.id_usuario) {
       setShowDeleteModal(false);
@@ -49,11 +49,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
     try {
       await apiClient.delete(`${API_ENDPOINTS.USERS}/${user.id_usuario}`);
 
-      // ✅ Mostrar alerta de éxito
+      // Mostrar alerta de éxito
       setShowSuccessAlert(true);
       setShowDeleteModal(false);
 
-      // ✅ Cerrar sesión y redirigir después de un breve retraso
+      // Cerrar sesión y redirigir después de un breve retraso
       setTimeout(() => {
         logout();
         window.location.href = "/login";

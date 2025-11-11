@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const isAuthenticated = !!token && !!user;
 
-  // ✅ Verificar token al cargar la aplicación
+  // Verificar token al cargar la aplicación
   useEffect(() => {
     const verifyToken = async () => {
       if (token) {
@@ -41,18 +41,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const storedUserData = localStorage.getItem("userData");
 
         try {
-          // ✅ Verificar token llamando al endpoint de perfil
+          // Verificar token llamando al endpoint de perfil
           const userProfile = await apiClient.get(API_ENDPOINTS.PROFILE, {
             headers: { Authorization: `Bearer ${token}` },
           }) as User;
 
-          // ✅ Validar que el perfil de usuario tenga ID válido
+          // Validar que el perfil de usuario tenga ID válido
           if (userProfile && userProfile.id_usuario) {
             setUser(userProfile);
-            // ✅ Actualizar datos de usuario almacenados con datos frescos del perfil
+            // Actualizar datos de usuario almacenados con datos frescos del perfil
             localStorage.setItem("userData", JSON.stringify(userProfile));
           } else {
-            // ✅ Limpiar token inválido si falta ID de usuario
+            // Limpiar token inválido si falta ID de usuario
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
             localStorage.removeItem("userData");
@@ -60,13 +60,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(null);
           }
         } catch {
-          // ✅ Intentar restaurar datos de usuario desde localStorage como respaldo
+          // Intentar restaurar datos de usuario desde localStorage como respaldo
           if (storedUserData) {
             try {
               const parsedUserData = JSON.parse(storedUserData) as User;
               setUser(parsedUserData);
             } catch {
-              // ✅ Crear usuario básico con ID almacenado si falla el parseo
+              // Crear usuario básico con ID almacenado si falla el parseo
               if (storedUserId) {
                 setUser({
                   id_usuario: parseInt(storedUserId),
@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   fecha_nacimiento: new Date(),
                 });
               } else {
-                // ✅ Limpiar datos inválidos
+                // Limpiar datos inválidos
                 localStorage.removeItem("token");
                 localStorage.removeItem("userId");
                 localStorage.removeItem("userData");
@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               }
             }
           } else if (storedUserId) {
-            // ✅ Crear usuario básico si no hay datos almacenados pero sí ID
+            // Crear usuario básico si no hay datos almacenados pero sí ID
             setUser({
               id_usuario: parseInt(storedUserId),
               nombre_usuario: "Usuario",
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               fecha_nacimiento: new Date(),
             });
           } else {
-            // ✅ Limpiar token y datos de usuario inválidos
+            // Limpiar token y datos de usuario inválidos
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
             localStorage.removeItem("userData");
@@ -107,10 +107,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     verifyToken();
   }, [token]);
 
-  // ✅ Función para iniciar sesión del usuario
+  // Función para iniciar sesión del usuario
   const login = async (credentials: LoginRequest): Promise<void> => {
     try {
-      // ✅ Transformar credenciales para coincidir con expectativas del backend
+      // Transformar credenciales para coincidir con expectativas del backend
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.correo);
 
       const payload = isEmail
@@ -123,19 +123,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const newToken = response.token;
         const userData = response.user;
 
-        // ✅ Validar que el usuario tenga ID válido
+        // Validar que el usuario tenga ID válido
         if (!userData.id_usuario) {
           throw new Error("ID de usuario inválido en la respuesta");
         }
 
-        // ✅ Almacenar token, ID de usuario y datos completos en localStorage
+        // Almacenar token, ID de usuario y datos completos en localStorage
         localStorage.setItem("token", newToken);
         localStorage.setItem("userId", userData.id_usuario.toString());
         localStorage.setItem("userData", JSON.stringify(userData));
         setToken(newToken);
         setUser(userData);
 
-        // ✅ Redirigir al dashboard después del login exitoso
+        // Redirigir al dashboard después del login exitoso
         window.location.href = "/dashboard";
       } else {
         throw new Error(response.message || "Inicio de sesión fallido");
@@ -145,10 +145,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // ✅ Función para registrar un nuevo usuario
+  // Función para registrar un nuevo usuario
   const register = async (userData: RegisterRequest): Promise<void> => {
     try {
-      // ✅ Transformar datos para coincidir con expectativas del backend
+      // Transformar datos para coincidir con expectativas del backend
       const payload = {
         nombre_usuario: userData.nombre_usuario,
         correo: userData.correo,
@@ -163,11 +163,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.success && response.token) {
         const newToken = response.token;
 
-        // ✅ Guardar token en localStorage
+        // Guardar token en localStorage
         localStorage.setItem("token", newToken);
         setToken(newToken);
 
-        // ✅ Obtener perfil de usuario después del registro
+        // Obtener perfil de usuario después del registro
         try {
           const userProfile = await apiClient.get(API_ENDPOINTS.PROFILE, {
             headers: { Authorization: `Bearer ${newToken}` },
@@ -185,7 +185,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // ✅ Función para cerrar sesión del usuario
+  // Función para cerrar sesión del usuario
   const logout = (): void => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -207,7 +207,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// ✅ Hook personalizado para acceder al contexto de autenticación
+// Hook personalizado para acceder al contexto de autenticación
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {

@@ -24,9 +24,9 @@ interface CardProps {
   onAddToSession: (method: StudyMethod) => void;
 }
 
-// ✅ Componente Card para mostrar métodos de estudio
+// Componente Card para mostrar métodos de estudio
 export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSession }) => {
-  // ✅ Aplicar color dinámico del método o usar azul por defecto
+  // Aplicar color dinámico del método o usar azul por defecto
   const methodColor = method.color_hexa || '#0690cf';
 
   return (
@@ -36,7 +36,7 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
         '--method-color': methodColor,
         boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px ${methodColor}20`,
       } as React.CSSProperties}
-      // ✅ Efectos hover para mejorar la interactividad
+      // Efectos hover para mejorar la interactividad
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px ${methodColor}40, 0 0 20px ${methodColor}10`;
       }}
@@ -52,7 +52,7 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
               src={method.url_imagen}
               alt={`Imagen de ${method.nombre_metodo}`}
               className="w-full h-full object-cover"
-              // ✅ Fallback a letra inicial si la imagen falla
+              // Fallback a letra inicial si la imagen falla
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
@@ -115,7 +115,7 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
             backgroundColor: methodColor,
             boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
           }}
-          // ✅ Efectos hover para el botón principal
+          // Efectos hover para el botón principal
           onMouseEnter={(e) => {
             const darkerColor = methodColor.replace('#', '');
             const r = parseInt(darkerColor.substr(0, 2), 16);

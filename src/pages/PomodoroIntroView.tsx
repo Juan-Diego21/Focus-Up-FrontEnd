@@ -23,7 +23,7 @@ export const PomodoroIntroView: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // ✅ Obtener datos del método de estudio desde la API
+  // Obtener datos del método de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {

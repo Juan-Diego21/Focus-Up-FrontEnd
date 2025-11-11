@@ -58,7 +58,7 @@ export const SurveyPage: React.FC = () => {
           distracciones: distracciones,
         };
 
-        // ✅ Enviar solicitud de registro con datos extendidos
+        // Enviar solicitud de registro con datos extendidos
         const { apiClient } = await import("../utils/apiClient");
         const { API_ENDPOINTS } = await import("../utils/constants");
 

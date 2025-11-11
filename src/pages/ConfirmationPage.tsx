@@ -37,7 +37,7 @@ export const ConfirmationPage: React.FC = () => {
           genero: formData.genero || "",
         };
 
-        // ✅ Enviar solicitud de registro con datos básicos
+        // Enviar solicitud de registro con datos básicos
         const { apiClient } = await import("../utils/apiClient");
         const { API_ENDPOINTS } = await import("../utils/constants");
 
