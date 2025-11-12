@@ -14,7 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
   register: (userData: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loading: boolean;
 }
 
@@ -37,68 +37,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const verifyToken = async () => {
       if (token) {
-        const storedUserId = localStorage.getItem("userId");
         const storedUserData = localStorage.getItem("userData");
 
-        try {
-          // Verificar token llamando al endpoint de perfil
-          const userProfile = await apiClient.get(API_ENDPOINTS.PROFILE, {
-            headers: { Authorization: `Bearer ${token}` },
-          }) as User;
-
-          // Validar que el perfil de usuario tenga ID válido
-          if (userProfile && userProfile.id_usuario) {
-            setUser(userProfile);
-            // Actualizar datos de usuario almacenados con datos frescos del perfil
-            localStorage.setItem("userData", JSON.stringify(userProfile));
-          } else {
-            // Limpiar token inválido si falta ID de usuario
-            localStorage.removeItem("token");
-            localStorage.removeItem("userId");
-            localStorage.removeItem("userData");
-            setToken(null);
-            setUser(null);
-          }
-        } catch {
-          // Intentar restaurar datos de usuario desde localStorage como respaldo
-          if (storedUserData) {
-            try {
-              const parsedUserData = JSON.parse(storedUserData) as User;
+        // Intentar restaurar datos de usuario desde localStorage
+        if (storedUserData) {
+          try {
+            const parsedUserData = JSON.parse(storedUserData) as User;
+            // Validar que el usuario tenga ID válido
+            if (parsedUserData && parsedUserData.id_usuario) {
               setUser(parsedUserData);
-            } catch {
-              // Crear usuario básico con ID almacenado si falla el parseo
-              if (storedUserId) {
-                setUser({
-                  id_usuario: parseInt(storedUserId),
-                  nombre_usuario: "Usuario",
-                  correo: "usuario@ejemplo.com",
-                  fecha_nacimiento: new Date(),
-                });
-              } else {
-                // Limpiar datos inválidos
-                localStorage.removeItem("token");
-                localStorage.removeItem("userId");
-                localStorage.removeItem("userData");
-                setToken(null);
-                setUser(null);
-              }
+            } else {
+              // Limpiar datos inválidos si falta ID de usuario
+              localStorage.removeItem("token");
+              localStorage.removeItem("userId");
+              localStorage.removeItem("userData");
+              setToken(null);
+              setUser(null);
             }
-          } else if (storedUserId) {
-            // Crear usuario básico si no hay datos almacenados pero sí ID
-            setUser({
-              id_usuario: parseInt(storedUserId),
-              nombre_usuario: "Usuario",
-              correo: "usuario@ejemplo.com",
-              fecha_nacimiento: new Date(),
-            });
-          } else {
-            // Limpiar token y datos de usuario inválidos
+          } catch {
+            // Limpiar datos inválidos si falla el parseo
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
             localStorage.removeItem("userData");
             setToken(null);
             setUser(null);
           }
+        } else {
+          // Limpiar token si no hay datos de usuario almacenados
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          setToken(null);
+          setUser(null);
         }
       }
       setLoading(false);
@@ -167,15 +136,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem("token", newToken);
         setToken(newToken);
 
-        // Obtener perfil de usuario después del registro
-        try {
-          const userProfile = await apiClient.get(API_ENDPOINTS.PROFILE, {
-            headers: { Authorization: `Bearer ${newToken}` },
-          }) as User;
-          setUser(userProfile);
-        } catch {
-          setUser(null);
-        }
+        // Usuario registrado exitosamente, redirigir a la siguiente página
+        // Los datos del usuario se obtendrán desde el login posterior
       } else {
         throw new Error(response.message || "Registro fallido");
       }
@@ -186,12 +148,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Función para cerrar sesión del usuario
-  const logout = (): void => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userData");
-    setToken(null);
-    setUser(null);
+  const logout = async (): Promise<void> => {
+    try {
+      // Obtener token actual para la solicitud de logout
+      const currentToken = localStorage.getItem("token");
+
+      if (currentToken) {
+        // Realizar solicitud POST al endpoint de logout del backend
+        await apiClient.post(API_ENDPOINTS.LOGOUT, {}, {
+          headers: { Authorization: `Bearer ${currentToken}` },
+        });
+      }
+    } catch (error) {
+      // En caso de error (token expirado o inválido), continuar con el logout local
+      console.warn("Error al hacer logout en el backend:", error);
+    } finally {
+      // Limpiar datos locales independientemente del resultado de la API
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userData");
+      setToken(null);
+      setUser(null);
+
+      // Redirigir al login después del logout
+      window.location.href = "/login";
+    }
   };
 
   const value: AuthContextType = {
