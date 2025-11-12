@@ -17,6 +17,8 @@ import { StudyMethodsLibraryPage } from "./pages/StudyMethodsLibraryPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { PomodoroIntroView } from "./pages/PomodoroIntroView";
 import { PomodoroExecutionView } from "./pages/PomodoroExecutionView";
+import { MindMapsInfoPage } from "./pages/MindMapsInfoPage";
+import { MindMapsStepsPage } from "./pages/MindMapsStepsPage";
 
 // Componente principal de la aplicación
 function App() {
@@ -71,6 +73,14 @@ function App() {
 
     if (path.startsWith("/pomodoro/execute/")) {
       return renderProtectedPage(PomodoroExecutionView);
+    }
+
+    if (path.startsWith("/mind-maps/intro/")) {
+      return renderProtectedPage(MindMapsInfoPage);
+    }
+
+    if (path.startsWith("/mind-maps/steps/")) {
+      return renderProtectedPage(MindMapsStepsPage);
     }
 
     // Ruta por defecto (dashboard)

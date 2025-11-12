@@ -81,6 +81,8 @@ export const StudyMethodsLibraryPage: React.FC = () => {
   const handleViewStepByStep = (method: StudyMethod) => {
     if (method.nombre_metodo.toLowerCase().includes('pomodoro')) {
       window.location.href = `/pomodoro/intro/${method.id_metodo}`;
+    } else if (method.nombre_metodo.toLowerCase().includes('mapa') || method.nombre_metodo.toLowerCase().includes('mentales')) {
+      window.location.href = `/mind-maps/intro/${method.id_metodo}`;
     }
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };

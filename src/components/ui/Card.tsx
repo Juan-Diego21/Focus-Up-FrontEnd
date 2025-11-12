@@ -110,7 +110,7 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
       <div className="flex gap-3 mt-auto">
         <button
           onClick={() => onViewStepByStep(method)}
-          className="flex-1 px-4 py-2.5 text-white rounded-lg font-semibold focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="flex-1 px-4 py-2.5 text-white rounded-lg font-semibold focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           style={{
             backgroundColor: methodColor,
             boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,

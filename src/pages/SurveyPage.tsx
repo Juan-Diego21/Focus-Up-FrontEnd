@@ -207,7 +207,7 @@ export const SurveyPage: React.FC = () => {
                     <input
                       type="date"
                       name="fecha_nacimiento"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:outline-none focus:border-transparent transition-all duration-200"
                       value={!isNaN(surveyData.fecha_nacimiento.getTime()) ? surveyData.fecha_nacimiento.toISOString().split('T')[0] : ""}
                       onChange={(e) => {
                         const date = new Date(e.target.value);
@@ -230,7 +230,7 @@ export const SurveyPage: React.FC = () => {
                   <Listbox value={surveyData.pais} onChange={(value) => setSurveyData((prev) => ({ ...prev, pais: value }))}>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
-                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
+                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:outline-none focus:border-transparent transition-all duration-200 text-left">
                         <span className="block truncate">
                           {surveyData.pais || "Selecciona un país"}
                         </span>
@@ -269,7 +269,7 @@ export const SurveyPage: React.FC = () => {
                   <Listbox value={surveyData.genero} onChange={(value) => setSurveyData((prev) => ({ ...prev, genero: value }))}>
                     <div className="relative">
                       <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
-                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
+                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent focus:outline-none transition-all duration-200 text-left">
                         <span className="block truncate">
                           {surveyData.genero || "Selecciona un género"}
                         </span>
@@ -319,7 +319,7 @@ export const SurveyPage: React.FC = () => {
                   <Listbox value={surveyData.distraction1} onChange={(value) => handleChange({ target: { name: 'distraction1', value } } as React.ChangeEvent<HTMLSelectElement>)}>
                     <div className="relative">
                       <AlertTriangle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
-                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
+                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
                         <span className="block truncate">
                           {surveyData.distraction1 ? distractions.find(d => d.value === surveyData.distraction1)?.label : "Selecciona una distracción"}
                         </span>
@@ -357,7 +357,7 @@ export const SurveyPage: React.FC = () => {
                   <Listbox value={surveyData.distraction2} onChange={(value) => handleChange({ target: { name: 'distraction2', value } } as React.ChangeEvent<HTMLSelectElement>)}>
                     <div className="relative">
                       <AlertTriangle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
-                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
+                      <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
                         <span className="block truncate">
                           {surveyData.distraction2 ? distractions.find(d => d.value === surveyData.distraction2)?.label : "Selecciona una distracción"}
                         </span>
@@ -403,7 +403,7 @@ export const SurveyPage: React.FC = () => {
                 <Listbox value={surveyData.objective} onChange={(value) => handleChange({ target: { name: 'objective', value } } as React.ChangeEvent<HTMLSelectElement>)}>
                   <div className="relative">
                     <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
-                    <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
+                    <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left">
                       <span className="block truncate">
                         {surveyData.objective ? objectives.find(o => o.value === surveyData.objective)?.label : "Selecciona una opción"}
                       </span>
@@ -448,7 +448,7 @@ export const SurveyPage: React.FC = () => {
                   </label>
                   <Listbox value={surveyData.hours} onChange={(value) => handleChange({ target: { name: 'hours', value } } as React.ChangeEvent<HTMLSelectElement>)}>
                     <div className="relative">
-                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10">
+                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10">
                         <span className="block truncate">
                           {surveyData.hours || "HH"}
                         </span>
@@ -486,7 +486,7 @@ export const SurveyPage: React.FC = () => {
                   </label>
                   <Listbox value={surveyData.minutes} onChange={(value) => handleChange({ target: { name: 'minutes', value } } as React.ChangeEvent<HTMLSelectElement>)}>
                     <div className="relative">
-                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10">
+                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10">
                         <span className="block truncate">
                           {surveyData.minutes || "MM"}
                         </span>
@@ -524,7 +524,7 @@ export const SurveyPage: React.FC = () => {
                   </label>
                   <Listbox value={surveyData.period} onChange={(value) => handleChange({ target: { name: 'period', value } } as React.ChangeEvent<HTMLSelectElement>)}>
                     <div className="relative">
-                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10">
+                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10">
                         <span className="block truncate">
                           {surveyData.period || "AM/PM"}
                         </span>
@@ -571,7 +571,7 @@ export const SurveyPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mt-6"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-1 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mt-6"
             >
               {loading ? "Registrando..." : "Registrarse"}
             </button>

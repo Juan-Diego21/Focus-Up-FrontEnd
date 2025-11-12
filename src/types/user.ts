@@ -5,6 +5,7 @@ export interface User {
   pais?: string;
   genero?: string;
   fecha_nacimiento: Date;
+  horario_fav?: string;
 }
 
 export interface LoginRequest {
