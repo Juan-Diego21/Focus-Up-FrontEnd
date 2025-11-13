@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reportes - Focus Up</title>
+    <link rel="stylesheet" href="css/reportes.css" />
+    <link rel="icon" href="img\Logo-marca.png" />
+  </head>
+  <body>
+    <button id="sidebarToggle" class="sidebar-toggle-btn">
+      <img src="img/ui_menu.png" alt="Toggle Menu" />
+    </button>
+
+    <!-- Barra lateral -->
+      <aside class="sidebar">
+        <div class="user-profile">
+          <img src="img/user.png" alt="Foto de usuario" class="user-photo" />
+          <div class="user-details">
+            <h3 class="username">Usuario</h3>
+            <p class="user-id">ID-789456</p>
+          </div>
+        </div>
+
+        <nav class="settings-menu">
+          <ul>
+            <li><i class="ico n"></i> Inicio</li>
+            <li><i class="icon"></i> Configuración de cuenta</li></a>
+            <li><i class="icon"></i> Preferencias</li>
+            <li><i class="icon"></i> Notificaciones</li>
+            <li><i class="icon"></i> Privacidad</li>
+            <li><i class="icon"></i> Reportes</li>
+          </ul>
+        </nav>
+
+        <button class="logout-btn"><i class="icon"></i> Cerrar Sesión</button>
+      </aside>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+      <div class="top-container">
+        <h1>Reportes de Sesiones</h1>
+        <div class="filters">
+          <select class="filter-select">
+            <option value="all">Todos los métodos</option>
+            <option value="pomodoro">Método Pomodoro</option>
+          </select>
+          <select class="filter-select">
+            <option value="all">Todos los álbumes</option>
+            <option value="calm">Calm</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sessions-grid">
+        <!-- Tarjeta de sesión -->
+        <div class="session-card">
+          <div class="session-icon">
+            <img src="img/Pomodoro.png" alt="Método Pomodoro" />
+          </div>
+          <div class="session-info">
+            <h2>Método Pomodoro</h2>
+            <p class="album">Álbum: Calm</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="Js/script.js"></script>
+    <script src="Js/reportes.js"></script>
+  </body>
+</html>

@@ -3,6 +3,22 @@ import { Timer } from "../components/ui/Timer";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
+import Swal from 'sweetalert2';
+import { CheckCircle, Clock, Coffee, SkipForward } from 'lucide-react';
+
+interface PomodoroConfig {
+  workTime: number;
+  breakTime: number;
+}
+
+interface SessionData {
+  id: string;
+  methodId: number;
+  id_metodo_realizado: number;
+  startTime: string;
+  progress: number;
+  status: 'in_process' | 'completed';
+}
 
 interface StudyMethod {
   id_metodo: number;
@@ -22,31 +38,68 @@ export const PomodoroExecutionView: React.FC = () => {
   const [progressPercentage, setProgressPercentage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [config, setConfig] = useState<PomodoroConfig>({ workTime: 25, breakTime: 5 });
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
+  const [timerCompleted, setTimerCompleted] = useState(false);
+  const [canFinishMethod, setCanFinishMethod] = useState(false);
+
+  // Load config and session from localStorage
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('pomodoro-config');
+    if (savedConfig) {
+      try {
+        const parsedConfig = JSON.parse(savedConfig);
+        setConfig(parsedConfig);
+      } catch (e) {
+        console.error('Error parsing saved config:', e);
+      }
+    }
+
+    const savedSession = localStorage.getItem('pomodoro-session');
+    if (savedSession) {
+      try {
+        const parsedSession = JSON.parse(savedSession);
+        setSessionData(parsedSession);
+        // Resume at appropriate step based on progress
+        if (parsedSession.progress === 0) {
+          setCurrentStep(0);
+        } else if (parsedSession.progress === 50) {
+          setCurrentStep(2); // Break phase
+          setProgressPercentage(50);
+        }
+      } catch (e) {
+        console.error('Error parsing saved session:', e);
+      }
+    }
+  }, []);
 
   // Pasos del método Pomodoro
   const steps = [
     {
       id: 0,
-      title: "1. Elige una tarea 🍅",
+      title: "1. Elige una tarea",
+      icon: CheckCircle,
       description: "Escoge una actividad específica que quieras completar en esta sesión de concentración.",
-      instruction: "Selecciona una tarea concreta y específica que puedas completar en 25 minutos.",
+      instruction: "Selecciona una tarea concreta y específica que puedas completar.",
       hasTimer: false,
     },
     {
       id: 1,
-      title: "2. Trabaja durante 25 minutos ⏱️",
+      title: `2. Trabaja durante ${config.workTime} minutos`,
+      icon: Clock,
       description: "Evita distracciones y concéntrate completamente hasta que el temporizador acabe.",
-      instruction: "Trabaja sin interrupciones durante 25 minutos.",
+      instruction: `Trabaja sin interrupciones durante ${config.workTime} minutos.`,
       hasTimer: true,
-      timerMinutes: 25,
+      timerMinutes: config.workTime,
     },
     {
       id: 2,
-      title: "3. Toma un descanso corto ☕",
-      description: "Descansa 5 minutos, levántate, estírate o haz algo que te relaje.",
-      instruction: "Toma un descanso de 5 minutos para recargar energías.",
+      title: `3. Toma un descanso de ${config.breakTime} minutos`,
+      icon: Coffee,
+      description: "Descansa, levántate, estírate o haz algo que te relaje.",
+      instruction: `Toma un descanso de ${config.breakTime} minutos para recargar energías.`,
       hasTimer: true,
-      timerMinutes: 5,
+      timerMinutes: config.breakTime,
     },
   ];
 
@@ -93,34 +146,188 @@ export const PomodoroExecutionView: React.FC = () => {
     }
   }, [id]);
 
+  // Start session with backend
+  const startSession = async () => {
+    try {
+      console.log('Starting session with id:', id, 'parsed:', parseInt(id));
+      const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
+        id_metodo: parseInt(id),
+        estado: 'in_process',
+        progreso: 0
+      });
+      console.log('Session started response:', response.data);
+      const session = response.data;
+      const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
+
+      if (!id_metodo_realizado) {
+        console.error('No id_metodo_realizado received from backend');
+        throw new Error('Invalid session response: missing id_metodo_realizado');
+      }
+
+      setSessionData({
+        id: session.id,
+        methodId: parseInt(id),
+        id_metodo_realizado: id_metodo_realizado,
+        startTime: new Date().toISOString(),
+        progress: 0,
+        status: 'in_process'
+      });
+
+      // Store the active method ID separately for progress updates
+      localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
+      localStorage.setItem('pomodoro-session', JSON.stringify(session));
+
+      // Show toast notification
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Sesión iniciada correctamente',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#232323',
+        color: '#ffffff',
+      });
+
+      // Trigger reports refresh
+      window.dispatchEvent(new Event('refreshReports'));
+    } catch (error) {
+      console.error('Error starting session:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Error al iniciar la sesión',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#EF4444',
+        background: '#232323',
+        color: '#ffffff',
+      });
+    }
+  };
+
+  // Update session progress
+  const updateSessionProgress = async (progress: number, status: 'in_process' | 'completed' = 'in_process') => {
+    const activeMethodId = localStorage.getItem('activeMethodId');
+
+    if (!activeMethodId) {
+      console.error('No active study method found in progress');
+      return;
+    }
+
+    try {
+      console.log('Updating progress for method record ID:', activeMethodId, 'progress:', progress, 'status:', status);
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${activeMethodId}/progress`, {
+        progreso: progress,
+        estado: status
+      });
+      console.log('Progress updated successfully');
+
+      if (sessionData) {
+        setSessionData(prev => prev ? { ...prev, progress, status } : null);
+        localStorage.setItem('pomodoro-session', JSON.stringify({ ...sessionData, progress, status }));
+      }
+
+      // Trigger reports refresh after successful progress update
+      window.dispatchEvent(new Event('refreshReports'));
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
+
   // Manejar completación del temporizador
   const handleTimerComplete = () => {
-    if (currentStep === 1) {
-      // Completó el trabajo de 25 minutos
-      setProgressPercentage(100);
-    } else if (currentStep === 2) {
-      // Completó el descanso de 5 minutos
-      setProgressPercentage(100);
+    setTimerCompleted(true);
+
+    // Habilitar botón de finalizar después de que termine el primer descanso
+    if (currentStep === 2) {
+      setCanFinishMethod(true);
     }
+
+    // Nota: Las actualizaciones de progreso ahora se manejan solo cuando el usuario avanza manualmente
+    // La completación del temporizador solo habilita el botón "Siguiente Paso"
   };
 
   // Navegar al siguiente paso
   const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-      setProgressPercentage(50); // En proceso
-    } else {
-      // Completó todos los pasos, volver al inicio
-      setCurrentStep(0);
-      setProgressPercentage(0);
+    if (!timerCompleted && currentStep > 0) return; // No permitir avanzar si el timer no completó
+
+    if (currentStep === 0) {
+      // De elegir tarea a trabajar
+      setCurrentStep(1);
+      setTimerCompleted(false);
+      startSession();
+    } else if (currentStep === 1) {
+      // De trabajar a descanso - update progress to 50%
+      setCurrentStep(2);
+      setTimerCompleted(false);
+      setProgressPercentage(50);
+      updateSessionProgress(50);
+    } else if (currentStep === 2) {
+      // De descanso a trabajar - allow infinite cycles, keep progress at 50%
+      setCurrentStep(1);
+      setTimerCompleted(false);
+      // Enable finish button after first complete cycle (work + break)
+      setCanFinishMethod(true);
+      // Progress stays at 50% until user manually finishes
     }
   };
 
-  // Reiniciar método
-  const resetMethod = () => {
-    setCurrentStep(0);
-    setProgressPercentage(0);
+  // Skip step (only during work phase)
+  const skipStep = () => {
+    if (currentStep === 1) {
+      // Skip work, go to break
+      setCurrentStep(2);
+      setTimerCompleted(false);
+      setProgressPercentage(50);
+      updateSessionProgress(50);
+    } else if (currentStep === 2) {
+      // Skip break, go back to work
+      setCurrentStep(1);
+      setTimerCompleted(false);
+    }
   };
+
+  // Finalizar método
+  const finishMethod = async () => {
+    setProgressPercentage(100);
+    await updateSessionProgress(100, 'completed');
+    localStorage.removeItem('pomodoro-session');
+    localStorage.removeItem('activeMethodId');
+
+    // Show SweetAlert confirmation in Spanish
+    Swal.fire({
+      title: 'Sesión guardada',
+      text: `Sesión de ${method?.titulo || 'Método Pomodoro'} guardada`,
+      icon: 'success',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#22C55E',
+      background: '#232323',
+      color: '#ffffff',
+    }).then(() => {
+      // Redirect to dashboard after confirmation
+      window.location.href = '/dashboard';
+    });
+  };
+
+  // Handle leaving without finishing
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const activeMethodId = localStorage.getItem('activeMethodId');
+      if (activeMethodId && sessionData && sessionData.status === 'in_process') {
+        // Update progress synchronously before page unload
+        navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${activeMethodId}/progress`,
+          JSON.stringify({
+            progreso: 50,
+            estado: 'in_process'
+          })
+        );
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [sessionData]);
 
   if (loading) {
     return (
@@ -181,7 +388,8 @@ export const PomodoroExecutionView: React.FC = () => {
           className="text-2xl font-semibold flex items-center gap-2"
           style={{ color: methodColor }}
         >
-          🍅 {method.titulo}
+          <Clock className="w-7 h-7" />
+          {method.titulo}
         </h1>
         <div className="w-8"></div>
       </header>
@@ -201,12 +409,15 @@ export const PomodoroExecutionView: React.FC = () => {
           className="bg-[#232323]/90 p-5 rounded-2xl shadow-lg border"
           style={{ borderColor: `${methodColor}33` }}
         >
-          <h2
-            className="text-xl font-semibold mb-2"
-            style={{ color: methodColor }}
-          >
-            {currentStepData.title}
-          </h2>
+          <div className="flex items-center gap-2 mb-2">
+            {currentStepData.icon && <currentStepData.icon className="w-6 h-6" style={{ color: 'white' }} />}
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: methodColor }}
+            >
+              {currentStepData.title}
+            </h2>
+          </div>
           <p className="text-gray-300 mb-3">{currentStepData.description}</p>
 
           {/* Instrucción específica */}
@@ -224,24 +435,99 @@ export const PomodoroExecutionView: React.FC = () => {
           )}
         </div>
 
-        {/* Botón de progreso */}
-        <div className="text-center">
-          <button
-            onClick={progressPercentage === 100 ? resetMethod : nextStep}
-            className="px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
-            style={{
-              backgroundColor: progressPercentage === 100 ? "#22C55E" : methodColor,
-              color: 'white',
-              boxShadow: `0 10px 15px -3px ${progressPercentage === 100 ? "#22C55E" : methodColor}30, 0 4px 6px -2px ${progressPercentage === 100 ? "#22C55E" : methodColor}20`,
-            }}
-          >
-            {progressPercentage === 100
-              ? "Reiniciar método"
-              : currentStep === steps.length - 1
-                ? "Finalizar método"
-                : "Siguiente paso"
-            }
-          </button>
+        {/* Botones de control */}
+        <div className="text-center space-y-4">
+          {currentStep === 0 && (
+            <button
+              onClick={nextStep}
+              className="px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
+              style={{
+                backgroundColor: methodColor,
+                color: 'white',
+                boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
+              }}
+            >
+              Comenzar trabajo
+            </button>
+          )}
+
+          {currentStep === 1 && (
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={skipStep}
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl whitespace-nowrap"
+                style={{
+                  backgroundColor: '#9CA3AF',
+                  boxShadow: `0 10px 15px -3px #9CA3AF30, 0 4px 6px -2px #9CA3AF20`,
+                }}
+              >
+                <SkipForward className="w-5 h-5" style={{ color: 'white' }} />
+                <span>Saltar Paso</span>
+              </button>
+              <button
+                onClick={nextStep}
+                disabled={!timerCompleted}
+                className="flex flex-row items-center justify-center space-x-2 px-6 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                style={{
+                  backgroundColor: timerCompleted ? '#22C55E' : '#6B7280',
+                  boxShadow: timerCompleted ? `0 10px 15px -3px #22C55E30, 0 4px 6px -2px #22C55E20` : 'none',
+                }}
+              >
+                <span>Siguiente Paso</span>
+              </button>
+              <button
+                onClick={finishMethod}
+                disabled={!canFinishMethod}
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                style={{
+                  backgroundColor: canFinishMethod ? '#EF4444' : '#6B7280',
+                  boxShadow: canFinishMethod ? `0 10px 15px -3px #EF444430, 0 4px 6px -2px #EF444420` : 'none',
+                }}
+              >
+                <CheckCircle className="w-5 h-5" style={{ color: canFinishMethod ? '#22C55E' : '#6B7280' }} />
+                <span>Finalizar Método</span>
+              </button>
+            </div>
+          )}
+
+          {currentStep === 2 && (
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={skipStep}
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl whitespace-nowrap"
+                style={{
+                  backgroundColor: '#9CA3AF',
+                  boxShadow: `0 10px 15px -3px #9CA3AF30, 0 4px 6px -2px #9CA3AF20`,
+                }}
+              >
+                <SkipForward className="w-5 h-5" style={{ color: 'white' }} />
+                <span>Saltar Paso</span>
+              </button>
+              <button
+                onClick={nextStep}
+                disabled={!timerCompleted}
+                className="flex flex-row items-center justify-center space-x-2 px-6 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                style={{
+                  backgroundColor: timerCompleted ? '#22C55E' : '#6B7280',
+                  boxShadow: timerCompleted ? `0 10px 15px -3px #22C55E30, 0 4px 6px -2px #22C55E20` : 'none',
+                }}
+              >
+                <span>Siguiente Paso</span>
+              </button>
+              <button
+                onClick={finishMethod}
+                disabled={!canFinishMethod}
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                style={{
+                  backgroundColor: canFinishMethod ? '#EF4444' : '#6B7280',
+                  boxShadow: canFinishMethod ? `0 10px 15px -3px #EF444430, 0 4px 6px -2px #EF444420` : 'none',
+                }}
+              >
+                <CheckCircle className="w-5 h-5" style={{ color: canFinishMethod ? '#22C55E' : '#6B7280' }} />
+                <span>Finalizar Método</span>
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
+import { Target, Sprout, Palette, Monitor, PenTool, Map } from 'lucide-react';
 
 interface StudyMethod {
   id_metodo: number;
@@ -161,8 +162,9 @@ export const MindMapsInfoPage: React.FC = () => {
           <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mx-auto mb-6">
             {method.descripcion}
           </p>
-          <p className="text-gray-400 text-base leading-relaxed max-w-2xl mx-auto">
-            🌱 <strong>Objetivo:</strong> organizar visualmente la información para fortalecer la comprensión y retención del conocimiento.
+          <p className="text-gray-400 text-base leading-relaxed max-w-2xl mx-auto flex items-center gap-2">
+            <Sprout className="w-5 h-5" style={{ color: 'white' }} />
+            <span><strong>Objetivo:</strong> organizar visualmente la información para fortalecer la comprensión y retención del conocimiento.</span>
           </p>
         </div>
 
@@ -178,7 +180,7 @@ export const MindMapsInfoPage: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>🎯</span>
+                <Target className="w-6 h-6" style={{ color: 'white' }} />
                 <span style={{ color: methodColor }}>
                   1. Elige un tema central
                 </span>
@@ -194,7 +196,7 @@ export const MindMapsInfoPage: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>🌿</span>
+                <Sprout className="w-6 h-6" style={{ color: 'white' }} />
                 <span style={{ color: methodColor }}>
                   2. Crea ramas principales
                 </span>
@@ -210,7 +212,7 @@ export const MindMapsInfoPage: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>🎨</span>
+                <Palette className="w-6 h-6" style={{ color: 'white' }} />
                 <span style={{ color: methodColor }}>
                   3. Añade colores y símbolos
                 </span>
@@ -226,7 +228,7 @@ export const MindMapsInfoPage: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>💻</span>
+                <Monitor className="w-6 h-6" style={{ color: 'white' }} />
                 <span style={{ color: methodColor }}>
                   4. Herramientas digitales recomendadas
                 </span>
@@ -242,7 +244,7 @@ export const MindMapsInfoPage: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>✏️</span>
+                <PenTool className="w-6 h-6" style={{ color: 'white' }} />
                 <span style={{ color: methodColor }}>
                   5. Recuerda: ¡hazlo tú mismo!
                 </span>
@@ -299,7 +301,7 @@ export const MindMapsInfoPage: React.FC = () => {
               e.currentTarget.style.backgroundColor = methodColor;
             }}
           >
-            <span>🗺️</span>
+            <Map className="w-6 h-6" />
             Crear Mapa Mental
           </button>
         </div>

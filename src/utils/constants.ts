@@ -11,4 +11,8 @@ export const API_ENDPOINTS = {
   STUDY_METHODS: "/metodos-estudio",
   BENEFITS: "/beneficios",
   EVENTS: "/eventos",
+  REPORTS: "/reports",
+  ACTIVE_METHODS: "/reports/active-methods",
+  METHOD_PROGRESS: "/reports/methods",
+  SESSION_PROGRESS: "/reports/sessions",
 } as const;

@@ -19,6 +19,7 @@ import { PomodoroIntroView } from "./pages/PomodoroIntroView";
 import { PomodoroExecutionView } from "./pages/PomodoroExecutionView";
 import { MindMapsInfoPage } from "./pages/MindMapsInfoPage";
 import { MindMapsStepsPage } from "./pages/MindMapsStepsPage";
+import { ReportsPage } from "./pages/ReportsPage";
 
 // Componente principal de la aplicación
 function App() {
@@ -58,6 +59,7 @@ function App() {
       "/profile": ProfilePage,
       "/study-methods": StudyMethodsLibraryPage,
       "/dashboard": DashboardPage,
+      "/reports": ReportsPage,
     };
 
     // Verificar rutas protegidas directas

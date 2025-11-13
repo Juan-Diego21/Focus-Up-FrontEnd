@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
+import { CheckCircle, Clock, Coffee, Settings } from 'lucide-react';
+
+interface PomodoroConfig {
+  workTime: number;
+  breakTime: number;
+}
 
 interface StudyMethod {
   id_metodo: number;
@@ -22,6 +28,11 @@ export const PomodoroIntroView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [config, setConfig] = useState<PomodoroConfig>({
+    workTime: 25,
+    breakTime: 5,
+  });
 
   // Obtener datos del método de estudio desde la API
   useEffect(() => {
@@ -66,6 +77,19 @@ export const PomodoroIntroView: React.FC = () => {
     }
   }, [id]);
 
+  // Load configuration from localStorage
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('pomodoro-config');
+    if (savedConfig) {
+      try {
+        const parsedConfig = JSON.parse(savedConfig);
+        setConfig(parsedConfig);
+      } catch (e) {
+        console.error('Error parsing saved config:', e);
+      }
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
@@ -96,6 +120,19 @@ export const PomodoroIntroView: React.FC = () => {
   }
 
   const methodColor = method.color_hexa || "#ef4444";
+
+  // Handle config modal
+  const handleOpenConfig = () => setShowConfigModal(true);
+  const handleCloseConfig = () => setShowConfigModal(false);
+
+  const handleSaveConfig = () => {
+    localStorage.setItem('pomodoro-config', JSON.stringify(config));
+    setShowConfigModal(false);
+  };
+
+  const handleConfigChange = (field: keyof PomodoroConfig, value: number) => {
+    setConfig(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
@@ -175,7 +212,7 @@ export const PomodoroIntroView: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>🍅</span>
+                <CheckCircle className="w-6 h-6" style={{ color: methodColor }} />
                 <span style={{ color: methodColor }}>
                   1. Elige una tarea específica
                 </span>
@@ -191,7 +228,7 @@ export const PomodoroIntroView: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>⏱️</span>
+                <Clock className="w-6 h-6" style={{ color: methodColor }} />
                 <span style={{ color: methodColor }}>
                   2. Trabaja durante 25 minutos
                 </span>
@@ -207,7 +244,7 @@ export const PomodoroIntroView: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>☕</span>
+                <Coffee className="w-6 h-6" style={{ color: methodColor }} />
                 <span style={{ color: methodColor }}>
                   3. Toma un descanso corto
                 </span>
@@ -242,33 +279,122 @@ export const PomodoroIntroView: React.FC = () => {
           </div>
         )}
 
-        {/* Botón para iniciar */}
-        <div className="text-center mt-10">
-          <button
-            onClick={() => window.location.href = `/pomodoro/execute/${id}`}
-            className="px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
-            style={{
-              backgroundColor: methodColor,
-              color: 'white',
-              boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
-            }}
-            onMouseEnter={(e) => {
-              const darkerColor = methodColor.replace('#', '');
-              const r = parseInt(darkerColor.substr(0, 2), 16);
-              const g = parseInt(darkerColor.substr(2, 2), 16);
-              const b = parseInt(darkerColor.substr(4, 2), 16);
-              const darker = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
-              e.currentTarget.style.backgroundColor = darker;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = methodColor;
-            }}
-          >
-            <span>🍅</span>
-            Hacer método {method.nombre_metodo}
-          </button>
+        {/* Botones para configurar e iniciar */}
+        <div className="text-center mt-10 space-y-4">
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={handleOpenConfig}
+              className="px-6 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl border-2 flex items-center gap-2"
+              style={{
+                borderColor: methodColor,
+                color: methodColor,
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${methodColor}20`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <Settings className="w-5 h-5" />
+              Configurar
+            </button>
+            <button
+              onClick={() => {
+                // Save current config for the execution page
+                localStorage.setItem('pomodoro-config', JSON.stringify(config));
+                window.location.href = `/pomodoro/execute/${id}`;
+              }}
+              className="px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+              style={{
+                backgroundColor: methodColor,
+                color: 'white',
+                boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
+              }}
+              onMouseEnter={(e) => {
+                const darkerColor = methodColor.replace('#', '');
+                const r = parseInt(darkerColor.substr(0, 2), 16);
+                const g = parseInt(darkerColor.substr(2, 2), 16);
+                const b = parseInt(darkerColor.substr(4, 2), 16);
+                const darker = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
+                e.currentTarget.style.backgroundColor = darker;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = methodColor;
+              }}
+            >
+              Hacer {method.nombre_metodo}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Configuration Modal */}
+      {showConfigModal && (
+        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#232323] rounded-2xl p-6 w-full max-w-md shadow-2xl border" style={{ borderColor: `${methodColor}33` }}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-white">Configurar Pomodoro</h2>
+              <button
+                onClick={handleCloseConfig}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Tiempo de trabajo (minutos)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={config.workTime}
+                  onChange={(e) => handleConfigChange('workTime', parseInt(e.target.value) || 1)}
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Tiempo de descanso (minutos)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={config.breakTime}
+                  onChange={(e) => handleConfigChange('breakTime', parseInt(e.target.value) || 1)}
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleCloseConfig}
+                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveConfig}
+                className="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:transform hover:scale-105"
+                style={{
+                  backgroundColor: methodColor,
+                  color: 'white',
+                }}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
