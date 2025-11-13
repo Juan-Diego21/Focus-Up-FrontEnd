@@ -32,3 +32,20 @@
 .swal2-html-container {
   color: #ffffff !important;
 }
+
+/* Custom animations for modern card design */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shine {
+  animation: shine 2s ease-in-out infinite;
+}

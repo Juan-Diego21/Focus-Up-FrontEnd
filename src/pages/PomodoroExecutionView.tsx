@@ -6,6 +6,13 @@ import { API_ENDPOINTS } from "../utils/constants";
 import Swal from 'sweetalert2';
 import { CheckCircle, Clock, Coffee, SkipForward } from 'lucide-react';
 
+// Preload SweetAlert2 for instant alerts
+Swal.mixin({
+  timerProgressBar: true,
+  background: '#232323',
+  color: '#ffffff',
+});
+
 interface PomodoroConfig {
   workTime: number;
   breakTime: number;
@@ -42,6 +49,7 @@ export const PomodoroExecutionView: React.FC = () => {
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [timerCompleted, setTimerCompleted] = useState(false);
   const [canFinishMethod, setCanFinishMethod] = useState(false);
+  const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
 
   // Load config and session from localStorage
   useEffect(() => {
@@ -56,7 +64,18 @@ export const PomodoroExecutionView: React.FC = () => {
     }
 
     const savedSession = localStorage.getItem('pomodoro-session');
-    if (savedSession) {
+    const resumeMethodId = localStorage.getItem('resume-method');
+
+    if (resumeMethodId) {
+      // Resuming a specific unfinished method
+      console.log('Resuming method with ID:', resumeMethodId);
+      // Load the method data and set it to break phase (50% progress)
+      setCurrentStep(2);
+      setProgressPercentage(50);
+      setCanFinishMethod(true);
+      // Clear the resume flag
+      localStorage.removeItem('resume-method');
+    } else if (savedSession) {
       try {
         const parsedSession = JSON.parse(savedSession);
         setSessionData(parsedSession);
@@ -66,6 +85,7 @@ export const PomodoroExecutionView: React.FC = () => {
         } else if (parsedSession.progress === 50) {
           setCurrentStep(2); // Break phase
           setProgressPercentage(50);
+          setCanFinishMethod(true);
         }
       } catch (e) {
         console.error('Error parsing saved session:', e);
@@ -177,32 +197,14 @@ export const PomodoroExecutionView: React.FC = () => {
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
       localStorage.setItem('pomodoro-session', JSON.stringify(session));
 
-      // Show toast notification
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'Sesión iniciada correctamente',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        background: '#232323',
-        color: '#ffffff',
-      });
+      // Queue success notification
+      setAlertQueue({ type: 'success', message: 'Sesión iniciada correctamente' });
 
       // Trigger reports refresh
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error starting session:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'Error al iniciar la sesión',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#EF4444',
-        background: '#232323',
-        color: '#ffffff',
-      });
+      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión' });
     }
   };
 
@@ -295,20 +297,50 @@ export const PomodoroExecutionView: React.FC = () => {
     localStorage.removeItem('pomodoro-session');
     localStorage.removeItem('activeMethodId');
 
-    // Show SweetAlert confirmation in Spanish
-    Swal.fire({
-      title: 'Sesión guardada',
-      text: `Sesión de ${method?.titulo || 'Método Pomodoro'} guardada`,
-      icon: 'success',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#22C55E',
-      background: '#232323',
-      color: '#ffffff',
-    }).then(() => {
-      // Redirect to dashboard after confirmation
-      window.location.href = '/dashboard';
+    // Queue completion notification
+    setAlertQueue({
+      type: 'completion',
+      message: `Sesión de ${method?.titulo || 'Método Pomodoro'} guardada`
     });
   };
+
+  // Handle alert queue for instant notifications
+  useEffect(() => {
+    if (alertQueue) {
+      const { type, message } = alertQueue;
+
+      if (type === 'success') {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: message,
+          showConfirmButton: false,
+          timer: 3000,
+        });
+      } else if (type === 'error') {
+        Swal.fire({
+          title: 'Error',
+          text: message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#EF4444',
+        });
+      } else if (type === 'completion') {
+        Swal.fire({
+          title: 'Sesión guardada',
+          text: message,
+          icon: 'success',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#22C55E',
+        }).then(() => {
+          window.location.href = '/dashboard';
+        });
+      }
+
+      setAlertQueue(null);
+    }
+  }, [alertQueue]);
 
   // Handle leaving without finishing
   useEffect(() => {
