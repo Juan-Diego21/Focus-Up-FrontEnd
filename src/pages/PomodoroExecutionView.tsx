@@ -153,7 +153,8 @@ export const PomodoroExecutionView: React.FC = () => {
         }
 
         const methodData = await response.json();
-        setMethod(methodData);
+        const method = methodData.data || methodData;
+        setMethod(method);
       } catch {
         setError("Error al cargar los datos del método");
       } finally {

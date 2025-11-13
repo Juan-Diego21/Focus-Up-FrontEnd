@@ -1,4 +1,5 @@
 import React from "react";
+import { LOCAL_METHOD_ASSETS } from "../../utils/methodAssets";
 
 interface Benefit {
   id_beneficio: number;
@@ -26,8 +27,10 @@ interface CardProps {
 
 // Componente Card para mostrar métodos de estudio
 export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSession }) => {
-  // Aplicar color dinámico del método o usar azul por defecto
-  const methodColor = method.color_hexa || '#0690cf';
+  // Usar únicamente colores locales del sistema de assets
+  const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
+  const methodColor = localAssets?.color || '#0690cf';
+  const methodImage = localAssets?.image;
 
   return (
     <div
@@ -47,9 +50,9 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
       {/* Header with image and title */}
       <div className="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3">
         <div className="w-10 h-10 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
-          {method.url_imagen ? (
+          {methodImage ? (
             <img
-              src={method.url_imagen}
+              src={methodImage}
               alt={`Imagen de ${method.nombre_metodo}`}
               className="w-full h-full object-cover"
               // Fallback a letra inicial si la imagen falla

@@ -12,6 +12,7 @@ import {
   CheckIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
+import { LOCAL_METHOD_ASSETS } from '../utils/methodAssets';
 
 // Interfaz para los reportes de la API
 interface ApiReport {
@@ -125,57 +126,37 @@ export const ReportsPage: React.FC = () => {
         console.log('Métodos de estudio cargados exitosamente:', methodsData.length);
       } else {
         console.warn('No se encontraron métodos de estudio en la respuesta. Estructura de respuesta:', response.data);
-        // Usar datos mock si no hay datos reales
-        console.log('Usando datos mock para métodos de estudio');
-        setStudyMethods([
-          {
-            id_metodo: 1,
-            nombre_metodo: 'Método Pomodoro',
-            descripcion: 'Técnica de gestión de tiempo',
-            url_imagen: 'https://wqoeufdsiwftfeifduul.supabase.co/storage/v1/object/public/Imagenes/MetodoPomodoro.png',
-            color_hexa: '#E53935',
-            fecha_creacion: new Date().toISOString(),
-            fecha_actualizacion: new Date().toISOString(),
-            beneficios: []
-          },
-          {
-            id_metodo: 2,
-            nombre_metodo: 'Mapas Mentales',
-            descripcion: 'Organización visual de ideas',
-            url_imagen: 'https://wqoeufdsiwftfeifduul.supabase.co/storage/v1/object/public/Imagenes/MapasMentales.png',
-            color_hexa: '#10B981',
-            fecha_creacion: new Date().toISOString(),
-            fecha_actualizacion: new Date().toISOString(),
-            beneficios: []
-          }
-        ]);
+        // Usar datos mock con activos locales si no hay datos reales
+        console.log('Usando datos mock para métodos de estudio con activos locales');
+        const mockMethods = Object.entries(LOCAL_METHOD_ASSETS).map(([name, assets], index) => ({
+          id_metodo: index + 1,
+          nombre_metodo: name,
+          descripcion: `Descripción del ${name}`,
+          url_imagen: assets.image,
+          color_hexa: assets.color,
+          fecha_creacion: new Date().toISOString(),
+          fecha_actualizacion: new Date().toISOString(),
+          beneficios: []
+        }));
+
+        setStudyMethods(mockMethods);
       }
     } catch (error) {
       console.error('Error al obtener métodos de estudio:', error);
       // En desarrollo, usar datos mock si la API no está disponible
       console.log('Usando datos mock para métodos de estudio por error');
-      setStudyMethods([
-        {
-          id_metodo: 1,
-          nombre_metodo: 'Método Pomodoro',
-          descripcion: 'Técnica de gestión de tiempo',
-          url_imagen: 'https://wqoeufdsiwftfeifduul.supabase.co/storage/v1/object/public/Imagenes/MetodoPomodoro.png',
-          color_hexa: '#E53935',
-          fecha_creacion: new Date().toISOString(),
-          fecha_actualizacion: new Date().toISOString(),
-          beneficios: []
-        },
-        {
-          id_metodo: 2,
-          nombre_metodo: 'Mapas Mentales',
-          descripcion: 'Organización visual de ideas',
-          url_imagen: 'https://wqoeufdsiwftfeifduul.supabase.co/storage/v1/object/public/Imagenes/MapasMentales.png',
-          color_hexa: '#10B981',
-          fecha_creacion: new Date().toISOString(),
-          fecha_actualizacion: new Date().toISOString(),
-          beneficios: []
-        }
-      ]);
+      const mockMethods = Object.entries(LOCAL_METHOD_ASSETS).slice(0, 2).map(([name, assets], index) => ({
+        id_metodo: index + 1,
+        nombre_metodo: name,
+        descripcion: `Descripción del ${name}`,
+        url_imagen: assets.image,
+        color_hexa: assets.color,
+        fecha_creacion: new Date().toISOString(),
+        fecha_actualizacion: new Date().toISOString(),
+        beneficios: []
+      }));
+
+      setStudyMethods(mockMethods);
     } finally {
       setStudyMethodsLoaded(true);
     }
@@ -217,14 +198,16 @@ export const ReportsPage: React.FC = () => {
             // Encontrar los datos correspondientes del método
             const methodData = studyMethods.find(method => method.nombre_metodo === report.nombre_metodo);
 
+            // Usar únicamente activos locales
+            const localAssets = LOCAL_METHOD_ASSETS[report.nombre_metodo];
             return {
               id: report.id_reporte,
               metodo: {
                 id: methodData?.id_metodo || 1,
                 nombre: report.nombre_metodo,
                 descripcion: methodData?.descripcion || '',
-                color: methodData?.color_hexa || '#6366f1',
-                imagen: methodData?.url_imagen || ''
+                color: localAssets?.color || '#6366f1',
+                imagen: localAssets?.image || ''
               },
               progreso: report.progreso,
               estado: report.estado === 'completado' ? 'completed' : 'in_process',
@@ -245,14 +228,16 @@ export const ReportsPage: React.FC = () => {
               // Encontrar los datos correspondientes del método
               const methodData = studyMethods.find(method => method.nombre_metodo === report.nombre_metodo);
 
+              // Usar únicamente activos locales
+              const localAssets = LOCAL_METHOD_ASSETS[report.nombre_metodo];
               return {
                 id: report.id_reporte,
                 metodo: {
                   id: methodData?.id_metodo || 1,
                   nombre: report.nombre_metodo,
                   descripcion: methodData?.descripcion || '',
-                  color: methodData?.color_hexa || '#6366f1',
-                  imagen: methodData?.url_imagen || ''
+                  color: localAssets?.color || '#6366f1',
+                  imagen: localAssets?.image || ''
                 },
                 progreso: report.progreso,
                 estado: report.estado === 'completado' ? 'completed' : 'in_process',
@@ -292,8 +277,8 @@ export const ReportsPage: React.FC = () => {
               id: 1,
               nombre: 'Método Pomodoro',
               descripcion: 'Técnica de gestión de tiempo',
-              color: '#E53935',
-              imagen: ''
+              color: LOCAL_METHOD_ASSETS['Método Pomodoro'].color,
+              imagen: LOCAL_METHOD_ASSETS['Método Pomodoro'].image
             },
             progreso: 100,
             estado: 'completed',
@@ -307,8 +292,8 @@ export const ReportsPage: React.FC = () => {
               id: 2,
               nombre: 'Mapas Mentales',
               descripcion: 'Organización visual de ideas',
-              color: '#10B981',
-              imagen: ''
+              color: LOCAL_METHOD_ASSETS['Mapas Mentales'].color,
+              imagen: LOCAL_METHOD_ASSETS['Mapas Mentales'].image
             },
             progreso: 50,
             estado: 'in_process',

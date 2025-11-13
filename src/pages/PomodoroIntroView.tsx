@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
+import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
 import { CheckCircle, Clock, Coffee, Settings } from 'lucide-react';
 
 interface PomodoroConfig {
@@ -20,6 +21,13 @@ interface StudyMethod {
   }>;
 }
 
+interface UnfinishedMethod {
+  id_reporte: number;
+  nombre_metodo: string;
+  progreso: number;
+  estado: string;
+}
+
 export const PomodoroIntroView: React.FC = () => {
   // Obtener ID del método desde la URL (usando window.location ya que no hay router)
   const urlParts = window.location.pathname.split('/');
@@ -30,7 +38,7 @@ export const PomodoroIntroView: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
-  const [unfinishedMethods, setUnfinishedMethods] = useState<any[]>([]);
+  const [unfinishedMethods, setUnfinishedMethods] = useState<UnfinishedMethod[]>([]);
   const [config, setConfig] = useState<PomodoroConfig>({
     workTime: 25,
     breakTime: 5,
@@ -66,7 +74,8 @@ export const PomodoroIntroView: React.FC = () => {
         }
 
         const methodData = await response.json();
-        setMethod(methodData.data || methodData);
+        const method = methodData.data || methodData;
+        setMethod(method);
       } catch {
         setError("Error al cargar los datos del método");
       } finally {
@@ -121,7 +130,10 @@ export const PomodoroIntroView: React.FC = () => {
     );
   }
 
-  const methodColor = method.color_hexa || "#ef4444";
+  // Usar únicamente colores locales del sistema de assets
+  const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
+  const methodColor = localAssets?.color || "#ef4444";
+  const methodImage = localAssets?.image;
 
   // Handle config modal
   const handleOpenConfig = () => setShowConfigModal(true);
@@ -153,7 +165,7 @@ export const PomodoroIntroView: React.FC = () => {
         const data = await response.json();
         // Filter methods that are in progress (50% progress)
         const unfinished = Array.isArray(data.data)
-          ? data.data.filter((report: any) => report.estado === 'in_process' && report.progreso === 50)
+          ? data.data.filter((report: UnfinishedMethod) => report.estado === 'in_process' && report.progreso === 50)
           : [];
         return unfinished;
       }
@@ -220,13 +232,13 @@ export const PomodoroIntroView: React.FC = () => {
         {/* Imagen y descripción principal */}
         <div className="text-center">
           <div className="mb-6 flex justify-center">
-            {method?.url_imagen ? (
+            {methodImage ? (
               <>
                 {!imageLoaded && (
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-700 animate-pulse"></div>
                 )}
                 <img
-                  src={method.url_imagen}
+                  src={methodImage}
                   alt={`Imagen de ${method.nombre_metodo}`}
                   className={`w-12 h-12 md:w-16 md:h-16 object-contain rounded-full shadow-md shadow-black/40 ${imageLoaded ? 'block' : 'hidden'}`}
                   onLoad={() => setImageLoaded(true)}
