@@ -14,6 +14,14 @@ import {
 } from '@heroicons/react/24/outline';
 import { LOCAL_METHOD_ASSETS } from '../utils/methodAssets';
 
+const getMethodColor = (methodName: string): string => {
+  return LOCAL_METHOD_ASSETS[methodName]?.color || '#6366f1';
+};
+
+const getMethodImage = (methodName: string): string => {
+  return LOCAL_METHOD_ASSETS[methodName]?.image || '';
+};
+
 // Interfaz para los reportes de la API
 interface ApiReport {
   id_reporte: number;
@@ -90,6 +98,7 @@ export const ReportsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [activeTab, setActiveTab] = useState<'methods' | 'sessions'>('methods');
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Estado para almacenar los métodos de estudio con sus imágenes y colores
   const [studyMethods, setStudyMethods] = useState<StudyMethod[]>([]);
@@ -323,6 +332,7 @@ export const ReportsPage: React.FC = () => {
     }
   }, [fetchReports, studyMethodsLoaded]);
 
+
   // Timeout de seguridad para evitar loading infinito
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -335,6 +345,7 @@ export const ReportsPage: React.FC = () => {
 
     return () => clearTimeout(timeout);
   }, [loading]);
+
 
   // Función para eliminar un reporte
   const deleteReport = async (reportId: number) => {
@@ -391,6 +402,7 @@ export const ReportsPage: React.FC = () => {
   }, [fetchReports]);
 
 
+
   if (loading) {
     console.log('ReportsPage: Mostrando loading spinner');
     return (
@@ -444,7 +456,7 @@ export const ReportsPage: React.FC = () => {
               <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
                 <button
                   onClick={() => setActiveTab('methods')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'methods'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -454,7 +466,7 @@ export const ReportsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('sessions')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'sessions'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -471,48 +483,58 @@ export const ReportsPage: React.FC = () => {
             {activeTab === 'methods' && (
               <>
                 {reportsData?.metodos?.map((method) => {
-                  const methodColor = method.metodo?.color || '#6366f1';
+                  const methodColor = getMethodColor(method.metodo?.nombre || '');
+                  const methodImage = getMethodImage(method.metodo?.nombre || '');
                   const isCompleted = method.estado === 'completed';
 
                   return (
                     <div
                       key={`method-${method.id}`}
-                      className="group relative bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-white/20"
+                      className="group relative bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-2xl border border-[#333]/50"
                       style={{
-                        background: `linear-gradient(135deg, ${methodColor}08 0%, ${methodColor}05 100%)`,
+                        '--method-color': methodColor,
+                        boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px ${methodColor}20`,
+                      } as React.CSSProperties}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px ${methodColor}40, 0 0 20px ${methodColor}10`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px ${methodColor}20`;
                       }}
                     >
-                      {/* Background Pattern */}
-                      <div
-                        className="absolute inset-0 opacity-5"
-                        style={{
-                          background: `radial-gradient(circle at 20% 80%, ${methodColor} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${methodColor} 0%, transparent 50%)`
-                        }}
-                      />
-
-                      {/* Diseño compacto: Imagen + Contenido lado a lado */}
+                      {/* Diseño rectangular: Imagen a la izquierda, contenido a la derecha */}
                       <div className="flex h-32">
-                        {/* Sección de imagen */}
-                        <div className="relative w-32 overflow-hidden flex-shrink-0">
-                          {method.metodo?.imagen && (
+                        {/* Sección de imagen - Izquierda, centrada verticalmente */}
+                        <div className="relative w-20 flex items-center justify-center p-3 overflow-hidden">
+                          {methodImage ? (
                             <>
+                              {!imageLoaded && (
+                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-700 animate-pulse"></div>
+                              )}
                               <img
-                                src={method.metodo.imagen}
-                                alt={method.metodo.nombre || 'Método de Estudio'}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                              {/* Color Overlay */}
-                              <div
-                                className="absolute inset-0 opacity-20 transition-opacity duration-300 group-hover:opacity-10"
-                                style={{
-                                  background: `linear-gradient(45deg, ${methodColor}60 0%, ${methodColor}20 100%)`
+                                src={methodImage}
+                                alt={method.metodo?.nombre || 'Método de Estudio'}
+                                className={`w-12 h-[55%] md:w-16 md:h-[55%] object-contain rounded-full shadow-md shadow-black/40 ${imageLoaded ? 'block' : 'hidden'}`}
+                                onLoad={() => setImageLoaded(true)}
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = "none";
+                                  const parent = target.parentElement;
+                                  if (parent && !parent.querySelector(".fallback-emoji")) {
+                                    const emoji = document.createElement("span");
+                                    emoji.className = "fallback-emoji text-6xl md:text-8xl";
+                                    emoji.textContent = "🍅";
+                                    parent.appendChild(emoji);
+                                  }
                                 }}
                               />
                             </>
+                          ) : (
+                            <span className="text-6xl md:text-8xl">🍅</span>
                           )}
 
                           {/* Insignia de estado - Compacta */}
-                          <div className="absolute top-2 right-2">
+                          <div className="absolute top-7 right-2">
                             <div
                               className={`px-2 py-0.5 rounded text-xs font-semibold text-white shadow flex items-center gap-1 ${
                                 isCompleted
@@ -528,20 +550,9 @@ export const ReportsPage: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Botón de eliminar */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteReport(method.id);
-                            }}
-                            className="absolute top-2 left-2 p-1 bg-black/20 backdrop-blur-sm rounded-full text-white hover:bg-red-500/80 transition-all duration-200 opacity-0 group-hover:opacity-100"
-                            title="Eliminar reporte"
-                          >
-                            <TrashIcon className="w-3 h-3" />
-                          </button>
                         </div>
 
-                        {/* Sección de contenido - Compacta */}
+                        {/* Sección de contenido - 50% de la altura total */}
                         <div className="flex-1 p-4 flex flex-col justify-between">
                           {/* Encabezado */}
                           <div className="flex items-start justify-between mb-2">
@@ -550,21 +561,21 @@ export const ReportsPage: React.FC = () => {
                                 className="w-2 h-2 rounded-full shadow-sm flex-shrink-0"
                                 style={{ backgroundColor: methodColor }}
                               />
-                              <h3 className="text-sm font-bold text-gray-900 leading-tight truncate">
+                              <h3 className="text-base font-bold text-white leading-tight truncate">
                                 {method.metodo?.nombre || 'Método de Estudio'}
                               </h3>
                             </div>
-                            <span className="text-xs text-gray-500 font-medium">
+                            <span className="text-sm text-gray-300 font-medium">
                               {method.progreso || 0}%
                             </span>
                           </div>
 
-                          {/* Barra de progreso - Compacta */}
-                          <div className="mb-2">
-                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                          {/* Barra de progreso */}
+                          <div className="mb-1">
+                            <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden shadow-inner">
                               <div
                                 className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                                  isCompleted ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-yellow-400 to-yellow-500'
+                                  isCompleted ? 'bg-green-500' : 'bg-yellow-500'
                                 }`}
                                 style={{
                                   width: isCompleted ? '100%' : `${method.progreso || 0}%`,
@@ -573,37 +584,66 @@ export const ReportsPage: React.FC = () => {
                             </div>
                           </div>
 
+                          {/* Etiqueta de estado */}
+                          <div className="mb-2">
+                            <span className="text-xs text-gray-400 font-medium">
+                              {isCompleted ? 'Terminado' : 'En proceso'}
+                            </span>
+                          </div>
+
                           {/* Pie de página */}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-sm text-gray-400 font-medium">
                               ID: {method.id}
                             </span>
-                            <button
-                              onClick={() => {
-                                window.location.href = `/pomodoro/execute/${method.metodo?.id || 1}`;
-                              }}
-                              className="px-3 py-1.5 rounded-lg font-medium text-white text-xs transition-all duration-200 hover:scale-105"
-                              style={{
-                                background: `linear-gradient(135deg, ${methodColor} 0%, ${methodColor}dd 100%)`,
-                                boxShadow: `0 2px 8px ${methodColor}40`,
-                              }}
-                            >
-                              {isCompleted ? 'Repetir' : 'Continuar'}
-                            </button>
+                            <div className="flex items-center gap-1.25">
+                              {!isCompleted && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteReport(method.id);
+                                  }}
+                                  className="p-2 bg-red-500/20 backdrop-blur-sm rounded-full text-red-400 hover:bg-red-500/80 hover:text-white transition-all duration-200 cursor-pointer"
+                                  title="Eliminar reporte"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isCompleted) {
+                                    deleteReport(method.id);
+                                  } else {
+                                    window.location.href = `/pomodoro/execute/${method.metodo?.id || 1}`;
+                                  }
+                                }}
+                                className={
+                                  isCompleted
+                                    ? 'p-2 bg-red-500/20 backdrop-blur-sm rounded-full text-red-400 hover:bg-red-500/80 hover:text-white transition-all duration-200 cursor-pointer'
+                                    : 'px-3 py-1.5 rounded-lg font-medium text-white text-xs transition-all duration-200 hover:scale-105 cursor-pointer'
+                                }
+                                style={
+                                  isCompleted
+                                    ? {}
+                                    : {
+                                        background: `linear-gradient(135deg, ${methodColor} 0%, ${methodColor}dd 100%)`,
+                                        boxShadow: `0 2px 8px ${methodColor}40`,
+                                      }
+                                }
+                                title={isCompleted ? "Eliminar reporte" : ""}
+                              >
+                                {isCompleted ? (
+                                  <TrashIcon className="w-4 h-4" />
+                                ) : (
+                                  'Continuar'
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Efecto de borde al pasar el mouse */}
-                      <div
-                        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                        style={{
-                          background: `linear-gradient(135deg, ${methodColor}20 0%, transparent 50%, ${methodColor}20 100%)`,
-                          padding: '1px'
-                        }}
-                      >
-                        <div className="w-full h-full bg-transparent rounded-2xl" />
-                      </div>
                     </div>
                   );
                 })}
@@ -669,6 +709,7 @@ export const ReportsPage: React.FC = () => {
             )}
           </div>
         </div>
+
       </PageLayout>
     );
   } catch (renderError) {

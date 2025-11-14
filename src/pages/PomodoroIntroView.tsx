@@ -21,12 +21,6 @@ interface StudyMethod {
   }>;
 }
 
-interface UnfinishedMethod {
-  id_reporte: number;
-  nombre_metodo: string;
-  progreso: number;
-  estado: string;
-}
 
 export const PomodoroIntroView: React.FC = () => {
   // Obtener ID del método desde la URL (usando window.location ya que no hay router)
@@ -37,12 +31,11 @@ export const PomodoroIntroView: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showResumeModal, setShowResumeModal] = useState(false);
-  const [unfinishedMethods, setUnfinishedMethods] = useState<UnfinishedMethod[]>([]);
   const [config, setConfig] = useState<PomodoroConfig>({
     workTime: 25,
     breakTime: 5,
   });
+
 
   // Obtener datos del método de estudio desde la API
   useEffect(() => {
@@ -148,55 +141,14 @@ export const PomodoroIntroView: React.FC = () => {
     setConfig(prev => ({ ...prev, [field]: value }));
   };
 
-  // Check for unfinished methods before starting
-  const checkUnfinishedMethods = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return [];
 
-      const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.REPORTS}?userId=${JSON.parse(atob(token.split('.')[1])).id_usuario}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Filter methods that are in progress (50% progress)
-        const unfinished = Array.isArray(data.data)
-          ? data.data.filter((report: UnfinishedMethod) => report.estado === 'in_process' && report.progreso === 50)
-          : [];
-        return unfinished;
-      }
-    } catch (error) {
-      console.error('Error checking unfinished methods:', error);
-    }
-    return [];
-  };
-
-  // Handle starting method with resume check
-  const handleStartMethod = async () => {
-    const unfinished = await checkUnfinishedMethods();
-
-    if (unfinished.length > 0) {
-      // Show resume modal
-      setUnfinishedMethods(unfinished);
-      setShowResumeModal(true);
-    } else {
-      // Start new method
-      localStorage.setItem('pomodoro-config', JSON.stringify(config));
-      window.location.href = `/pomodoro/execute/${id}`;
-    }
-  };
-
-  // Handle resuming a specific method
-  const handleResumeMethod = (methodId: number) => {
+  // Handle starting method
+  const handleStartMethod = () => {
     localStorage.setItem('pomodoro-config', JSON.stringify(config));
-    // Store the method to resume in localStorage
-    localStorage.setItem('resume-method', methodId.toString());
     window.location.href = `/pomodoro/execute/${id}`;
   };
+
+
 
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
@@ -345,7 +297,7 @@ export const PomodoroIntroView: React.FC = () => {
 
         {/* Botones para configurar e iniciar */}
         <div className="text-center mt-10 space-y-4">
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center gap-4 flex-wrap">
             <button
               onClick={handleOpenConfig}
               className="px-6 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl border-2 flex items-center gap-2"
@@ -456,48 +408,6 @@ export const PomodoroIntroView: React.FC = () => {
         </div>
       )}
 
-      {/* Resume Modal */}
-      {showResumeModal && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-transparent z-50">
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 max-w-4xl max-h-[80vh] overflow-y-auto p-4">
-            {unfinishedMethods.map((method) => (
-              <div key={method.id_reporte} className="bg-white p-4 rounded-xl shadow-lg">
-                <h4 className="font-medium text-gray-900">{method.nombre_metodo}</h4>
-                <p className="text-sm text-gray-500">Progreso: {method.progreso}%</p>
-                <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
-                  <div className="h-2 bg-yellow-400 rounded-full w-1/2"></div>
-                </div>
-                <button
-                  onClick={() => handleResumeMethod(method.id_reporte)}
-                  className="mt-3 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                >
-                  Continuar {method.nombre_metodo}
-                </button>
-              </div>
-            ))}
-            <div className="bg-white p-4 rounded-xl shadow-lg col-span-full md:col-span-1">
-              <h4 className="font-medium text-gray-900">Iniciar Nuevo</h4>
-              <p className="text-sm text-gray-500">Comenzar una nueva sesión</p>
-              <button
-                onClick={() => {
-                  setShowResumeModal(false);
-                  localStorage.setItem('pomodoro-config', JSON.stringify(config));
-                  window.location.href = `/pomodoro/execute/${id}`;
-                }}
-                className="mt-3 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-              >
-                Nuevo Método
-              </button>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowResumeModal(false)}
-            className="absolute top-4 right-4 text-white text-2xl hover:text-gray-300 transition"
-          >
-            ✕
-          </button>
-        </div>
-      )}
     </div>
   );
 };
