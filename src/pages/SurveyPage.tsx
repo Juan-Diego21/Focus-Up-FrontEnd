@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { RegisterRequest } from "../types/user";
 import { Target, AlertTriangle, ChevronDown, Calendar, MapPin, Users } from "lucide-react";
 import { Listbox } from "@headlessui/react";
@@ -60,6 +60,14 @@ export const SurveyPage: React.FC = () => {
   });
 
   const isInitialFieldsComplete = surveyData.fecha_nacimiento && surveyData.pais && surveyData.genero;
+
+  // Scroll lock until initial questions are answered
+  useEffect(() => {
+    document.body.style.overflow = isInitialFieldsComplete ? 'auto' : 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isInitialFieldsComplete]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

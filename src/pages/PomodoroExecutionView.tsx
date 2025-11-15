@@ -63,10 +63,9 @@ export const PomodoroExecutionView: React.FC = () => {
       }
     }
 
-    const savedSession = localStorage.getItem('pomodoro-session');
     const resumeMethodId = localStorage.getItem('resume-method');
 
-    if (resumeMethodId) {
+    if (resumeMethodId && resumeMethodId === id) {
       // Resuming a specific unfinished method
       console.log('Resuming method with ID:', resumeMethodId);
       // Load the method data and set it to break phase (50% progress)
@@ -75,23 +74,8 @@ export const PomodoroExecutionView: React.FC = () => {
       setCanFinishMethod(true);
       // Clear the resume flag
       localStorage.removeItem('resume-method');
-    } else if (savedSession) {
-      try {
-        const parsedSession = JSON.parse(savedSession);
-        setSessionData(parsedSession);
-        // Resume at appropriate step based on progress
-        if (parsedSession.progress === 0) {
-          setCurrentStep(0);
-        } else if (parsedSession.progress === 50) {
-          setCurrentStep(2); // Break phase
-          setProgressPercentage(50);
-          setCanFinishMethod(true);
-        }
-      } catch (e) {
-        console.error('Error parsing saved session:', e);
-      }
     }
-  }, []);
+  }, [id]);
 
   // Pasos del método Pomodoro
   const steps = [
@@ -318,6 +302,9 @@ export const PomodoroExecutionView: React.FC = () => {
           title: message,
           showConfirmButton: false,
           timer: 3000,
+          background: '#232323',
+          color: '#ffffff',
+          iconColor: '#22C55E',
         });
       } else if (type === 'error') {
         Swal.fire({
@@ -326,6 +313,9 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#EF4444',
+          background: '#232323',
+          color: '#ffffff',
+          iconColor: '#EF4444',
         });
       } else if (type === 'completion') {
         Swal.fire({
@@ -334,6 +324,9 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'success',
           confirmButtonText: 'OK',
           confirmButtonColor: '#22C55E',
+          background: '#232323',
+          color: '#ffffff',
+          iconColor: '#22C55E',
         }).then(() => {
           window.location.href = '/dashboard';
         });
@@ -418,10 +411,9 @@ export const PomodoroExecutionView: React.FC = () => {
           </svg>
         </button>
         <h1
-          className="text-2xl font-semibold flex items-center gap-2"
+          className="text-2xl font-semibold"
           style={{ color: methodColor }}
         >
-          <Clock className="w-7 h-7" />
           {method.titulo}
         </h1>
         <div className="w-8"></div>

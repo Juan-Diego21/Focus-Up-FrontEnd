@@ -98,6 +98,7 @@ export const ReportsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [activeTab, setActiveTab] = useState<'methods' | 'sessions'>('methods');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Estado para almacenar los métodos de estudio con sus imágenes y colores
@@ -442,6 +443,13 @@ export const ReportsPage: React.FC = () => {
   }
 
   try {
+    const filteredMethods = reportsData.metodos.filter(method => {
+      if (statusFilter === 'all') return true;
+      if (statusFilter === 'pending') return method.estado === 'in_process';
+      if (statusFilter === 'completed') return method.estado === 'completed';
+      return true;
+    });
+
     return (
       <PageLayout
         showSidebar={true}
@@ -476,13 +484,51 @@ export const ReportsPage: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* Filtro de estado */}
+            {activeTab === 'methods' && (
+              <div className="flex justify-center mb-8">
+                <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
+                  <button
+                    onClick={() => setStatusFilter('all')}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                      statusFilter === 'all'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
+                    }`}
+                  >
+                    Todos
+                  </button>
+                  <button
+                    onClick={() => setStatusFilter('pending')}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                      statusFilter === 'pending'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
+                    }`}
+                  >
+                    Pendiente
+                  </button>
+                  <button
+                    onClick={() => setStatusFilter('completed')}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                      statusFilter === 'completed'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
+                    }`}
+                  >
+                    Terminado
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Contenido */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 py-6">
             {activeTab === 'methods' && (
               <>
-                {reportsData?.metodos?.map((method) => {
+                {filteredMethods.map((method) => {
                   const methodColor = getMethodColor(method.metodo?.nombre || '');
                   const methodImage = getMethodImage(method.metodo?.nombre || '');
                   const isCompleted = method.estado === 'completed';
@@ -615,6 +661,7 @@ export const ReportsPage: React.FC = () => {
                                   if (isCompleted) {
                                     deleteReport(method.id);
                                   } else {
+                                    localStorage.setItem('resume-method', method.metodo?.id.toString());
                                     window.location.href = `/pomodoro/execute/${method.metodo?.id || 1}`;
                                   }
                                 }}
@@ -647,7 +694,7 @@ export const ReportsPage: React.FC = () => {
                     </div>
                   );
                 })}
-                {(!reportsData?.metodos || reportsData.metodos.length === 0) && (
+                {(!filteredMethods || filteredMethods.length === 0) && (
                   <div className="col-span-full text-center py-12">
                     <p className="text-gray-400 text-lg">No hay métodos de estudio registrados.</p>
                   </div>

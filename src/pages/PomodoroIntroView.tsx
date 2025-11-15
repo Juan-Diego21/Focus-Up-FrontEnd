@@ -228,7 +228,7 @@ export const PomodoroIntroView: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <CheckCircle className="w-6 h-6" style={{ color: methodColor }} />
+                <CheckCircle className="w-6 h-6" style={{ color: '#FFFFFF' }} />
                 <span style={{ color: methodColor }}>
                   1. Elige una tarea específica
                 </span>
@@ -244,7 +244,7 @@ export const PomodoroIntroView: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Clock className="w-6 h-6" style={{ color: methodColor }} />
+                <Clock className="w-6 h-6" style={{ color: 'white' }} />
                 <span style={{ color: methodColor }}>
                   2. Trabaja durante 25 minutos
                 </span>
@@ -260,7 +260,7 @@ export const PomodoroIntroView: React.FC = () => {
               style={{ borderColor: `${methodColor}33` }}
             >
               <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Coffee className="w-6 h-6" style={{ color: methodColor }} />
+                <Coffee className="w-6 h-6" style={{ color: 'white' }} />
                 <span style={{ color: methodColor }}>
                   3. Toma un descanso corto
                 </span>
@@ -313,7 +313,7 @@ export const PomodoroIntroView: React.FC = () => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-5 h-5" style={{ color: '#9CA3AF' }} />
               Configurar
             </button>
             <button
