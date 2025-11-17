@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
+import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
 import { Target, Sprout, Palette, Monitor, PenTool, Map } from 'lucide-react';
 
 interface StudyMethod {
@@ -96,7 +97,10 @@ export const MindMapsInfoPage: React.FC = () => {
     );
   }
 
-  const methodColor = method.color_hexa || "#10b981";
+  // Usar únicamente colores locales del sistema de assets
+  const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
+  const methodColor = localAssets?.color || "#10b981";
+  const methodImage = localAssets?.image;
 
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
@@ -132,13 +136,13 @@ export const MindMapsInfoPage: React.FC = () => {
         {/* Imagen y descripción principal */}
         <div className="text-center">
           <div className="mb-6 flex justify-center">
-            {method?.url_imagen ? (
+            {methodImage ? (
               <>
                 {!imageLoaded && (
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-700 animate-pulse"></div>
                 )}
                 <img
-                  src={method.url_imagen}
+                  src={methodImage}
                   alt={`Imagen de ${method.nombre_metodo}`}
                   className={`w-12 h-12 md:w-16 md:h-16 object-contain rounded-full shadow-md shadow-black/40 ${imageLoaded ? 'block' : 'hidden'}`}
                   onLoad={() => setImageLoaded(true)}
@@ -163,7 +167,6 @@ export const MindMapsInfoPage: React.FC = () => {
             {method.descripcion}
           </p>
           <p className="text-gray-400 text-base leading-relaxed max-w-2xl mx-auto flex items-center gap-2">
-            <Sprout className="w-5 h-5" style={{ color: 'white' }} />
             <span><strong>Objetivo:</strong> organizar visualmente la información para fortalecer la comprensión y retención del conocimiento.</span>
           </p>
         </div>

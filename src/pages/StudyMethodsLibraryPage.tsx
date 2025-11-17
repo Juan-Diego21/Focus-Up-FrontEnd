@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Sidebar } from "../components/ui/Sidebar";
 import { Card } from "../components/ui/Card";
 import { API_BASE_URL, API_ENDPOINTS } from "../utils/constants";
+import { overrideMethodsWithLocalAssets } from "../utils/methodAssets";
 
 interface Benefit {
   id_beneficio: number;
@@ -66,7 +67,9 @@ export const StudyMethodsLibraryPage: React.FC = () => {
         const apiResponse = await methodsResponse.json();
         // Extraer el array de datos de la respuesta de manera robusta
         const methods: StudyMethod[] = apiResponse?.data || [];
-        setStudyMethods(methods);
+        // Override with local assets for consistent images and colors
+        const methodsWithLocalAssets = overrideMethodsWithLocalAssets(methods);
+        setStudyMethods(methodsWithLocalAssets);
       } catch {
         setError("Error al cargar los métodos de estudio. Por favor, intenta de nuevo.");
       } finally {
