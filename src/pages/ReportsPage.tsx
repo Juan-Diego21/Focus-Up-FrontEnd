@@ -13,6 +13,12 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 import { LOCAL_METHOD_ASSETS } from '../utils/methodAssets';
+import {
+  getMindMapsColorByProgress,
+  getMindMapsLabelByProgress,
+  getMethodType,
+  isValidProgressForResume
+} from '../utils/methodStatus';
 
 const getMethodColor = (methodName: string): string => {
   return LOCAL_METHOD_ASSETS[methodName]?.color || '#6366f1';
@@ -98,7 +104,7 @@ export const ReportsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [activeTab, setActiveTab] = useState<'methods' | 'sessions'>('methods');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'pendiente' | 'terminado'>('todos');
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Estado para almacenar los métodos de estudio con sus imágenes y colores
@@ -250,7 +256,8 @@ export const ReportsPage: React.FC = () => {
                   imagen: localAssets?.image || ''
                 },
                 progreso: report.progreso,
-                estado: report.estado === 'completado' ? 'completed' : 'in_process',
+                estado: report.estado === 'completado' || report.estado === 'completed' ? 'completed' :
+                       report.estado === 'almost_done' ? 'almost_done' : 'in_process',
                 fechaInicio: null,
                 fechaFin: report.estado === 'completed' ? report.fecha_creacion : null,
                 fechaCreacion: report.fecha_creacion
@@ -444,9 +451,9 @@ export const ReportsPage: React.FC = () => {
 
   try {
     const filteredMethods = reportsData.metodos.filter(method => {
-      if (statusFilter === 'all') return true;
-      if (statusFilter === 'pending') return method.estado === 'in_process';
-      if (statusFilter === 'completed') return method.estado === 'completed';
+      if (statusFilter === 'todos') return true;
+      if (statusFilter === 'pendiente') return method.estado === 'in_process' || method.estado === 'almost_done';
+      if (statusFilter === 'terminado') return method.estado === 'completed';
       return true;
     });
 
@@ -490,9 +497,9 @@ export const ReportsPage: React.FC = () => {
               <div className="flex justify-center mb-8">
                 <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
                   <button
-                    onClick={() => setStatusFilter('all')}
+                    onClick={() => setStatusFilter('todos')}
                     className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
-                      statusFilter === 'all'
+                      statusFilter === 'todos'
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
                     }`}
@@ -500,9 +507,9 @@ export const ReportsPage: React.FC = () => {
                     Todos
                   </button>
                   <button
-                    onClick={() => setStatusFilter('pending')}
+                    onClick={() => setStatusFilter('pendiente')}
                     className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
-                      statusFilter === 'pending'
+                      statusFilter === 'pendiente'
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
                     }`}
@@ -510,9 +517,9 @@ export const ReportsPage: React.FC = () => {
                     Pendiente
                   </button>
                   <button
-                    onClick={() => setStatusFilter('completed')}
+                    onClick={() => setStatusFilter('terminado')}
                     className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
-                      statusFilter === 'completed'
+                      statusFilter === 'terminado'
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
                     }`}
@@ -532,6 +539,7 @@ export const ReportsPage: React.FC = () => {
                   const methodColor = getMethodColor(method.metodo?.nombre || '');
                   const methodImage = getMethodImage(method.metodo?.nombre || '');
                   const isCompleted = method.estado === 'completed';
+                  const methodType = getMethodType(method.metodo);
 
                   return (
                     <div
@@ -582,11 +590,15 @@ export const ReportsPage: React.FC = () => {
                           {/* Insignia de estado - Compacta */}
                           <div className="absolute top-7 right-2">
                             <div
-                              className={`px-2 py-0.5 rounded text-xs font-semibold text-white shadow flex items-center gap-1 ${
-                                isCompleted
-                                  ? 'bg-green-500 shadow-green-500/30'
-                                  : 'bg-yellow-500 shadow-yellow-500/30'
-                              }`}
+                              className="px-2 py-0.5 rounded text-xs font-semibold text-white shadow flex items-center gap-1"
+                              style={{
+                                backgroundColor: methodType === 'mindmaps'
+                                  ? getMindMapsColorByProgress(method.progreso)
+                                  : (isCompleted ? '#22C55E' : '#FACC15'),
+                                boxShadow: `0 0 10px ${methodType === 'mindmaps'
+                                  ? getMindMapsColorByProgress(method.progreso)
+                                  : (isCompleted ? '#22C55E' : '#FACC15')}30`
+                              }}
                             >
                               {isCompleted ? (
                                 <CheckIcon className="w-3 h-3" />
@@ -620,11 +632,12 @@ export const ReportsPage: React.FC = () => {
                           <div className="mb-1">
                             <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden shadow-inner">
                               <div
-                                className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                                  isCompleted ? 'bg-green-500' : 'bg-yellow-500'
-                                }`}
+                                className="h-full rounded-full transition-all duration-1000 ease-out"
                                 style={{
                                   width: isCompleted ? '100%' : `${method.progreso || 0}%`,
+                                  backgroundColor: getMethodType(method.metodo) === 'mindmaps'
+                                    ? getMindMapsColorByProgress(method.progreso)
+                                    : (isCompleted ? '#22C55E' : '#FACC15') // Green for completed, Yellow for in progress
                                 }}
                               />
                             </div>
@@ -633,7 +646,9 @@ export const ReportsPage: React.FC = () => {
                           {/* Etiqueta de estado */}
                           <div className="mb-2">
                             <span className="text-xs text-gray-400 font-medium">
-                              {isCompleted ? 'Terminado' : 'En proceso'}
+                              {getMethodType(method.metodo) === 'mindmaps'
+                                ? getMindMapsLabelByProgress(method.progreso)
+                                : (isCompleted ? 'Terminado' : 'En proceso')}
                             </span>
                           </div>
 
@@ -661,8 +676,52 @@ export const ReportsPage: React.FC = () => {
                                   if (isCompleted) {
                                     deleteReport(method.id);
                                   } else {
-                                    localStorage.setItem('resume-method', method.metodo?.id.toString());
-                                    window.location.href = `/pomodoro/execute/${method.metodo?.id || 1}`;
+                                    const methodType = getMethodType(method.metodo);
+
+                                    // Validate method type and progress for resume before redirecting
+                                    if (methodType === 'unknown' || !isValidProgressForResume(method.progreso, methodType as 'mindmaps' | 'pomodoro')) {
+                                      Swal.fire({
+                                        title: 'Error',
+                                        text: 'Valor de progreso inválido para reanudar sesión',
+                                        icon: 'error',
+                                        confirmButtonText: 'OK',
+                                        confirmButtonColor: '#EF4444',
+                                        background: '#232323',
+                                        color: '#ffffff',
+                                        iconColor: '#EF4444',
+                                      });
+                                      return;
+                                    }
+
+                                    // Store fallback data in localStorage
+                                    localStorage.setItem('resume-session-id', method.id.toString());
+                                    localStorage.setItem('resume-progress', method.progreso.toString());
+                                    localStorage.setItem('resume-method-type', methodType);
+
+                                    if (methodType === 'mindmaps') {
+                                      // Pass sessionId and progress in URL
+                                      window.location.href = `/mind-maps/steps/${method.metodo?.id}?progreso=${method.progreso}&sessionId=${method.id}`;
+                                    } else {
+                                      // Pass sessionId and progress in URL for Pomodoro too
+                                      window.location.href = `/pomodoro/execute/${method.metodo?.id || 1}?progreso=${method.progreso}&sessionId=${method.id}`;
+                                    }
+
+                                    // Show success alert for method resumption
+                                    setTimeout(() => {
+                                      import('sweetalert2').then(Swal => {
+                                        Swal.default.fire({
+                                          toast: true,
+                                          position: 'top-end',
+                                          icon: 'success',
+                                          title: `Sesión de ${method.metodo.nombre} retomada correctamente`,
+                                          showConfirmButton: false,
+                                          timer: 3000,
+                                          background: '#232323',
+                                          color: '#ffffff',
+                                          iconColor: '#22C55E',
+                                        });
+                                      });
+                                    }, 100);
                                   }
                                 }}
                                 className={

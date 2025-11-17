@@ -5,6 +5,11 @@ import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import Swal from 'sweetalert2';
 import { CheckCircle, Clock, Coffee, SkipForward } from 'lucide-react';
+import {
+  isValidProgressForCreation,
+  isValidProgressForUpdate,
+  isValidProgressForResume
+} from "../utils/methodStatus";
 
 // Preload SweetAlert2 for instant alerts
 Swal.mixin({
@@ -24,7 +29,7 @@ interface SessionData {
   id_metodo_realizado: number;
   startTime: string;
   progress: number;
-  status: 'in_process' | 'completed';
+  status: 'en_progreso' | 'completado';
 }
 
 interface StudyMethod {
@@ -40,6 +45,11 @@ export const PomodoroExecutionView: React.FC = () => {
   const urlParts = window.location.pathname.split('/');
   const id = urlParts[urlParts.length - 1];
 
+  // Read URL params for session resumption
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlProgress = urlParams.get('progreso');
+  const urlSessionId = urlParams.get('sessionId');
+
   const [method, setMethod] = useState<StudyMethod | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -50,8 +60,9 @@ export const PomodoroExecutionView: React.FC = () => {
   const [timerCompleted, setTimerCompleted] = useState(false);
   const [canFinishMethod, setCanFinishMethod] = useState(false);
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
+  const [isResuming, setIsResuming] = useState(false);
 
-  // Load config and session from localStorage
+  // Load config and session from localStorage or URL params
   useEffect(() => {
     const savedConfig = localStorage.getItem('pomodoro-config');
     if (savedConfig) {
@@ -63,19 +74,79 @@ export const PomodoroExecutionView: React.FC = () => {
       }
     }
 
-    const resumeMethodId = localStorage.getItem('resume-method');
+    // Check for URL params first (higher priority)
+    if (urlSessionId && urlProgress) {
+      const progress = parseInt(urlProgress);
 
-    if (resumeMethodId && resumeMethodId === id) {
-      // Resuming a specific unfinished method
-      console.log('Resuming method with ID:', resumeMethodId);
-      // Load the method data and set it to break phase (50% progress)
-      setCurrentStep(2);
-      setProgressPercentage(50);
-      setCanFinishMethod(true);
-      // Clear the resume flag
-      localStorage.removeItem('resume-method');
+      // Validate progress for resume
+      if (!isValidProgressForResume(progress, 'pomodoro')) {
+        console.error('Invalid progress value for resume:', progress);
+        setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para reanudar sesión' });
+        return;
+      }
+
+      setIsResuming(true);
+
+      // Set step based on actual progress from report
+      if (progress === 0) {
+        setCurrentStep(0); // Task selection step
+        setProgressPercentage(0);
+        setCanFinishMethod(false);
+      } else if (progress === 50) {
+        setCurrentStep(2); // Break phase
+        setProgressPercentage(50);
+        setCanFinishMethod(true);
+      } else if (progress === 100) {
+        setCurrentStep(2); // Completed, show break phase
+        setProgressPercentage(100);
+        setCanFinishMethod(true);
+      }
+
+      // Set session data for existing session
+      setSessionData({
+        id: urlSessionId,
+        methodId: parseInt(id),
+        id_metodo_realizado: 0, // Will be set when we have the real session
+        startTime: new Date().toISOString(),
+        progress: progress,
+        status: progress === 100 ? 'completado' : 'en_progreso'
+      });
+
+      // Show resumption message
+      setAlertQueue({ type: 'resumed', message: `Sesión de Pomodoro retomada correctamente` });
+    } else {
+      // Fallback to localStorage resumption
+      const resumeMethodId = localStorage.getItem('resume-method');
+      const resumeProgress = localStorage.getItem('resume-progress');
+      const resumeMethodType = localStorage.getItem('resume-method-type');
+
+      if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'pomodoro') {
+        // Resuming a specific unfinished Pomodoro method
+        console.log('Resuming Pomodoro method with ID:', resumeMethodId, 'at progress:', resumeProgress);
+        const progress = parseInt(resumeProgress || '0');
+
+        // Set step based on actual progress from report
+        if (progress === 0) {
+          setCurrentStep(0); // Task selection step
+          setProgressPercentage(0);
+          setCanFinishMethod(false);
+        } else if (progress === 50) {
+          setCurrentStep(2); // Break phase
+          setProgressPercentage(50);
+          setCanFinishMethod(true);
+        } else if (progress === 100) {
+          setCurrentStep(2); // Completed, show break phase
+          setProgressPercentage(100);
+          setCanFinishMethod(true);
+        }
+
+        // Clear the resume flags
+        localStorage.removeItem('resume-method');
+        localStorage.removeItem('resume-progress');
+        localStorage.removeItem('resume-method-type');
+      }
     }
-  }, [id]);
+  }, [id, urlSessionId, urlProgress]);
 
   // Pasos del método Pomodoro
   const steps = [
@@ -153,14 +224,27 @@ export const PomodoroExecutionView: React.FC = () => {
 
   // Start session with backend
   const startSession = async () => {
+    // If resuming, don't create a new session
+    if (isResuming) {
+      console.log('Resuming existing Pomodoro session, not creating new one');
+      return;
+    }
+
+    // Validate progress for creation
+    if (!isValidProgressForCreation(0, 'pomodoro')) {
+      console.error('Invalid progress value for session creation');
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
+      return;
+    }
+
     try {
-      console.log('Starting session with id:', id, 'parsed:', parseInt(id));
+      console.log('Starting new Pomodoro session with id:', id, 'parsed:', parseInt(id));
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
         id_metodo: parseInt(id),
-        estado: 'in_process',
+        estado: 'en_progreso',
         progreso: 0
       });
-      console.log('Session started response:', response.data);
+      console.log('Pomodoro session started response:', response.data);
       const session = response.data;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
@@ -175,7 +259,7 @@ export const PomodoroExecutionView: React.FC = () => {
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
         progress: 0,
-        status: 'in_process'
+        status: 'en_progreso'
       });
 
       // Store the active method ID separately for progress updates
@@ -183,32 +267,40 @@ export const PomodoroExecutionView: React.FC = () => {
       localStorage.setItem('pomodoro-session', JSON.stringify(session));
 
       // Queue success notification
-      setAlertQueue({ type: 'success', message: 'Sesión iniciada correctamente' });
+      setAlertQueue({ type: 'started', message: 'Sesión de Pomodoro iniciada correctamente' });
 
       // Trigger reports refresh
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error starting session:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión' });
+      console.error('Error starting Pomodoro session:', error);
+      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Pomodoro' });
     }
   };
 
   // Update session progress
-  const updateSessionProgress = async (progress: number, status: 'in_process' | 'completed' = 'in_process') => {
-    const activeMethodId = localStorage.getItem('activeMethodId');
+  const updateSessionProgress = async (progress: number, status: 'en_progreso' | 'completado' = 'en_progreso') => {
+    // Validate progress for update
+    if (!isValidProgressForUpdate(progress, 'pomodoro')) {
+      console.error('Invalid progress value for update:', progress);
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
+      return;
+    }
 
-    if (!activeMethodId) {
-      console.error('No active study method found in progress');
+    // For resumed sessions, use the sessionId from URL, otherwise use activeMethodId
+    const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+
+    if (!sessionId) {
+      console.error('No session ID found for progress update');
       return;
     }
 
     try {
-      console.log('Updating progress for method record ID:', activeMethodId, 'progress:', progress, 'status:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${activeMethodId}/progress`, {
+      console.log('Updating Pomodoro progress for session ID:', sessionId, 'progress:', progress, 'status:', status);
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
         progreso: progress,
         estado: status
       });
-      console.log('Progress updated successfully');
+      console.log('Pomodoro progress updated successfully');
 
       if (sessionData) {
         setSessionData(prev => prev ? { ...prev, progress, status } : null);
@@ -218,7 +310,7 @@ export const PomodoroExecutionView: React.FC = () => {
       // Trigger reports refresh after successful progress update
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error updating progress:', error);
+      console.error('Error updating Pomodoro progress:', error);
     }
   };
 
@@ -239,11 +331,15 @@ export const PomodoroExecutionView: React.FC = () => {
   const nextStep = () => {
     if (!timerCompleted && currentStep > 0) return; // No permitir avanzar si el timer no completó
 
-    if (currentStep === 0) {
-      // De elegir tarea a trabajar
+    if (currentStep === 0 && !isResuming && !sessionData) {
+      // Start session only if not resuming and no session data exists
       setCurrentStep(1);
       setTimerCompleted(false);
       startSession();
+    } else if (currentStep === 0) {
+      // If resuming or session already exists, just move to next step
+      setCurrentStep(1);
+      setTimerCompleted(false);
     } else if (currentStep === 1) {
       // De trabajar a descanso - update progress to 50%
       setCurrentStep(2);
@@ -278,7 +374,7 @@ export const PomodoroExecutionView: React.FC = () => {
   // Finalizar método
   const finishMethod = async () => {
     setProgressPercentage(100);
-    await updateSessionProgress(100, 'completed');
+    await updateSessionProgress(100, 'completado');
     localStorage.removeItem('pomodoro-session');
     localStorage.removeItem('activeMethodId');
 
@@ -294,7 +390,7 @@ export const PomodoroExecutionView: React.FC = () => {
     if (alertQueue) {
       const { type, message } = alertQueue;
 
-      if (type === 'success') {
+      if (type === 'success' || type === 'started' || type === 'resumed') {
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -302,7 +398,7 @@ export const PomodoroExecutionView: React.FC = () => {
           title: message,
           showConfirmButton: false,
           timer: 3000,
-          background: '#232323',
+          background: '#1f2937',
           color: '#ffffff',
           iconColor: '#22C55E',
         });
@@ -313,7 +409,7 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#EF4444',
-          background: '#232323',
+          background: '#1f2937',
           color: '#ffffff',
           iconColor: '#EF4444',
         });
@@ -324,7 +420,7 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'success',
           confirmButtonText: 'OK',
           confirmButtonColor: '#22C55E',
-          background: '#232323',
+          background: '#1f2937',
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
@@ -336,24 +432,29 @@ export const PomodoroExecutionView: React.FC = () => {
     }
   }, [alertQueue]);
 
-  // Handle leaving without finishing
+  // Handle leaving without finishing - save progress synchronously
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const activeMethodId = localStorage.getItem('activeMethodId');
-      if (activeMethodId && sessionData && sessionData.status === 'in_process') {
-        // Update progress synchronously before page unload
-        navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${activeMethodId}/progress`,
-          JSON.stringify({
-            progreso: 50,
-            estado: 'in_process'
-          })
-        );
+      const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+      if (sessionId && sessionData && sessionData.status === 'en_progreso') {
+        // Validate progress before sending beacon
+        if (isValidProgressForUpdate(progressPercentage, 'pomodoro')) {
+          // Update progress synchronously before page unload
+          navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
+            JSON.stringify({
+              progreso: progressPercentage,
+              estado: 'en_progreso'
+            })
+          );
+        } else {
+          console.error('Invalid progress value for beforeunload update:', progressPercentage);
+        }
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [sessionData]);
+  }, [sessionData, progressPercentage, isResuming, urlSessionId]);
 
   if (loading) {
     return (
@@ -420,7 +521,7 @@ export const PomodoroExecutionView: React.FC = () => {
       </header>
 
       {/* Progreso */}
-      <section className="flex flex-col items-center mb-10 relative">
+      <section className="flex flex-col items-center mb-10 relative" style={{ marginTop: '-20px' }}>
         <ProgressCircle
           percentage={progressPercentage}
           size={140}

@@ -3,6 +3,14 @@ import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
+import {
+  getMindMapsColorByProgress,
+  getMindMapsLabelByProgress,
+  getMindMapsStatusByProgress,
+  isValidProgressForCreation,
+  isValidProgressForUpdate,
+  isValidProgressForResume
+} from "../utils/methodStatus";
 import Swal from 'sweetalert2';
 
 interface StudyMethod {
@@ -18,6 +26,11 @@ export const MindMapsStepsPage: React.FC = () => {
   const urlParts = window.location.pathname.split('/');
   const id = urlParts[urlParts.length - 1];
 
+  // Read URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlProgress = urlParams.get('progreso');
+  const urlSessionId = urlParams.get('sessionId');
+
   const [method, setMethod] = useState<StudyMethod | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -25,6 +38,22 @@ export const MindMapsStepsPage: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [sessionData, setSessionData] = useState<{ id: string; methodId: number; id_metodo_realizado: number; startTime: string; progress: number; status: string } | null>(null);
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
+  const [isResuming, setIsResuming] = useState(false);
+
+  // Pure function for progress-to-step mapping
+  const getStepFromProgress = (progress: number): number => {
+    if (progress === 20) return 0;
+    if (progress === 40) return 1;
+    if (progress === 60) return 2;
+    if (progress === 80) return 3;
+    if (progress === 100) return 4;
+    // For unexpected values, find closest
+    if (progress < 30) return 0;
+    if (progress < 50) return 1;
+    if (progress < 70) return 2;
+    if (progress < 90) return 3;
+    return 4;
+  };
 
   // Pasos del método Mapas Mentales
   const steps = [
@@ -96,6 +125,36 @@ export const MindMapsStepsPage: React.FC = () => {
 
         const methodData = await response.json();
         setMethod(methodData);
+
+        // After loading method, check for resumption
+        if (urlSessionId && urlProgress) {
+          const progress = parseInt(urlProgress);
+
+          // Validate progress for resume
+          if (!isValidProgressForResume(progress, 'mindmaps')) {
+            console.error('Invalid progress value for resume:', progress);
+            setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para reanudar sesión' });
+            return;
+          }
+
+          setIsResuming(true);
+          const step = getStepFromProgress(progress);
+          setCurrentStep(step);
+          setProgressPercentage(progress);
+
+          // Set session data for existing session
+          setSessionData({
+            id: urlSessionId,
+            methodId: parseInt(id),
+            id_metodo_realizado: 0, // Will be set when we have the real session
+            startTime: new Date().toISOString(),
+            progress: progress,
+            status: getMindMapsStatusByProgress(progress)
+          });
+
+          // Show resumption message
+          setAlertQueue({ type: 'resumed', message: `Sesión de ${methodData.titulo || 'Mapas Mentales'} retomada correctamente` });
+        }
       } catch {
         setError("Error al cargar los datos del método");
       } finally {
@@ -106,16 +165,85 @@ export const MindMapsStepsPage: React.FC = () => {
     if (id) {
       fetchMethodData();
     }
+  }, [id, urlSessionId, urlProgress]);
+
+  // Load resume data from localStorage
+  useEffect(() => {
+    const resumeMethodId = localStorage.getItem('resume-method');
+    const resumeProgress = localStorage.getItem('resume-progress');
+    const resumeMethodType = localStorage.getItem('resume-method-type');
+
+    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'mindmaps') {
+      // Resuming a specific unfinished Mind Maps method
+      console.log('Resuming Mind Maps method with ID:', resumeMethodId, 'at progress:', resumeProgress);
+      const progress = parseInt(resumeProgress || '0');
+
+      // Set step based on actual progress from report
+      // Mind Maps steps: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
+      if (progress === 20) {
+        setCurrentStep(0);
+        setProgressPercentage(20);
+      } else if (progress === 40) {
+        setCurrentStep(1);
+        setProgressPercentage(40);
+      } else if (progress === 60) {
+        setCurrentStep(2);
+        setProgressPercentage(60);
+      } else if (progress === 80) {
+        setCurrentStep(3);
+        setProgressPercentage(80);
+      } else if (progress === 100) {
+        setCurrentStep(4);
+        setProgressPercentage(100);
+      } else {
+        // For any other progress value, find the closest valid step
+        // This prevents invalid progress values
+        if (progress < 30) {
+          setCurrentStep(0);
+          setProgressPercentage(20);
+        } else if (progress < 50) {
+          setCurrentStep(1);
+          setProgressPercentage(40);
+        } else if (progress < 70) {
+          setCurrentStep(2);
+          setProgressPercentage(60);
+        } else if (progress < 90) {
+          setCurrentStep(3);
+          setProgressPercentage(80);
+        } else {
+          setCurrentStep(4);
+          setProgressPercentage(100);
+        }
+      }
+
+      // Clear the resume flags
+      localStorage.removeItem('resume-method');
+      localStorage.removeItem('resume-progress');
+      localStorage.removeItem('resume-method-type');
+    }
   }, [id]);
 
   // Start session with backend
   const startSession = async () => {
+    // If resuming, don't create a new session
+    if (isResuming) {
+      console.log('Resuming existing Mind Maps session, not creating new one');
+      return;
+    }
+
+    // Validate progress for creation
+    if (!isValidProgressForCreation(20, 'mindmaps')) {
+      console.error('Invalid progress value for session creation');
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
+      return;
+    }
+
     try {
-      console.log('Starting Mind Maps session with id:', id);
+      console.log('Starting new Mind Maps session with id:', id);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
         id_metodo: parseInt(id),
         estado: 'En_proceso',
-        progreso: 0
+        progreso: 20
       });
       console.log('Mind Maps session started response:', response.data);
       const session = response.data;
@@ -131,7 +259,7 @@ export const MindMapsStepsPage: React.FC = () => {
         methodId: parseInt(id),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
-        progress: 0,
+        progress: 20,
         status: 'En_proceso'
       });
 
@@ -140,7 +268,7 @@ export const MindMapsStepsPage: React.FC = () => {
       localStorage.setItem('mindmaps-session', JSON.stringify(session));
 
       // Queue success notification
-      setAlertQueue({ type: 'success', message: 'Sesión de Mapas Mentales iniciada correctamente' });
+      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Mapas Mentales'} iniciada correctamente` });
 
       // Trigger reports refresh
       window.dispatchEvent(new Event('refreshReports'));
@@ -152,16 +280,24 @@ export const MindMapsStepsPage: React.FC = () => {
 
   // Update session progress
   const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
-    const activeMethodId = localStorage.getItem('activeMethodId');
+    // Validate progress for update
+    if (!isValidProgressForUpdate(progress, 'mindmaps')) {
+      console.error('Invalid progress value for update:', progress);
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
+      return;
+    }
 
-    if (!activeMethodId) {
-      console.error('No active study method found in progress');
+    // For resumed sessions, use the sessionId from URL, otherwise use activeMethodId
+    const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+
+    if (!sessionId) {
+      console.error('No session ID found for progress update');
       return;
     }
 
     try {
-      console.log('Updating Mind Maps progress for method record ID:', activeMethodId, 'progress:', progress, 'status:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${activeMethodId}/progress`, {
+      console.log('Updating Mind Maps progress for session ID:', sessionId, 'progress:', progress, 'status:', status);
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
         progreso: progress,
         estado: status
       });
@@ -184,7 +320,7 @@ export const MindMapsStepsPage: React.FC = () => {
     if (alertQueue) {
       const { type, message } = alertQueue;
 
-      if (type === 'success') {
+      if (type === 'success' || type === 'started' || type === 'resumed') {
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -226,31 +362,46 @@ export const MindMapsStepsPage: React.FC = () => {
     }
   }, [alertQueue]);
 
+  // Handle leaving without finishing - save progress synchronously
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+      if (sessionId && sessionData && sessionData.status !== 'Terminado') {
+        // Validate progress before sending beacon
+        if (isValidProgressForUpdate(progressPercentage, 'mindmaps')) {
+          // Update progress synchronously before page unload
+          navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
+            JSON.stringify({
+              progreso: progressPercentage,
+              estado: getMindMapsStatusByProgress(progressPercentage)
+            })
+          );
+        } else {
+          console.error('Invalid progress value for beforeunload update:', progressPercentage);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [sessionData, progressPercentage, isResuming, urlSessionId]);
+
   // Navegar al siguiente paso
   const nextStep = () => {
-    if (currentStep === 0) {
-      // Start session at first step
+    if (currentStep === 0 && !isResuming && !sessionData) {
+      // Start session only if not resuming and no session data exists
       startSession();
     }
 
     if (currentStep < steps.length - 1) {
       const nextStepIndex = currentStep + 1;
       setCurrentStep(nextStepIndex);
-      // Fixed percentages: 20%, 40%, 60%, 80%, 100%
-      const fixedPercentages = [0, 20, 40, 60, 80, 100];
-      const newProgress = fixedPercentages[nextStepIndex];
+      // Use the mapping function for consistent progress values: 20%, 40%, 60%, 80%, 100%
+      const newProgress = (nextStepIndex + 1) * 20; // Step 0 = 20%, Step 1 = 40%, etc.
       setProgressPercentage(newProgress);
 
-      // Update progress with status mapping
-      let status = 'En_proceso';
-      if (newProgress >= 20 && newProgress < 60) {
-        status = 'En_proceso';
-      } else if (newProgress >= 60 && newProgress < 100) {
-        status = 'Casi_terminando';
-      } else if (newProgress === 100) {
-        status = 'Terminado';
-      }
-
+      // Update progress with standardized status mapping
+      const status = getMindMapsStatusByProgress(newProgress);
       updateSessionProgress(newProgress, status);
     }
   };
@@ -258,8 +409,16 @@ export const MindMapsStepsPage: React.FC = () => {
   // Navegar al paso anterior
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-      setProgressPercentage(((currentStep - 1) / steps.length) * 100);
+      const prevStepIndex = currentStep - 1;
+      setCurrentStep(prevStepIndex);
+      // Fixed percentages: 20%, 40%, 60%, 80%, 100%
+      const fixedPercentages = [20, 40, 60, 80, 100];
+      const newProgress = fixedPercentages[prevStepIndex];
+      setProgressPercentage(newProgress);
+
+      // Update progress with standardized status mapping
+      const status = getMindMapsStatusByProgress(newProgress);
+      updateSessionProgress(newProgress, status);
     }
   };
 
@@ -312,6 +471,7 @@ export const MindMapsStepsPage: React.FC = () => {
   const methodColor = localAssets?.color || "#10b981";
   const currentStepData = steps[currentStep];
 
+
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
       {/* Header */}
@@ -336,19 +496,21 @@ export const MindMapsStepsPage: React.FC = () => {
           </svg>
         </button>
         <h1
-          className="text-2xl font-semibold flex items-center gap-2"
+          className="text-2xl font-semibold"
           style={{ color: methodColor }}
         >
-          🗺️ {method.titulo}
+          {method.titulo}
         </h1>
         <div className="w-8"></div>
       </header>
 
       {/* Indicador de progreso */}
-      <section className="flex flex-col items-center mb-10 relative">
+      <section className="flex flex-col items-center mb-10 relative" style={{ marginTop: '-20px' }}>
         <ProgressCircle
           percentage={progressPercentage}
           size={140}
+          getTextByPercentage={getMindMapsLabelByProgress}
+          getColorByPercentage={getMindMapsColorByProgress}
         />
         <div className="text-center mt-4">
           <span className="text-gray-400 text-sm">
