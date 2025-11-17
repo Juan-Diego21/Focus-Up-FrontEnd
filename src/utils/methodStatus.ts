@@ -131,6 +131,38 @@ export const getSpacedRepetitionLabelByProgress = (progress: number): string => 
 };
 
 /**
+ * Mapea el progreso a estado para Práctica Activa (igual que Repaso Espaciado)
+ * @param progress - Valor de progreso (20, 40, 60, 80, 100)
+ * @returns Estado correspondiente del método
+ */
+export const getActiveRecallStatusByProgress = (progress: number): MethodStatus => {
+  if (progress === 20 || progress === 40) return 'En_proceso';
+  if (progress === 60 || progress === 80) return 'Casi_terminando';
+  if (progress === 100) return 'Terminado';
+  return 'En_proceso'; // Valor por defecto
+};
+
+/**
+ * Obtiene el color basado en el progreso para Práctica Activa
+ * @param progress - Valor de progreso
+ * @returns Color correspondiente al progreso
+ */
+export const getActiveRecallColorByProgress = (progress: number): string => {
+  const status = getActiveRecallStatusByProgress(progress);
+  return getStatusColor(status);
+};
+
+/**
+ * Obtiene la etiqueta basada en el progreso para Práctica Activa
+ * @param progress - Valor de progreso
+ * @returns Etiqueta correspondiente al progreso
+ */
+export const getActiveRecallLabelByProgress = (progress: number): string => {
+  const status = getActiveRecallStatusByProgress(progress);
+  return getStatusLabel(status);
+};
+
+/**
  * Utilidades para detectar el tipo de método basado en el nombre
  */
 
@@ -162,16 +194,26 @@ export const isSpacedRepetitionMethod = (methodName: string): boolean => {
 };
 
 /**
+ * Verifica si un método es de Práctica Activa
+ * @param methodName - Nombre del método
+ * @returns true si es un método de práctica activa
+ */
+export const isActiveRecallMethod = (methodName: string): boolean => {
+  return methodName.toLowerCase().includes('práctica') && methodName.toLowerCase().includes('activa');
+};
+
+/**
  * Obtiene el tipo de método desde los datos del método
  * @param method - Objeto con datos del método
  * @returns Tipo de método identificado
  */
-export const getMethodType = (method: any): 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'unknown' => {
+export const getMethodType = (method: any): 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'unknown' => {
   if (!method) return 'unknown';
   const name = method.nombre || method.titulo || '';
   if (isPomodoroMethod(name)) return 'pomodoro';
   if (isMindMapsMethod(name)) return 'mindmaps';
   if (isSpacedRepetitionMethod(name)) return 'spacedrepetition';
+  if (isActiveRecallMethod(name)) return 'activerecall';
   return 'unknown';
 };
 
@@ -191,16 +233,20 @@ export const VALID_PROGRESS_VALUES = {
   spacedrepetition: {
     creation: [20], // El Repaso Espaciado sigue el modelo de Mapas Mentales
     update: [20, 40, 60, 80, 100]
+  },
+  activerecall: {
+    creation: [20], // La Práctica Activa sigue el modelo de Repaso Espaciado
+    update: [20, 40, 60, 80, 100]
   }
 } as const;
 
 /**
  * Valida si un valor de progreso es válido para la creación de sesión
  * @param progress - El valor de progreso a validar
- * @param methodType - El tipo de método ('pomodoro' | 'mindmaps' | 'spacedrepetition')
+ * @param methodType - El tipo de método ('pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall')
  * @returns true si es válido para creación, false en caso contrario
  */
-export const isValidProgressForCreation = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition'): boolean => {
+export const isValidProgressForCreation = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall'): boolean => {
   const validValues = VALID_PROGRESS_VALUES[methodType].creation;
   return (validValues as readonly number[]).includes(progress);
 };
@@ -208,10 +254,10 @@ export const isValidProgressForCreation = (progress: number, methodType: 'pomodo
 /**
  * Valida si un valor de progreso es válido para la actualización de sesión
  * @param progress - El valor de progreso a validar
- * @param methodType - El tipo de método ('pomodoro' | 'mindmaps' | 'spacedrepetition')
+ * @param methodType - El tipo de método ('pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall')
  * @returns true si es válido para actualización, false en caso contrario
  */
-export const isValidProgressForUpdate = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition'): boolean => {
+export const isValidProgressForUpdate = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall'): boolean => {
   const validValues = VALID_PROGRESS_VALUES[methodType].update;
   return (validValues as readonly number[]).includes(progress);
 };
@@ -225,7 +271,7 @@ export const isValidProgressForUpdate = (progress: number, methodType: 'pomodoro
  */
 export const getNextValidProgress = (
   currentProgress: number,
-  methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition',
+  methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall',
   direction: 'next' | 'prev' = 'next'
 ): number | null => {
   const validValues = VALID_PROGRESS_VALUES[methodType].update;
@@ -248,8 +294,8 @@ export const getNextValidProgress = (
  * @param methodType - El tipo de método
  * @returns true si es válido para reanudar, false en caso contrario
  */
-export const isValidProgressForResume = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition'): boolean => {
-  // Para reanudar, permitimos cualquier valor de actualización válido, pero no 0 para Mapas Mentales y Repaso Espaciado
-  if ((methodType === 'mindmaps' || methodType === 'spacedrepetition') && progress === 0) return false;
+export const isValidProgressForResume = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall'): boolean => {
+  // Para reanudar, permitimos cualquier valor de actualización válido, pero no 0 para métodos que no son Pomodoro
+  if ((methodType === 'mindmaps' || methodType === 'spacedrepetition' || methodType === 'activerecall') && progress === 0) return false;
   return isValidProgressForUpdate(progress, methodType);
 };

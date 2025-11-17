@@ -21,6 +21,8 @@ import { MindMapsInfoPage } from "./pages/MindMapsInfoPage";
 import { MindMapsStepsPage } from "./pages/MindMapsStepsPage";
 import { SpacedRepetitionIntroView } from "./pages/SpacedRepetitionIntroView";
 import { SpacedRepetitionStepsView } from "./pages/SpacedRepetitionStepsView";
+import { ActiveRecallIntroView } from "./pages/ActiveRecallIntroView";
+import { ActiveRecallStepsView } from "./pages/ActiveRecallStepsView";
 import { ReportsPage } from "./pages/ReportsPage";
 
 // Componente principal de la aplicación
@@ -93,6 +95,14 @@ function App() {
 
     if (path.startsWith("/spaced-repetition/steps/")) {
       return renderProtectedPage(SpacedRepetitionStepsView);
+    }
+
+    if (path.startsWith("/active-recall/intro/")) {
+      return renderProtectedPage(ActiveRecallIntroView);
+    }
+
+    if (path.startsWith("/active-recall/steps/")) {
+      return renderProtectedPage(ActiveRecallStepsView);
     }
 
     // Ruta por defecto (dashboard)

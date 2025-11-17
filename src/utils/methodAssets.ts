@@ -12,7 +12,7 @@ export const LOCAL_METHOD_ASSETS: Record<string, { image: string; color: string 
     image: '/img/RepasoEspaciado.png',
     color: '#7E57C2'
   },
-  'Práctica activa': {
+  'Práctica Activa': {
     image: '/img/PracticaActiva.png',
     color: '#43A047'
   },
