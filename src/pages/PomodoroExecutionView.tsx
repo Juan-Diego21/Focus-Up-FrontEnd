@@ -1,15 +1,20 @@
+/**
+ * Componente principal para la ejecución del método Pomodoro
+ * Maneja la lógica de temporización, progreso y navegación entre pasos
+ */
 import React, { useState, useEffect } from "react";
 import { Timer } from "../components/ui/Timer";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import Swal from 'sweetalert2';
-import { CheckCircle, Clock, Coffee, SkipForward } from 'lucide-react';
+import { CheckCircle, Clock, Coffee, SkipForward, Clock as ClockIcon } from 'lucide-react';
 import {
   isValidProgressForCreation,
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../utils/methodStatus";
+import { FinishLaterModal } from "../components/ui/FinishLaterModal";
 
 // Preload SweetAlert2 for instant alerts
 Swal.mixin({
@@ -40,27 +45,44 @@ interface StudyMethod {
   color_hexa?: string;
 }
 
+/**
+ * Componente principal que maneja la ejecución completa del método Pomodoro
+ * Incluye temporización, navegación de pasos y gestión de sesiones
+ */
 export const PomodoroExecutionView: React.FC = () => {
-  // Obtener ID del método desde la URL
+  // Extraer el ID del método desde la URL para identificar qué método ejecutar
   const urlParts = window.location.pathname.split('/');
   const id = urlParts[urlParts.length - 1];
 
-  // Read URL params for session resumption
+  // Leer parámetros de URL para reanudar sesiones existentes
   const urlParams = new URLSearchParams(window.location.search);
   const urlProgress = urlParams.get('progreso');
   const urlSessionId = urlParams.get('sessionId');
 
+  // Estado para almacenar la información del método de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
+  // Estado para controlar el paso actual en el flujo del método (0, 1, 2)
   const [currentStep, setCurrentStep] = useState(0);
+  // Estado para el porcentaje de progreso visual (0, 50, 100)
   const [progressPercentage, setProgressPercentage] = useState(0);
+  // Estado de carga mientras se obtienen datos del servidor
   const [loading, setLoading] = useState(true);
+  // Estado para manejar errores de carga o API
   const [error, setError] = useState<string>("");
+  // Estado para configuración personalizada del usuario (tiempos de trabajo y descanso)
   const [config, setConfig] = useState<PomodoroConfig>({ workTime: 25, breakTime: 5 });
+  // Estado para datos de la sesión activa en el backend
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
+  // Estado para saber si el temporizador actual ha completado su ciclo
   const [timerCompleted, setTimerCompleted] = useState(false);
+  // Estado para habilitar el botón de finalizar método después del primer ciclo completo
   const [canFinishMethod, setCanFinishMethod] = useState(false);
+  // Estado para cola de notificaciones/alertas que se muestran al usuario
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
+  // Estado para saber si se está reanudando una sesión existente
   const [isResuming, setIsResuming] = useState(false);
+  // Estado para controlar la visibilidad del modal "Terminar más tarde"
+  const [showFinishLaterModal, setShowFinishLaterModal] = useState(false);
 
   // Load config and session from localStorage or URL params
   useEffect(() => {
@@ -222,14 +244,12 @@ export const PomodoroExecutionView: React.FC = () => {
     }
   }, [id]);
 
-  // Start session with backend
+  /**
+   * Inicia una nueva sesión en el backend para el método Pomodoro
+   * Valida el progreso antes de enviar la solicitud y maneja errores
+   * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
+   */
   const startSession = async () => {
-    // If resuming, don't create a new session
-    if (isResuming) {
-      console.log('Resuming existing Pomodoro session, not creating new one');
-      return;
-    }
-
     // Validate progress for creation
     if (!isValidProgressForCreation(0, 'pomodoro')) {
       console.error('Invalid progress value for session creation');
@@ -277,7 +297,10 @@ export const PomodoroExecutionView: React.FC = () => {
     }
   };
 
-  // Update session progress
+  /**
+   * Actualiza el progreso de la sesión en el backend
+   * Valida el progreso antes de enviar y maneja sesiones reanudadas
+   */
   const updateSessionProgress = async (progress: number, status: 'en_progreso' | 'completado' = 'en_progreso') => {
     // Validate progress for update
     if (!isValidProgressForUpdate(progress, 'pomodoro')) {
@@ -327,19 +350,19 @@ export const PomodoroExecutionView: React.FC = () => {
     // La completación del temporizador solo habilita el botón "Siguiente Paso"
   };
 
-  // Navegar al siguiente paso
+  /**
+   * Maneja la navegación al siguiente paso del método
+   * Controla la lógica de inicio de sesión y actualización de progreso
+   * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
+   */
   const nextStep = () => {
     if (!timerCompleted && currentStep > 0) return; // No permitir avanzar si el timer no completó
 
-    if (currentStep === 0 && !isResuming && !sessionData) {
-      // Start session only if not resuming and no session data exists
+    if (currentStep === 0) {
+      // Always create a new session from step-by-step execution flow
       setCurrentStep(1);
       setTimerCompleted(false);
       startSession();
-    } else if (currentStep === 0) {
-      // If resuming or session already exists, just move to next step
-      setCurrentStep(1);
-      setTimerCompleted(false);
     } else if (currentStep === 1) {
       // De trabajar a descanso - update progress to 50%
       setCurrentStep(2);
@@ -398,7 +421,7 @@ export const PomodoroExecutionView: React.FC = () => {
           title: message,
           showConfirmButton: false,
           timer: 3000,
-          background: '#1f2937',
+          background: '#22C55E20', // Green-tinted background for success
           color: '#ffffff',
           iconColor: '#22C55E',
         });
@@ -409,7 +432,7 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#EF4444',
-          background: '#1f2937',
+          background: '#EF444420', // Red-tinted background for error
           color: '#ffffff',
           iconColor: '#EF4444',
         });
@@ -420,7 +443,7 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'success',
           confirmButtonText: 'OK',
           confirmButtonColor: '#22C55E',
-          background: '#1f2937',
+          background: '#22C55E20', // Green-tinted background for completion
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
@@ -517,7 +540,17 @@ export const PomodoroExecutionView: React.FC = () => {
         >
           {method.titulo}
         </h1>
-        <div className="w-8"></div>
+        {/* Botón "Terminar más tarde" solo visible después de iniciar la sesión */}
+        {sessionData && (
+          <button
+            onClick={() => setShowFinishLaterModal(true)}
+            className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+            aria-label="Terminar más tarde"
+          >
+            <ClockIcon className="w-4 h-4" />
+            Terminar más tarde
+          </button>
+        )}
       </header>
 
       {/* Progreso */}
@@ -656,6 +689,16 @@ export const PomodoroExecutionView: React.FC = () => {
           )}
         </div>
       </section>
+
+      {/* Finish Later Modal */}
+      <FinishLaterModal
+        isOpen={showFinishLaterModal}
+        methodName={method?.titulo || "Método Pomodoro"}
+        onConfirm={() => {
+          setShowFinishLaterModal(false);
+          window.location.href = "/reports";
+        }}
+      />
     </div>
   );
 };

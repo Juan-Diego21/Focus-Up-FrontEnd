@@ -1,3 +1,8 @@
+/**
+ * Componente principal que muestra los reportes de sesiones de estudio
+ * Permite visualizar métodos completados y sesiones de concentración
+ * Incluye filtros y opciones para reanudar métodos no terminados
+ */
 import React, { useState, useEffect, useCallback } from "react";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
@@ -95,23 +100,35 @@ interface ReportsData {
   sesiones: ConcentrationSession[];
 }
 
+/**
+ * Componente que muestra los reportes de progreso del usuario
+ * Incluye métodos de estudio completados y sesiones de concentración
+ */
 export const ReportsPage: React.FC = () => {
-  // Hook de autenticación para obtener datos del usuario
+  // Hook de autenticación para acceder a la información del usuario actual
   const { user } = useAuth();
 
-  // Estados para manejar los datos de reportes
+  // Estado para almacenar todos los datos de reportes obtenidos del backend
   const [reportsData, setReportsData] = useState<ReportsData>({ metodos: [], sesiones: [] });
+  // Estado de carga mientras se obtienen datos del servidor
   const [loading, setLoading] = useState(true);
+  // Estado para manejar errores de carga o API
   const [error, setError] = useState<string>("");
+  // Estado para controlar qué pestaña está activa (métodos o sesiones)
   const [activeTab, setActiveTab] = useState<'methods' | 'sessions'>('methods');
+  // Estado para el filtro de estado de los métodos (todos, pendiente, terminado)
   const [statusFilter, setStatusFilter] = useState<'todos' | 'pendiente' | 'terminado'>('todos');
+  // Estado para controlar la carga de imágenes de métodos
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Estado para almacenar los métodos de estudio con sus imágenes y colores
   const [studyMethods, setStudyMethods] = useState<StudyMethod[]>([]);
   const [studyMethodsLoaded, setStudyMethodsLoaded] = useState(false);
 
-  // Función para obtener los métodos de estudio desde la API
+  /**
+   * Obtiene la lista de métodos de estudio disponibles desde el backend
+   * Se ejecuta una vez al montar el componente y actualiza la lista de métodos
+   */
   const fetchStudyMethods = useCallback(async () => {
     try {
       console.log('Obteniendo métodos de estudio...');
@@ -178,7 +195,10 @@ export const ReportsPage: React.FC = () => {
     }
   }, []);
 
-  // Función para obtener los reportes desde la API
+  /**
+   * Obtiene los reportes de progreso del usuario desde el backend
+   * Convierte los datos del API al formato esperado por el componente
+   */
   const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
@@ -355,7 +375,10 @@ export const ReportsPage: React.FC = () => {
   }, [loading]);
 
 
-  // Función para eliminar un reporte
+  /**
+   * Elimina un reporte específico del backend
+   * Muestra confirmación al usuario antes de proceder con la eliminación
+   */
   const deleteReport = async (reportId: number) => {
     const result = await Swal.fire({
       title: '¿Eliminar reporte?',
@@ -418,10 +441,6 @@ export const ReportsPage: React.FC = () => {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white text-lg">Cargando reportes...</p>
-          <p className="text-gray-400 text-sm mt-2">
-            studyMethodsLoaded: {studyMethodsLoaded ? 'true' : 'false'} |
-            studyMethods: {studyMethods.length}
-          </p>
         </div>
       </div>
     );
@@ -450,6 +469,7 @@ export const ReportsPage: React.FC = () => {
   }
 
   try {
+    // Filtrar métodos según el estado seleccionado por el usuario
     const filteredMethods = reportsData.metodos.filter(method => {
       if (statusFilter === 'todos') return true;
       if (statusFilter === 'pendiente') return method.estado === 'in_process' || method.estado === 'almost_done';
@@ -678,7 +698,7 @@ export const ReportsPage: React.FC = () => {
                                   } else {
                                     const methodType = getMethodType(method.metodo);
 
-                                    // Validate method type and progress for resume before redirecting
+                                    // Validar tipo de método y progreso antes de redirigir para reanudar
                                     if (methodType === 'unknown' || !isValidProgressForResume(method.progreso, methodType as 'mindmaps' | 'pomodoro')) {
                                       Swal.fire({
                                         title: 'Error',

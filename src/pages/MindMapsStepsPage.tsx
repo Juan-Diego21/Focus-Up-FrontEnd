@@ -1,8 +1,13 @@
+/**
+ * Componente principal para la ejecución del método Mapas Mentales
+ * Gestiona la navegación paso a paso y el progreso del usuario
+ */
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
+import { Clock as ClockIcon } from "lucide-react";
 import {
   getMindMapsColorByProgress,
   getMindMapsLabelByProgress,
@@ -11,6 +16,7 @@ import {
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../utils/methodStatus";
+import { FinishLaterModal } from "../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
 
 interface StudyMethod {
@@ -21,26 +27,43 @@ interface StudyMethod {
   color_hexa?: string;
 }
 
+/**
+ * Componente que maneja la ejecución paso a paso del método Mapas Mentales
+ * Permite al usuario navegar entre los 5 pasos del método con progreso visual
+ */
 export const MindMapsStepsPage: React.FC = () => {
-  // Obtener ID del método desde la URL
+  // Extraer el ID del método desde la URL para identificar qué método ejecutar
   const urlParts = window.location.pathname.split('/');
   const id = urlParts[urlParts.length - 1];
 
-  // Read URL params
+  // Leer parámetros de URL para reanudar sesiones existentes
   const urlParams = new URLSearchParams(window.location.search);
   const urlProgress = urlParams.get('progreso');
   const urlSessionId = urlParams.get('sessionId');
 
+  // Estado para almacenar la información del método de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
+  // Estado para controlar el paso actual en el flujo del método (0-4)
   const [currentStep, setCurrentStep] = useState(0);
+  // Estado para el porcentaje de progreso visual (20, 40, 60, 80, 100)
   const [progressPercentage, setProgressPercentage] = useState(0);
+  // Estado de carga mientras se obtienen datos del servidor
   const [loading, setLoading] = useState(true);
+  // Estado para manejar errores de carga o API
   const [error, setError] = useState<string>("");
+  // Estado para datos de la sesión activa en el backend
   const [sessionData, setSessionData] = useState<{ id: string; methodId: number; id_metodo_realizado: number; startTime: string; progress: number; status: string } | null>(null);
+  // Estado para cola de notificaciones/alertas que se muestran al usuario
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
+  // Estado para saber si se está reanudando una sesión existente
   const [isResuming, setIsResuming] = useState(false);
+  // Estado para controlar la visibilidad del modal "Terminar más tarde"
+  const [showFinishLaterModal, setShowFinishLaterModal] = useState(false);
 
-  // Pure function for progress-to-step mapping
+  /**
+   * Función pura que convierte el porcentaje de progreso al número de paso correspondiente
+   * Mapea: 20%→0, 40%→1, 60%→2, 80%→3, 100%→4
+   */
   const getStepFromProgress = (progress: number): number => {
     if (progress === 20) return 0;
     if (progress === 40) return 1;
@@ -223,14 +246,12 @@ export const MindMapsStepsPage: React.FC = () => {
     }
   }, [id]);
 
-  // Start session with backend
+  /**
+   * Inicia una nueva sesión en el backend para el método Mapas Mentales
+   * Valida el progreso antes de enviar la solicitud y maneja errores
+   * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
+   */
   const startSession = async () => {
-    // If resuming, don't create a new session
-    if (isResuming) {
-      console.log('Resuming existing Mind Maps session, not creating new one');
-      return;
-    }
-
     // Validate progress for creation
     if (!isValidProgressForCreation(20, 'mindmaps')) {
       console.error('Invalid progress value for session creation');
@@ -278,7 +299,10 @@ export const MindMapsStepsPage: React.FC = () => {
     }
   };
 
-  // Update session progress
+  /**
+   * Actualiza el progreso de la sesión en el backend
+   * Valida el progreso antes de enviar y maneja sesiones reanudadas
+   */
   const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
     // Validate progress for update
     if (!isValidProgressForUpdate(progress, 'mindmaps')) {
@@ -386,10 +410,14 @@ export const MindMapsStepsPage: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [sessionData, progressPercentage, isResuming, urlSessionId]);
 
-  // Navegar al siguiente paso
+  /**
+   * Maneja la navegación al siguiente paso del método
+   * Controla la lógica de inicio de sesión y actualización de progreso
+   * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
+   */
   const nextStep = () => {
-    if (currentStep === 0 && !isResuming && !sessionData) {
-      // Start session only if not resuming and no session data exists
+    if (currentStep === 0) {
+      // Always create a new session from step-by-step execution flow
       startSession();
     }
 
@@ -406,7 +434,10 @@ export const MindMapsStepsPage: React.FC = () => {
     }
   };
 
-  // Navegar al paso anterior
+  /**
+   * Maneja la navegación al paso anterior del método
+   * Actualiza el progreso correspondiente al paso anterior
+   */
   const prevStep = () => {
     if (currentStep > 0) {
       const prevStepIndex = currentStep - 1;
@@ -501,7 +532,17 @@ export const MindMapsStepsPage: React.FC = () => {
         >
           {method.titulo}
         </h1>
-        <div className="w-8"></div>
+        {/* Botón "Terminar más tarde" solo visible después de iniciar la sesión */}
+        {sessionData && (
+          <button
+            onClick={() => setShowFinishLaterModal(true)}
+            className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+            aria-label="Terminar más tarde"
+          >
+            <ClockIcon className="w-4 h-4" />
+            Terminar más tarde
+          </button>
+        )}
       </header>
 
       {/* Indicador de progreso */}
@@ -633,6 +674,16 @@ export const MindMapsStepsPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Finish Later Modal */}
+      <FinishLaterModal
+        isOpen={showFinishLaterModal}
+        methodName={method?.titulo || "Mapas Mentales"}
+        onConfirm={() => {
+          setShowFinishLaterModal(false);
+          window.location.href = "/reports";
+        }}
+      />
     </div>
   );
 };
