@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Sidebar } from "../components/ui/Sidebar";
 import { Card } from "../components/ui/Card";
 import { API_BASE_URL, API_ENDPOINTS } from "../utils/constants";
+import { overrideMethodsWithLocalAssets } from "../utils/methodAssets";
 
 interface Benefit {
   id_beneficio: number;
@@ -22,20 +23,20 @@ interface StudyMethod {
 }
 
 
-// ✅ Página que muestra la biblioteca de métodos de estudio
+// Página que muestra la biblioteca de métodos de estudio
 export const StudyMethodsLibraryPage: React.FC = () => {
   const [studyMethods, setStudyMethods] = useState<StudyMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
-  // ✅ Obtener métodos de estudio y sus beneficios desde la API
+  // Obtener métodos de estudio y sus beneficios desde la API
   useEffect(() => {
     const fetchStudyMethods = async () => {
       try {
         setLoading(true);
         setError("");
 
-        // ✅ Obtener token del localStorage para autenticación
+        // Obtener token del localStorage para autenticación
         const token = localStorage.getItem("token");
         if (!token) {
           // ✅ Redirigir al login si no hay token
@@ -43,7 +44,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
           return;
         }
 
-        // ✅ Obtener todos los métodos de estudio con token de autorización
+        // Obtener todos los métodos de estudio con token de autorización
         const methodsResponse = await fetch(`${API_BASE_URL}${API_ENDPOINTS.STUDY_METHODS}`, {
           headers: {
             "Content-Type": "application/json",
@@ -53,7 +54,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
 
         if (!methodsResponse.ok) {
           if (methodsResponse.status === 401) {
-            // ✅ Token expirado o inválido, limpiar datos y redirigir al login
+            // Token expirado o inválido, limpiar datos y redirigir al login
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
             localStorage.removeItem("userData");
@@ -64,9 +65,11 @@ export const StudyMethodsLibraryPage: React.FC = () => {
         }
 
         const apiResponse = await methodsResponse.json();
-        // ✅ Extraer el array de datos de la respuesta de manera robusta
+        // Extraer el array de datos de la respuesta de manera robusta
         const methods: StudyMethod[] = apiResponse?.data || [];
-        setStudyMethods(methods);
+        // Override with local assets for consistent images and colors
+        const methodsWithLocalAssets = overrideMethodsWithLocalAssets(methods);
+        setStudyMethods(methodsWithLocalAssets);
       } catch {
         setError("Error al cargar los métodos de estudio. Por favor, intenta de nuevo.");
       } finally {
@@ -77,15 +80,19 @@ export const StudyMethodsLibraryPage: React.FC = () => {
     fetchStudyMethods();
   }, []);
 
-  // ✅ Manejar navegación a vista paso a paso del método
+  // Manejar navegación a vista paso a paso del método
   const handleViewStepByStep = (method: StudyMethod) => {
     if (method.nombre_metodo.toLowerCase().includes('pomodoro')) {
       window.location.href = `/pomodoro/intro/${method.id_metodo}`;
+    } else if (method.nombre_metodo.toLowerCase().includes('mapa') || method.nombre_metodo.toLowerCase().includes('mentales')) {
+      window.location.href = `/mind-maps/intro/${method.id_metodo}`;
+    } else if (method.nombre_metodo.toLowerCase().includes('repaso') && method.nombre_metodo.toLowerCase().includes('espaciado')) {
+      window.location.href = `/spaced-repetition/intro/${method.id_metodo}`;
     }
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };
 
-  // ✅ Manejar agregar método a sesión de concentración
+  // Manejar agregar método a sesión de concentración
   const handleAddToSession = () => {
     // TODO: Implementar funcionalidad de agregar a sesión
   };

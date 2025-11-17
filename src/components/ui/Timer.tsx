@@ -9,6 +9,7 @@ interface TimerProps {
 export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color = "#ef4444" }) => {
   const [seconds, setSeconds] = useState(initialMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
+  const [hasCompleted, setHasCompleted] = useState(false);
   const intervalRef = useRef<number | null>(null);
 
   // Formatear tiempo como MM:SS
@@ -34,6 +35,7 @@ export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color 
   const resetTimer = () => {
     setIsRunning(false);
     setSeconds(initialMinutes * 60);
+    setHasCompleted(false);
   };
 
   // Efecto para manejar el conteo del temporizador
@@ -43,7 +45,7 @@ export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color 
         setSeconds(prev => {
           if (prev <= 1) {
             setIsRunning(false);
-            onComplete?.();
+            setHasCompleted(true);
             return 0;
           }
           return prev - 1;
@@ -61,7 +63,15 @@ export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color 
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, seconds, onComplete]);
+  }, [isRunning, seconds]);
+
+  // Efecto separado para llamar onComplete después de que el estado se haya actualizado
+  useEffect(() => {
+    if (hasCompleted && onComplete) {
+      onComplete();
+      setHasCompleted(false); // Reset para evitar llamadas múltiples
+    }
+  }, [hasCompleted, onComplete]);
 
   return (
     <div className="flex items-center justify-between">

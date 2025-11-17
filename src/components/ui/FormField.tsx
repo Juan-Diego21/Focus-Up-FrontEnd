@@ -1,4 +1,4 @@
-// ✅ Componente reutilizable para campos de formulario
+// Componente reutilizable para campos de formulario
 import React from 'react';
 
 interface FormFieldProps {

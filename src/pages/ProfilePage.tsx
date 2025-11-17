@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Sidebar } from "../components/ui/Sidebar";
-import { User, MapPin, Users, Clock, Lock, Eye, EyeOff } from "lucide-react";
+import { User, MapPin, Users, Lock, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { Listbox } from "@headlessui/react";
 
 const countries = [
   "Colombia", "México", "Argentina", "Estados Unidos", "Canadá", "España",
@@ -18,7 +19,9 @@ export const ProfilePage: React.FC = () => {
     nombre_usuario: "",
     pais: "",
     genero: "",
-    horario_fav: "",
+    hours: "",
+    minutes: "",
+    period: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -33,14 +36,27 @@ export const ProfilePage: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
 
-  // Load user data on component mount
+  // Cargar datos del usuario al montar el componente
   useEffect(() => {
     if (user) {
+      // Convertir horario_fav de formato HH:MM:SS a componentes separados si existe
+      let hours = "", minutes = "", period = "";
+      if (user.horario_fav) {
+        const [timePart] = user.horario_fav.split(' '); // Remover segundos si existen
+        const [hourStr, minuteStr] = timePart.split(':');
+        const hour = parseInt(hourStr);
+        hours = (hour === 0 ? 12 : hour > 12 ? hour - 12 : hour).toString().padStart(2, '0');
+        minutes = minuteStr;
+        period = hour >= 12 ? "PM" : "AM";
+      }
+
       setFormData({
         nombre_usuario: user.nombre_usuario || "",
         pais: user.pais || "",
         genero: user.genero || "",
-        horario_fav: "", // This would come from user preferences if available
+        hours,
+        minutes,
+        period,
       });
     }
   }, [user]);
@@ -76,11 +92,21 @@ export const ProfilePage: React.FC = () => {
         throw new Error("Usuario no encontrado");
       }
 
+      // Convertir componentes de tiempo a formato HH:MM si están completos
+      let horarioFav: string | null = null;
+      if (formData.hours && formData.minutes && formData.period) {
+        const hours24 = formData.period === "PM" && formData.hours !== "12" ? parseInt(formData.hours) + 12 : formData.period === "AM" && formData.hours === "12" ? 0 : parseInt(formData.hours);
+        horarioFav = `${hours24.toString().padStart(2, '0')}:${formData.minutes.padStart(2, '0')}`;
+      } else if (user?.horario_fav) {
+        // Mantener el horario existente si no se modificó, convirtiendo de HH:MM:SS a HH:MM si es necesario
+        horarioFav = user.horario_fav.includes(':') ? user.horario_fav.split(':').slice(0, 2).join(':') : user.horario_fav;
+      }
+
       const updateData: Record<string, unknown> = {
         nombre_usuario: formData.nombre_usuario,
         pais: formData.pais,
         genero: formData.genero,
-        horario_fav: formData.horario_fav,
+        horario_fav: horarioFav,
       };
 
       // If password change is requested, validate and include it
@@ -155,7 +181,7 @@ export const ProfilePage: React.FC = () => {
 
             {/* Nombre de usuario */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Nombre de usuario
               </label>
               <div className="relative">
@@ -164,7 +190,7 @@ export const ProfilePage: React.FC = () => {
                   type="text"
                   name="nombre_usuario"
                   placeholder="Nombre de usuario"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                   value={formData.nombre_usuario}
                   onChange={handleChange}
                   disabled={loading}
@@ -174,66 +200,211 @@ export const ProfilePage: React.FC = () => {
 
             {/* País */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 País
               </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="pais"
-                  placeholder="País"
-                  list="countries"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={formData.pais}
-                  onChange={handleChange}
-                  disabled={loading}
-                />
-                <datalist id="countries">
-                  {countries.map((country) => (
-                    <option key={country} value={country} />
-                  ))}
-                </datalist>
-              </div>
+              {/* Componente Listbox para selección de país con estilo consistente */}
+              <Listbox value={formData.pais} onChange={(value) => setFormData((prev) => ({ ...prev, pais: value }))} disabled={loading}>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
+                  <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:outline-none focus:border-transparent transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span className="block truncate">
+                      {formData.pais || "Selecciona un país"}
+                    </span>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                  </Listbox.Button>
+                  {/* Lista de opciones para país - se expande hacia abajo */}
+                  <Listbox.Options className="absolute z-20 mt-1 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                    {countries.map((country) => (
+                      <Listbox.Option
+                        key={country}
+                        value={country}
+                        className={({ active }) =>
+                          `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                            active ? 'bg-gray-700 text-white' : 'text-gray-200'
+                          }`
+                        }
+                      >
+                        {({ selected }) => (
+                          <>
+                            <span className={`block ${selected ? 'font-medium' : 'font-normal'}`}>
+                              {country}
+                            </span>
+                          </>
+                        )}
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
+              </Listbox>
             </div>
 
             {/* Género */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Género
               </label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <select
-                  name="genero"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none"
-                  value={formData.genero}
-                  onChange={handleChange}
-                  disabled={loading}
-                >
-                  <option value="">Seleccionar género</option>
-                  {genders.map((gender) => (
-                    <option key={gender} value={gender}>{gender}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Componente Listbox para selección de género con expansión hacia arriba */}
+              <Listbox value={formData.genero} onChange={(value) => setFormData((prev) => ({ ...prev, genero: value }))} disabled={loading}>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
+                  <Listbox.Button className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:outline-none focus:border-transparent transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span className="block truncate">
+                      {formData.genero || "Seleccionar género"}
+                    </span>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                  </Listbox.Button>
+                  {/* Lista de opciones para género - se expande hacia arriba para evitar cortes */}
+                  <Listbox.Options className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-30 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                    {genders.map((gender) => (
+                      <Listbox.Option
+                        key={gender}
+                        value={gender}
+                        className={({ active }) =>
+                          `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                            active ? 'bg-gray-700 text-white' : 'text-gray-200'
+                          }`
+                        }
+                      >
+                        {({ selected }) => (
+                          <>
+                            <span className={`block ${selected ? 'font-medium' : 'font-normal'}`}>
+                              {gender}
+                            </span>
+                          </>
+                        )}
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
+              </Listbox>
             </div>
 
             {/* Horario favorito */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Horario favorito para trabajar
               </label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="time"
-                  name="horario_fav"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={formData.horario_fav}
-                  onChange={handleChange}
-                  disabled={loading}
-                />
+              <div className="grid grid-cols-3 gap-4">
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Horas
+                  </label>
+                  {/* Componente Listbox para selección de horas con expansión hacia arriba */}
+                  <Listbox value={formData.hours} onChange={(value) => setFormData((prev) => ({ ...prev, hours: value }))} disabled={loading}>
+                    <div className="relative">
+                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span className="block truncate">
+                          {formData.hours || "HH"}
+                        </span>
+                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                      </Listbox.Button>
+                      {/* Lista de opciones para horas - se expande hacia arriba para evitar cortes */}
+                      <Listbox.Options className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-30 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
+                          <Listbox.Option
+                            key={hour}
+                            value={hour.toString().padStart(2, '0')}
+                            className={({ active }) =>
+                              `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                                active ? 'bg-gray-700 text-white' : 'text-gray-200'
+                              }`
+                            }
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span className={`block ${selected ? 'font-medium' : 'font-normal'}`}>
+                                  {hour.toString().padStart(2, '0')}
+                                </span>
+                              </>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
+                </div>
+
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Minutos
+                  </label>
+                  {/* Componente Listbox para selección de minutos con expansión hacia arriba */}
+                  <Listbox value={formData.minutes} onChange={(value) => setFormData((prev) => ({ ...prev, minutes: value }))} disabled={loading}>
+                    <div className="relative">
+                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span className="block truncate">
+                          {formData.minutes || "MM"}
+                        </span>
+                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                      </Listbox.Button>
+                      {/* Lista de opciones para minutos - se expande hacia arriba para evitar cortes */}
+                      <Listbox.Options className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-30 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                        {Array.from({ length: 60 }, (_, i) => i).map(minute => (
+                          <Listbox.Option
+                            key={minute}
+                            value={minute.toString().padStart(2, '0')}
+                            className={({ active }) =>
+                              `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                                active ? 'bg-gray-700 text-white' : 'text-gray-200'
+                              }`
+                            }
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span className={`block ${selected ? 'font-medium' : 'font-normal'}`}>
+                                  {minute.toString().padStart(2, '0')}
+                                </span>
+                              </>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
+                </div>
+
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    AM/PM
+                  </label>
+                  {/* Componente Listbox para selección de AM/PM con expansión hacia arriba */}
+                  <Listbox value={formData.period} onChange={(value) => setFormData((prev) => ({ ...prev, period: value }))} disabled={loading}>
+                    <div className="relative">
+                      <Listbox.Button className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-left pr-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span className="block truncate">
+                          {formData.period || "AM/PM"}
+                        </span>
+                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                      </Listbox.Button>
+                      {/* Lista de opciones para AM/PM - se expande hacia arriba para evitar cortes */}
+                      <Listbox.Options className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-30 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                        {[
+                          { value: "AM", label: "AM" },
+                          { value: "PM", label: "PM" }
+                        ].map((period) => (
+                          <Listbox.Option
+                            key={period.value}
+                            value={period.value}
+                            className={({ active }) =>
+                              `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                                active ? 'bg-gray-700 text-white' : 'text-gray-200'
+                              }`
+                            }
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span className={`block ${selected ? 'font-medium' : 'font-normal'}`}>
+                                  {period.label}
+                                </span>
+                              </>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
+                </div>
               </div>
             </div>
 
@@ -253,7 +424,7 @@ export const ProfilePage: React.FC = () => {
 
                   {/* Contraseña actual */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Contraseña actual
                     </label>
                     <div className="relative">
@@ -262,14 +433,14 @@ export const ProfilePage: React.FC = () => {
                         type={showCurrentPassword ? "text" : "password"}
                         name="currentPassword"
                         placeholder="Contraseña actual"
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                         value={passwordData.currentPassword}
                         onChange={handlePasswordChange}
                         disabled={loading}
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                         onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                       >
                         {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -279,7 +450,7 @@ export const ProfilePage: React.FC = () => {
 
                   {/* Nueva contraseña */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Nueva contraseña
                     </label>
                     <div className="relative">
@@ -288,14 +459,14 @@ export const ProfilePage: React.FC = () => {
                         type={showNewPassword ? "text" : "password"}
                         name="newPassword"
                         placeholder="Nueva contraseña"
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                         value={passwordData.newPassword}
                         onChange={handlePasswordChange}
                         disabled={loading}
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                         onClick={() => setShowNewPassword(!showNewPassword)}
                       >
                         {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -305,7 +476,7 @@ export const ProfilePage: React.FC = () => {
 
                   {/* Confirmar nueva contraseña */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Confirmar nueva contraseña
                     </label>
                     <div className="relative">
@@ -314,14 +485,14 @@ export const ProfilePage: React.FC = () => {
                         type={showConfirmPassword ? "text" : "password"}
                         name="confirmPassword"
                         placeholder="Confirmar nueva contraseña"
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                         value={passwordData.confirmPassword}
                         onChange={handlePasswordChange}
                         disabled={loading}
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -355,7 +526,7 @@ export const ProfilePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.location.href = "/dashboard"}
-                className="w-full sm:w-auto px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="w-full sm:w-auto px-6 py-3 ml-20 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 Cancelar
               </button>

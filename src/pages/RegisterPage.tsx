@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from "react";
 import type { RegisterRequest } from "../types/user";
-import { User, Mail, Lock, Calendar, MapPin, Users, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-const countries = [
-  "Colombia", "México", "Argentina", "Estados Unidos", "Canadá", "España",
-  "Brasil", "Chile", "Perú", "Alemania", "Francia", "Italia", "Reino Unido", "Japón"
-];
-
-const genders = [
-  "Masculino", "Femenino", "Otro", "Prefiero no decir"
-];
 
 const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState<RegisterRequest>({
@@ -28,6 +22,9 @@ export const RegisterPage: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [usernameError, setUsernameError] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
+  const [showPasswordHint, setShowPasswordHint] = useState(false);
 
   // Load saved form data on component mount
   useEffect(() => {
@@ -70,6 +67,26 @@ export const RegisterPage: React.FC = () => {
         ...newFormData,
         [name]: value,
       };
+    } else if (name === "correo") {
+      if (!emailRegex.test(value) && value !== "") {
+        setEmailError("Por favor ingresa un correo electrónico válido.");
+      } else {
+        setEmailError("");
+      }
+      newFormData = {
+        ...newFormData,
+        [name]: value,
+      };
+    } else if (name === "password") {
+      if (!passwordRegex.test(value) && value !== "") {
+        setPasswordError("La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial.");
+      } else {
+        setPasswordError("");
+      }
+      newFormData = {
+        ...newFormData,
+        [name]: value,
+      };
     } else {
       newFormData = {
         ...newFormData,
@@ -87,8 +104,14 @@ export const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (usernameError) {
+    // Validación completa del formulario antes de enviar
+    if (usernameError || emailError || passwordError) {
       setError("Corrige los errores en el formulario antes de continuar.");
+      return;
+    }
+
+    if (!formData.nombre_usuario || !formData.correo || !formData.password) {
+      setError("Todos los campos obligatorios deben estar completos.");
       return;
     }
 
@@ -150,7 +173,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Nombre de usuario */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Nombre de usuario <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -159,7 +182,7 @@ export const RegisterPage: React.FC = () => {
                   type="text"
                   name="nombre_usuario"
                   placeholder="Nombre de usuario"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${usernameError ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 ${usernameError ? 'border-red-500' : 'border-gray-300'}`}
                   required
                   value={formData.nombre_usuario}
                   onChange={handleChange}
@@ -173,7 +196,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Email */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correo electrónico <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -182,18 +205,21 @@ export const RegisterPage: React.FC = () => {
                   type="email"
                   name="correo"
                   placeholder="Correo electrónico"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                   required
                   value={formData.correo}
                   onChange={handleChange}
                   disabled={false}
                 />
               </div>
+              {emailError && (
+                <p className="text-red-500 text-sm mt-1">{emailError}</p>
+              )}
             </div>
 
             {/* Contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Contraseña <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -202,25 +228,36 @@ export const RegisterPage: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Contraseña"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                   required
                   value={formData.password}
                   onChange={handleChange}
+                  onFocus={() => setShowPasswordHint(true)}
+                  onBlur={() => setShowPasswordHint(false)}
                   disabled={false}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {/* Sugerencia de contraseña que aparece solo al enfocar el campo */}
+              {showPasswordHint && (
+                <div className="mt-2 text-sm text-gray-500 transition-all duration-200 ease-in-out animate-fade-in">
+                  La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial.
+                </div>
+              )}
+              {passwordError && (
+                <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+              )}
             </div>
 
             {/* Confirmar Contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Confirmar Contraseña <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -228,7 +265,7 @@ export const RegisterPage: React.FC = () => {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirmar Contraseña"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -244,73 +281,6 @@ export const RegisterPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Fecha de nacimiento */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha de nacimiento
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="date"
-                  name="fecha_nacimiento"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={!isNaN(formData.fecha_nacimiento.getTime()) ? formData.fecha_nacimiento.toISOString().split('T')[0] : ""}
-                  onChange={handleChange}
-                  disabled={false}
-                />
-              </div>
-            </div>
-
-            {/* País */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                País
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="pais"
-                  placeholder="País"
-                  list="countries"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={formData.pais}
-                  onChange={handleChange}
-                  disabled={false}
-                />
-                <datalist id="countries">
-                  {countries.map((country) => (
-                    <option key={country} value={country} />
-                  ))}
-                </datalist>
-              </div>
-            </div>
-
-            {/* Género */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Género
-              </label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="genero"
-                  placeholder="Género"
-                  list="genders"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={formData.genero}
-                  onChange={handleChange}
-                  disabled={false}
-                />
-                <datalist id="genders">
-                  {genders.map((gender) => (
-                    <option key={gender} value={gender} />
-                  ))}
-                </datalist>
-              </div>
-            </div>
 
             {/* Botón Siguiente */}
             <button
@@ -342,3 +312,4 @@ export const RegisterPage: React.FC = () => {
   );
 };
 export default RegisterPage;
+

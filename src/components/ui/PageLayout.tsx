@@ -1,4 +1,4 @@
-// ✅ Componente reutilizable para layout de páginas
+// Componente reutilizable para layout de páginas
 import React from 'react';
 
 interface PageLayoutProps {

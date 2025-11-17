@@ -37,7 +37,7 @@ export const ConfirmationPage: React.FC = () => {
           genero: formData.genero || "",
         };
 
-        // ✅ Enviar solicitud de registro con datos básicos
+        // Enviar solicitud de registro con datos básicos
         const { apiClient } = await import("../utils/apiClient");
         const { API_ENDPOINTS } = await import("../utils/constants");
 
@@ -104,8 +104,7 @@ export const ConfirmationPage: React.FC = () => {
           />
 
           <h1 className="text-xl font-semibold text-white mb-8 leading-relaxed">
-            ¡Para mejorar tu experiencia nos gustaría que nos ayudaras llenando
-            la siguiente encuesta!
+            Para ofrecerte una mejor experiencia, nos gustaría conocerte un poco más. Por eso, te invitamos a responder la siguiente encuesta.
           </h1>
 
           {error && (

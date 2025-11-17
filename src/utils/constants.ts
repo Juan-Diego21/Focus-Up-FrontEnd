@@ -3,6 +3,7 @@ export const API_ENDPOINTS = {
   HEALTH: "/health",
   USERS: "/users",
   LOGIN: "/users/login",
+  LOGOUT: "/users/logout",
   PROFILE: "/users/profile",
   DELETE_ACCOUNT: "/users/delete",
   REQUEST_PASSWORD_RESET: "/users/request-password-reset",
@@ -10,4 +11,8 @@ export const API_ENDPOINTS = {
   STUDY_METHODS: "/metodos-estudio",
   BENEFITS: "/beneficios",
   EVENTS: "/eventos",
+  REPORTS: "/reports",
+  ACTIVE_METHODS: "/reports/active-methods",
+  METHOD_PROGRESS: "/reports/methods",
+  SESSION_PROGRESS: "/reports/sessions",
 } as const;

@@ -59,7 +59,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Campo para correo electrónico o nombre de usuario */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correo electrónico o nombre de usuario
               </label>
               <div className="relative">
@@ -68,7 +68,7 @@ export const LoginPage: React.FC = () => {
                   type="text"
                   name="correo"
                   placeholder="Correo electrónico o nombre de usuario"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                   required
                   value={formData.correo}
                   onChange={handleChange}
@@ -79,7 +79,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Campo para contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Contraseña
               </label>
               <div className="relative">
@@ -88,7 +88,7 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Contraseña"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                   required
                   value={formData.password}
                   onChange={handleChange}
@@ -123,7 +123,11 @@ export const LoginPage: React.FC = () => {
             {/* Botón para continuar con Google */}
             <button
               type="button"
-              className="w-full bg-white text-gray-800 py-3 rounded-lg font-medium border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer shadow-md"
+              className="w-full bg-white text-gray-800 py-3 rounded-lg font-medium border border-gray-300 
+                        flex items-center justify-center gap-2 
+                      hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 
+                        transition-all duration-200 cursor-pointer 
+                        shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               <img src="/img/google.png" alt="Logo de Google" className="w-5 h-5" />
               Continuar con Google
@@ -151,3 +155,4 @@ export const LoginPage: React.FC = () => {
   );
 };
 export default LoginPage;
+

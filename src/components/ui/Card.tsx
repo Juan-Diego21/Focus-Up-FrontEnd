@@ -1,4 +1,5 @@
 import React from "react";
+import { LOCAL_METHOD_ASSETS } from "../../utils/methodAssets";
 
 interface Benefit {
   id_beneficio: number;
@@ -24,10 +25,12 @@ interface CardProps {
   onAddToSession: (method: StudyMethod) => void;
 }
 
-// ✅ Componente Card para mostrar métodos de estudio
+// Componente Card para mostrar métodos de estudio
 export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSession }) => {
-  // ✅ Aplicar color dinámico del método o usar azul por defecto
-  const methodColor = method.color_hexa || '#0690cf';
+  // Usar únicamente colores locales del sistema de assets
+  const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
+  const methodColor = localAssets?.color || '#0690cf';
+  const methodImage = localAssets?.image;
 
   return (
     <div
@@ -36,7 +39,7 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
         '--method-color': methodColor,
         boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px ${methodColor}20`,
       } as React.CSSProperties}
-      // ✅ Efectos hover para mejorar la interactividad
+      // Efectos hover para mejorar la interactividad
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px ${methodColor}40, 0 0 20px ${methodColor}10`;
       }}
@@ -47,12 +50,12 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
       {/* Header with image and title */}
       <div className="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3">
         <div className="w-10 h-10 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
-          {method.url_imagen ? (
+          {methodImage ? (
             <img
-              src={method.url_imagen}
+              src={methodImage}
               alt={`Imagen de ${method.nombre_metodo}`}
               className="w-full h-full object-cover"
-              // ✅ Fallback a letra inicial si la imagen falla
+              // Fallback a letra inicial si la imagen falla
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
@@ -110,12 +113,12 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
       <div className="flex gap-3 mt-auto">
         <button
           onClick={() => onViewStepByStep(method)}
-          className="flex-1 px-4 py-2.5 text-white rounded-lg font-semibold focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="flex-1 px-4 py-2.5 text-white rounded-lg font-semibold focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           style={{
             backgroundColor: methodColor,
             boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
           }}
-          // ✅ Efectos hover para el botón principal
+          // Efectos hover para el botón principal
           onMouseEnter={(e) => {
             const darkerColor = methodColor.replace('#', '');
             const r = parseInt(darkerColor.substr(0, 2), 16);

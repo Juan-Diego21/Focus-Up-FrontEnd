@@ -63,12 +63,12 @@ export const ForgotPasswordPage: React.FC = () => {
           />
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <p className="text-gray-700 text-center mb-8 text-lg font-medium">
+            <p className="text-gray-400 text-center mb-8 text-lg font-medium">
               Ingresa el correo electrónico asociado a tu cuenta
             </p>
 
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correo electrónico
               </label>
               <div className="relative">
@@ -76,7 +76,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 <input
                   type="email"
                   placeholder="Correo electrónico"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -92,7 +92,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all duration-200 cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {loading ? "Enviando..." : "Continuar"}
             </button>
