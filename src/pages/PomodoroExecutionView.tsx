@@ -111,7 +111,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
       // Set step based on actual progress from report
       if (progress === 20) {
-        setCurrentStep(0); // Task selection step
+        setCurrentStep(1); // Work phase
         setProgressPercentage(20);
         setCanFinishMethod(false);
       } else if (progress === 60) {
@@ -149,7 +149,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
         // Set step based on actual progress from report
         if (progress === 20) {
-          setCurrentStep(0); // Task selection step
+          setCurrentStep(1); // Work phase
           setProgressPercentage(20);
           setCanFinishMethod(false);
         } else if (progress === 60) {
