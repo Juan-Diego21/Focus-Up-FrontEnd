@@ -81,9 +81,9 @@ export const FinishLaterModal: React.FC<FinishLaterModalProps> = ({
             id="finish-later-description"
             className="text-gray-300 text-sm leading-relaxed mb-6"
           >
-            You can resume the {methodName} method anytime from the{" "}
-            <span className="font-semibold text-blue-400">Reports</span>{" "}
-            section in the side menu.
+            Puedes reanudar el método {methodName} en cualquier momento desde la sección{" "}
+            <span className="font-semibold text-blue-400">Reportes</span>{" "}
+            en el menú lateral.
           </p>
 
           {/* Button */}

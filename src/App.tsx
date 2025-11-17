@@ -23,6 +23,8 @@ import { SpacedRepetitionIntroView } from "./pages/SpacedRepetitionIntroView";
 import { SpacedRepetitionStepsView } from "./pages/SpacedRepetitionStepsView";
 import { ActiveRecallIntroView } from "./pages/ActiveRecallIntroView";
 import { ActiveRecallStepsView } from "./pages/ActiveRecallStepsView";
+import { FeynmanIntroView } from "./pages/FeynmanIntroView";
+import { FeynmanStepsView } from "./pages/FeynmanStepsView";
 import { ReportsPage } from "./pages/ReportsPage";
 
 // Componente principal de la aplicación
@@ -103,6 +105,14 @@ function App() {
 
     if (path.startsWith("/active-recall/steps/")) {
       return renderProtectedPage(ActiveRecallStepsView);
+    }
+
+    if (path.startsWith("/feynman/intro/")) {
+      return renderProtectedPage(FeynmanIntroView);
+    }
+
+    if (path.startsWith("/feynman/steps/")) {
+      return renderProtectedPage(FeynmanStepsView);
     }
 
     // Ruta por defecto (dashboard)

@@ -90,6 +90,8 @@ export const StudyMethodsLibraryPage: React.FC = () => {
       window.location.href = `/spaced-repetition/intro/${method.id_metodo}`;
     } else if (method.nombre_metodo.toLowerCase().includes('práctica') && method.nombre_metodo.toLowerCase().includes('activa')) {
       window.location.href = `/active-recall/intro/${method.id_metodo}`;
+    } else if (method.nombre_metodo.toLowerCase().includes('feynman')) {
+      window.location.href = `/feynman/intro/${method.id_metodo}`;
     }
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };
