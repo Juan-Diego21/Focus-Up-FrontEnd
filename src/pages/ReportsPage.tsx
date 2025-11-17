@@ -21,9 +21,22 @@ import { LOCAL_METHOD_ASSETS } from '../utils/methodAssets';
 import {
   getMindMapsColorByProgress,
   getMindMapsLabelByProgress,
+  getSpacedRepetitionColorByProgress,
+  getSpacedRepetitionLabelByProgress,
   getMethodType,
   isValidProgressForResume
 } from '../utils/methodStatus';
+
+/**
+ * Obtiene el color basado en el progreso para métodos Pomodoro
+ * @param progress - Valor de progreso
+ * @returns Color correspondiente al progreso
+ */
+const getPomodoroColorByProgress = (progress: number): string => {
+  if (progress === 60) return '#3B82F6'; // Azul para fase de descanso
+  if (progress === 100) return '#22C55E'; // Verde para completado
+  return '#FACC15'; // Amarillo para fase de trabajo
+};
 
 const getMethodColor = (methodName: string): string => {
   return LOCAL_METHOD_ASSETS[methodName]?.color || '#6366f1';
@@ -614,9 +627,17 @@ export const ReportsPage: React.FC = () => {
                               style={{
                                 backgroundColor: methodType === 'mindmaps'
                                   ? getMindMapsColorByProgress(method.progreso)
+                                  : methodType === 'spacedrepetition'
+                                  ? getSpacedRepetitionColorByProgress(method.progreso)
+                                  : methodType === 'pomodoro'
+                                  ? getPomodoroColorByProgress(method.progreso)
                                   : (isCompleted ? '#22C55E' : '#FACC15'),
                                 boxShadow: `0 0 10px ${methodType === 'mindmaps'
                                   ? getMindMapsColorByProgress(method.progreso)
+                                  : methodType === 'spacedrepetition'
+                                  ? getSpacedRepetitionColorByProgress(method.progreso)
+                                  : methodType === 'pomodoro'
+                                  ? getPomodoroColorByProgress(method.progreso)
                                   : (isCompleted ? '#22C55E' : '#FACC15')}30`
                               }}
                             >
@@ -657,6 +678,10 @@ export const ReportsPage: React.FC = () => {
                                   width: isCompleted ? '100%' : `${method.progreso || 0}%`,
                                   backgroundColor: getMethodType(method.metodo) === 'mindmaps'
                                     ? getMindMapsColorByProgress(method.progreso)
+                                    : getMethodType(method.metodo) === 'spacedrepetition'
+                                    ? getSpacedRepetitionColorByProgress(method.progreso)
+                                    : getMethodType(method.metodo) === 'pomodoro'
+                                    ? getPomodoroColorByProgress(method.progreso)
                                     : (isCompleted ? '#22C55E' : '#FACC15') // Green for completed, Yellow for in progress
                                 }}
                               />
@@ -668,6 +693,8 @@ export const ReportsPage: React.FC = () => {
                             <span className="text-xs text-gray-400 font-medium">
                               {getMethodType(method.metodo) === 'mindmaps'
                                 ? getMindMapsLabelByProgress(method.progreso)
+                                : getMethodType(method.metodo) === 'spacedrepetition'
+                                ? getSpacedRepetitionLabelByProgress(method.progreso)
                                 : (isCompleted ? 'Terminado' : 'En proceso')}
                             </span>
                           </div>
@@ -721,8 +748,11 @@ export const ReportsPage: React.FC = () => {
                                     if (methodType === 'mindmaps') {
                                       // Pass sessionId and progress in URL
                                       window.location.href = `/mind-maps/steps/${method.metodo?.id}?progreso=${method.progreso}&sessionId=${method.id}`;
+                                    } else if (methodType === 'spacedrepetition') {
+                                      // Pass sessionId and progress in URL for Spaced Repetition
+                                      window.location.href = `/spaced-repetition/steps/${method.metodo?.id}?progreso=${method.progreso}&sessionId=${method.id}`;
                                     } else {
-                                      // Pass sessionId and progress in URL for Pomodoro too
+                                      // Pass sessionId and progress in URL for Pomodoro
                                       window.location.href = `/pomodoro/execute/${method.metodo?.id || 1}?progreso=${method.progreso}&sessionId=${method.id}`;
                                     }
 

@@ -19,6 +19,8 @@ import { PomodoroIntroView } from "./pages/PomodoroIntroView";
 import { PomodoroExecutionView } from "./pages/PomodoroExecutionView";
 import { MindMapsInfoPage } from "./pages/MindMapsInfoPage";
 import { MindMapsStepsPage } from "./pages/MindMapsStepsPage";
+import { SpacedRepetitionIntroView } from "./pages/SpacedRepetitionIntroView";
+import { SpacedRepetitionStepsView } from "./pages/SpacedRepetitionStepsView";
 import { ReportsPage } from "./pages/ReportsPage";
 
 // Componente principal de la aplicación
@@ -83,6 +85,14 @@ function App() {
 
     if (path.startsWith("/mind-maps/steps/")) {
       return renderProtectedPage(MindMapsStepsPage);
+    }
+
+    if (path.startsWith("/spaced-repetition/intro/")) {
+      return renderProtectedPage(SpacedRepetitionIntroView);
+    }
+
+    if (path.startsWith("/spaced-repetition/steps/")) {
+      return renderProtectedPage(SpacedRepetitionStepsView);
     }
 
     // Ruta por defecto (dashboard)

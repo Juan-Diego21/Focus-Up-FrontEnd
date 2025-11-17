@@ -1,5 +1,5 @@
 /**
- * Componente principal para la ejecución del método Mapas Mentales
+ * Componente principal para la ejecución del método Repaso Espaciado
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
@@ -7,11 +7,11 @@ import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
-import { Clock as ClockIcon } from "lucide-react";
+import { Clock as ClockIcon } from 'lucide-react';
 import {
-  getMindMapsColorByProgress,
-  getMindMapsLabelByProgress,
-  getMindMapsStatusByProgress,
+  getSpacedRepetitionColorByProgress,
+  getSpacedRepetitionLabelByProgress,
+  getSpacedRepetitionStatusByProgress,
   isValidProgressForCreation,
   isValidProgressForUpdate,
   isValidProgressForResume
@@ -28,11 +28,11 @@ interface StudyMethod {
 }
 
 /**
- * Componente que maneja la ejecución paso a paso del método Mapas Mentales
- * Permite al usuario navegar entre los 5 pasos del método con progreso visual
+ * Componente que maneja la ejecución paso a paso del método Repaso Espaciado
+ * Permite al usuario completar 4 pasos de revisión espaciada con progreso visual
  */
-export const MindMapsStepsPage: React.FC = () => {
-  // Extraer el ID del método desde la URL para identificar qué método ejecutar
+export const SpacedRepetitionStepsView: React.FC = () => {
+  // Obtener ID del método desde la URL para identificar qué método ejecutar
   const urlParts = window.location.pathname.split('/');
   const id = urlParts[urlParts.length - 1];
 
@@ -43,7 +43,7 @@ export const MindMapsStepsPage: React.FC = () => {
 
   // Estado para almacenar la información del método de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
-  // Estado para controlar el paso actual en el flujo del método (0-4)
+  // Estado para controlar el paso actual en el flujo del método (0-3)
   const [currentStep, setCurrentStep] = useState(0);
   // Estado para el porcentaje de progreso visual (20, 40, 60, 80, 100)
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -70,7 +70,7 @@ export const MindMapsStepsPage: React.FC = () => {
     if (progress === 60) return 2;
     if (progress === 80) return 3;
     if (progress === 100) return 4;
-    // For unexpected values, find closest
+    // Para valores inesperados, encontrar el más cercano
     if (progress < 30) return 0;
     if (progress < 50) return 1;
     if (progress < 70) return 2;
@@ -78,41 +78,34 @@ export const MindMapsStepsPage: React.FC = () => {
     return 4;
   };
 
-  // Pasos del método Mapas Mentales
+  // Pasos del método Repaso Espaciado
   const steps = [
     {
       id: 0,
-      title: "1. Elige un tema central 🗺️",
-      description: "Selecciona el tema principal que quieres estudiar y escríbelo en el centro de tu hoja o lienzo digital.",
-      instruction: "Elige un tema específico y escribe la palabra o frase principal en el centro de tu mapa.",
+      title: "1. Revisión inmediata 📖",
+      description: "Revisa el material justo ahora para establecer el primer rastro de memoria.",
+      instruction: "Toma 10-15 minutos para revisar activamente el material por primera vez.",
       hasTimer: false,
     },
     {
       id: 1,
-      title: "2. Crea ramas principales 🌿",
-      description: "Dibuja líneas desde el centro hacia afuera para las ideas principales relacionadas con el tema.",
-      instruction: "Identifica 3-5 ideas principales y dibuja ramas desde el centro hacia afuera.",
+      title: "2. Después de unas horas ⏰",
+      description: "Revisa el material más tarde hoy para reforzar las conexiones.",
+      instruction: "Espera al menos 2-3 horas antes de esta segunda revisión.",
       hasTimer: false,
     },
     {
       id: 2,
-      title: "3. Añade colores y símbolos 🎨",
-      description: "Utiliza colores, símbolos, dibujos e imágenes para conectar conceptos y hacer el mapa más memorable.",
-      instruction: "Asigna colores diferentes a cada rama y añade símbolos o dibujos relacionados con cada idea.",
+      title: "3. Al día siguiente 📅",
+      description: "Revisa el contenido mañana para fortalecer la codificación a largo plazo.",
+      instruction: "Realiza esta revisión al día siguiente de la primera sesión.",
       hasTimer: false,
     },
     {
       id: 3,
-      title: "4. Revisa y conecta conceptos 🔗",
-      description: "Revisa tu mapa, añade conexiones entre ideas relacionadas y completa cualquier rama faltante.",
-      instruction: "Busca conexiones entre diferentes ramas y añade líneas o flechas para mostrar relaciones.",
-      hasTimer: false,
-    },
-    {
-      id: 4,
-      title: "5. Herramientas digitales 💻",
-      description: "Si prefieres trabajar digitalmente, prueba aplicaciones especializadas en mapas mentales.",
-      instruction: "Considera usar MindMeister, Coggle, Miro o XMind para crear mapas mentales digitales.",
+      title: "4. Revisión final ✅",
+      description: "Realiza la revisión final espaciada para consolidar la información.",
+      instruction: "Esta última revisión asegura la retención a largo plazo del material.",
       hasTimer: false,
     },
   ];
@@ -147,15 +140,16 @@ export const MindMapsStepsPage: React.FC = () => {
         }
 
         const methodData = await response.json();
-        setMethod(methodData);
+        const method = methodData.data || methodData;
+        setMethod(method);
 
-        // After loading method, check for resumption
+        // Después de cargar el método, verificar si hay reanudación
         if (urlSessionId && urlProgress) {
           const progress = parseInt(urlProgress);
 
-          // Validate progress for resume
-          if (!isValidProgressForResume(progress, 'mindmaps')) {
-            console.error('Invalid progress value for resume:', progress);
+          // Validar progreso para reanudar
+          if (!isValidProgressForResume(progress, 'spacedrepetition')) {
+            console.error('Valor de progreso inválido para reanudar:', progress);
             setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para reanudar sesión' });
             return;
           }
@@ -165,18 +159,18 @@ export const MindMapsStepsPage: React.FC = () => {
           setCurrentStep(step);
           setProgressPercentage(progress);
 
-          // Set session data for existing session
+          // Establecer datos de sesión para sesión existente
           setSessionData({
             id: urlSessionId,
             methodId: parseInt(id),
-            id_metodo_realizado: 0, // Will be set when we have the real session
+            id_metodo_realizado: 0, // Se establecerá cuando tengamos la sesión real
             startTime: new Date().toISOString(),
             progress: progress,
-            status: getMindMapsStatusByProgress(progress)
+            status: getSpacedRepetitionStatusByProgress(progress)
           });
 
-          // Show resumption message
-          setAlertQueue({ type: 'resumed', message: `Sesión de ${methodData.titulo || 'Mapas Mentales'} retomada correctamente` });
+          // Mostrar mensaje de reanudación
+          setAlertQueue({ type: 'resumed', message: `Sesión de ${method.titulo || 'Repaso Espaciado'} retomada correctamente` });
         }
       } catch {
         setError("Error al cargar los datos del método");
@@ -190,19 +184,19 @@ export const MindMapsStepsPage: React.FC = () => {
     }
   }, [id, urlSessionId, urlProgress]);
 
-  // Load resume data from localStorage
+  // Cargar datos de reanudación desde localStorage
   useEffect(() => {
     const resumeMethodId = localStorage.getItem('resume-method');
     const resumeProgress = localStorage.getItem('resume-progress');
     const resumeMethodType = localStorage.getItem('resume-method-type');
 
-    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'mindmaps') {
-      // Resuming a specific unfinished Mind Maps method
-      console.log('Resuming Mind Maps method with ID:', resumeMethodId, 'at progress:', resumeProgress);
+    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'spacedrepetition') {
+      // Reanudando un método específico de Repaso Espaciado sin terminar
+      console.log('Reanudando método de Repaso Espaciado con ID:', resumeMethodId, 'en progreso:', resumeProgress);
       const progress = parseInt(resumeProgress || '0');
 
-      // Set step based on actual progress from report
-      // Mind Maps steps: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
+      // Establecer paso basado en progreso actual del reporte
+      // Pasos de Repaso Espaciado: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
       if (progress === 20) {
         setCurrentStep(0);
         setProgressPercentage(20);
@@ -219,8 +213,8 @@ export const MindMapsStepsPage: React.FC = () => {
         setCurrentStep(4);
         setProgressPercentage(100);
       } else {
-        // For any other progress value, find the closest valid step
-        // This prevents invalid progress values
+        // Para cualquier otro valor de progreso, encontrar el paso más cercano
+        // Esto previene valores de progreso inválidos
         if (progress < 30) {
           setCurrentStep(0);
           setProgressPercentage(20);
@@ -239,7 +233,7 @@ export const MindMapsStepsPage: React.FC = () => {
         }
       }
 
-      // Clear the resume flags
+      // Limpiar los flags de reanudación
       localStorage.removeItem('resume-method');
       localStorage.removeItem('resume-progress');
       localStorage.removeItem('resume-method-type');
@@ -247,32 +241,32 @@ export const MindMapsStepsPage: React.FC = () => {
   }, [id]);
 
   /**
-   * Inicia una nueva sesión en el backend para el método Mapas Mentales
+   * Inicia una nueva sesión en el backend para el método Repaso Espaciado
    * Valida el progreso antes de enviar la solicitud y maneja errores
    * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
    */
   const startSession = async () => {
-    // Validate progress for creation
-    if (!isValidProgressForCreation(20, 'mindmaps')) {
-      console.error('Invalid progress value for session creation');
+    // Validar progreso para creación
+    if (!isValidProgressForCreation(20, 'spacedrepetition')) {
+      console.error('Valor de progreso inválido para creación de sesión');
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
       return;
     }
 
     try {
-      console.log('Starting new Mind Maps session with id:', id);
+      console.log('Iniciando nueva sesión de Repaso Espaciado con id:', id);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
         id_metodo: parseInt(id),
         estado: 'En_proceso',
         progreso: 20
       });
-      console.log('Mind Maps session started response:', response.data);
+      console.log('Sesión de Repaso Espaciado iniciada respuesta:', response.data);
       const session = response.data;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
-        console.error('No id_metodo_realizado received from backend');
-        throw new Error('Invalid session response: missing id_metodo_realizado');
+        console.error('No se recibió id_metodo_realizado del backend');
+        throw new Error('Respuesta de sesión inválida: falta id_metodo_realizado');
       }
 
       setSessionData({
@@ -284,18 +278,18 @@ export const MindMapsStepsPage: React.FC = () => {
         status: 'En_proceso'
       });
 
-      // Store the active method ID separately for progress updates
+      // Almacenar el ID del método activo por separado para actualizaciones de progreso
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
-      localStorage.setItem('mindmaps-session', JSON.stringify(session));
+      localStorage.setItem('spaced-repetition-session', JSON.stringify(session));
 
-      // Queue success notification
-      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Mapas Mentales'} iniciada correctamente` });
+      // Poner en cola notificación de éxito
+      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Repaso Espaciado'} iniciada correctamente` });
 
-      // Trigger reports refresh
+      // Activar actualización de reportes
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error starting Mind Maps session:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Mapas Mentales' });
+      console.error('Error al iniciar sesión de Repaso Espaciado:', error);
+      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Repaso Espaciado' });
     }
   };
 
@@ -304,42 +298,42 @@ export const MindMapsStepsPage: React.FC = () => {
    * Valida el progreso antes de enviar y maneja sesiones reanudadas
    */
   const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
-    // Validate progress for update
-    if (!isValidProgressForUpdate(progress, 'mindmaps')) {
-      console.error('Invalid progress value for update:', progress);
+    // Validar progreso para actualización
+    if (!isValidProgressForUpdate(progress, 'spacedrepetition')) {
+      console.error('Valor de progreso inválido para actualización:', progress);
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
       return;
     }
 
-    // For resumed sessions, use the sessionId from URL, otherwise use activeMethodId
+    // Para sesiones reanudadas, usar sessionId de URL, de lo contrario usar activeMethodId
     const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
 
     if (!sessionId) {
-      console.error('No session ID found for progress update');
+      console.error('No se encontró ID de sesión para actualización de progreso');
       return;
     }
 
     try {
-      console.log('Updating Mind Maps progress for session ID:', sessionId, 'progress:', progress, 'status:', status);
+      console.log('Actualizando progreso de Repaso Espaciado para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
       await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
         progreso: progress,
         estado: status
       });
-      console.log('Mind Maps progress updated successfully');
+      console.log('Progreso de Repaso Espaciado actualizado exitosamente');
 
       if (sessionData) {
         setSessionData(prev => prev ? { ...prev, progress, status } : null);
-        localStorage.setItem('mindmaps-session', JSON.stringify({ ...sessionData, progress, status }));
+        localStorage.setItem('spaced-repetition-session', JSON.stringify({ ...sessionData, progress, status }));
       }
 
-      // Trigger reports refresh after successful progress update
+      // Activar actualización de reportes después de actualización exitosa de progreso
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error updating Mind Maps progress:', error);
+      console.error('Error al actualizar progreso de Repaso Espaciado:', error);
     }
   };
 
-  // Handle alert queue for instant notifications
+  // Manejar cola de alertas para notificaciones instantáneas
   useEffect(() => {
     if (alertQueue) {
       const { type, message } = alertQueue;
@@ -386,22 +380,22 @@ export const MindMapsStepsPage: React.FC = () => {
     }
   }, [alertQueue]);
 
-  // Handle leaving without finishing - save progress synchronously
+  // Manejar salida sin terminar - guardar progreso de forma síncrona
   useEffect(() => {
     const handleBeforeUnload = () => {
       const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
       if (sessionId && sessionData && sessionData.status !== 'Terminado') {
-        // Validate progress before sending beacon
-        if (isValidProgressForUpdate(progressPercentage, 'mindmaps')) {
-          // Update progress synchronously before page unload
+        // Validar progreso antes de enviar beacon
+        if (isValidProgressForUpdate(progressPercentage, 'spacedrepetition')) {
+          // Actualizar progreso de forma síncrona antes de salir de la página
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
               progreso: progressPercentage,
-              estado: getMindMapsStatusByProgress(progressPercentage)
+              estado: getSpacedRepetitionStatusByProgress(progressPercentage)
             })
           );
         } else {
-          console.error('Invalid progress value for beforeunload update:', progressPercentage);
+          console.error('Valor de progreso inválido para actualización beforeunload:', progressPercentage);
         }
       }
     };
@@ -411,11 +405,11 @@ export const MindMapsStepsPage: React.FC = () => {
   }, [sessionData, progressPercentage, isResuming, urlSessionId]);
 
   /**
-   * Maneja la navegación al siguiente paso del método
+   * Maneja la finalización de un paso del método
    * Controla la lógica de inicio de sesión y actualización de progreso
    * Solo crea una nueva sesión cuando no se está reanudando una existente
    */
-  const nextStep = () => {
+  const completeStep = () => {
     if (currentStep === 0 && !isResuming) {
       // Crear una nueva sesión solo si no se está reanudando una existente
       startSession();
@@ -424,31 +418,12 @@ export const MindMapsStepsPage: React.FC = () => {
     if (currentStep < steps.length - 1) {
       const nextStepIndex = currentStep + 1;
       setCurrentStep(nextStepIndex);
-      // Use the mapping function for consistent progress values: 20%, 40%, 60%, 80%, 100%
-      const newProgress = (nextStepIndex + 1) * 20; // Step 0 = 20%, Step 1 = 40%, etc.
+      // Usar el mapeo de función para valores de progreso consistentes: 20%, 40%, 60%, 80%, 100%
+      const newProgress = (nextStepIndex + 1) * 20; // Paso 0 = 20%, Paso 1 = 40%, etc.
       setProgressPercentage(newProgress);
 
-      // Update progress with standardized status mapping
-      const status = getMindMapsStatusByProgress(newProgress);
-      updateSessionProgress(newProgress, status);
-    }
-  };
-
-  /**
-   * Maneja la navegación al paso anterior del método
-   * Actualiza el progreso correspondiente al paso anterior
-   */
-  const prevStep = () => {
-    if (currentStep > 0) {
-      const prevStepIndex = currentStep - 1;
-      setCurrentStep(prevStepIndex);
-      // Fixed percentages: 20%, 40%, 60%, 80%, 100%
-      const fixedPercentages = [20, 40, 60, 80, 100];
-      const newProgress = fixedPercentages[prevStepIndex];
-      setProgressPercentage(newProgress);
-
-      // Update progress with standardized status mapping
-      const status = getMindMapsStatusByProgress(newProgress);
+      // Actualizar progreso con mapeo de estado estandarizado
+      const status = getSpacedRepetitionStatusByProgress(newProgress);
       updateSessionProgress(newProgress, status);
     }
   };
@@ -457,16 +432,15 @@ export const MindMapsStepsPage: React.FC = () => {
   const finishMethod = async () => {
     setProgressPercentage(100);
     await updateSessionProgress(100, 'Terminado');
-    localStorage.removeItem('mindmaps-session');
+    localStorage.removeItem('spaced-repetition-session');
     localStorage.removeItem('activeMethodId');
 
-    // Queue completion notification
+    // Poner en cola notificación de finalización
     setAlertQueue({
       type: 'completion',
-      message: `Sesión de ${method?.titulo || 'Mapas Mentales'} guardada`
+      message: `Sesión de ${method?.titulo || 'Método Repaso Espaciado'} guardada`
     });
   };
-
 
   if (loading) {
     return (
@@ -488,7 +462,7 @@ export const MindMapsStepsPage: React.FC = () => {
           <p className="text-gray-400 mb-6">{error}</p>
           <button
             onClick={() => window.location.href = "/study-methods"}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
           >
             Volver a métodos
           </button>
@@ -498,18 +472,17 @@ export const MindMapsStepsPage: React.FC = () => {
   }
 
   // Usar únicamente colores locales del sistema de assets
-  const localAssets = LOCAL_METHOD_ASSETS['Mapas Mentales'];
-  const methodColor = localAssets?.color || "#10b981";
+  const localAssets = LOCAL_METHOD_ASSETS[method.titulo];
+  const methodColor = localAssets?.color || "#7E57C2";
   const currentStepData = steps[currentStep];
-
 
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => window.location.href = `/mind-maps/intro/${id}`}
-          className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform focus:outline-none"
+          onClick={() => window.location.href = `/spaced-repetition/intro/${id}`}
+          className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >
           <svg
@@ -550,8 +523,8 @@ export const MindMapsStepsPage: React.FC = () => {
         <ProgressCircle
           percentage={progressPercentage}
           size={140}
-          getTextByPercentage={getMindMapsLabelByProgress}
-          getColorByPercentage={getMindMapsColorByProgress}
+          getTextByPercentage={getSpacedRepetitionLabelByProgress}
+          getColorByPercentage={getSpacedRepetitionColorByProgress}
         />
         <div className="text-center mt-4">
           <span className="text-gray-400 text-sm">
@@ -581,67 +554,43 @@ export const MindMapsStepsPage: React.FC = () => {
           </div>
 
           {/* Consejos adicionales para algunos pasos */}
-          {currentStep === 2 && (
+          {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
               <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Usa colores para categorizar información. Por ejemplo: azul para conceptos, verde para ejemplos, rojo para ideas importantes.
+                💡 <strong>Tip:</strong> Enfócate en comprender los conceptos principales. No intentes memorizar todo de una vez.
               </p>
             </div>
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
               <p className="text-gray-300 text-sm">
-                💡 <strong>Herramientas recomendadas:</strong> MindMeister, Coggle, Miro, XMind, FreeMind
+                💡 <strong>Recuerda:</strong> El espacio entre revisiones es crucial. Cada repaso espaciado fortalece las conexiones neuronales.
               </p>
             </div>
           )}
         </div>
 
-        {/* Navegación entre pasos */}
-        <div className="flex justify-between items-center">
-          <button
-            onClick={prevStep}
-            disabled={currentStep === 0}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          >
-            ← Anterior
-          </button>
-
-          <div className="flex gap-2">
-            {steps.map((_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  index === currentStep
-                    ? 'bg-current'
-                    : index < currentStep
-                      ? 'bg-gray-500'
-                      : 'bg-gray-700'
-                }`}
-                style={{
-                  backgroundColor: index === currentStep ? methodColor : undefined
-                }}
-              />
-            ))}
-          </div>
-
+        {/* Botones de acción */}
+        <div className="text-center space-y-4">
           {currentStep === steps.length - 1 ? (
+            // Botón para finalizar el método en el último paso
             <button
               onClick={finishMethod}
-              className="px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              className="px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
               style={{
                 backgroundColor: '#22C55E',
                 color: 'white',
                 boxShadow: `0 10px 15px -3px #22C55E30, 0 4px 6px -2px #22C55E20`,
               }}
             >
-              Terminar método
+              Finalizar Método
             </button>
           ) : (
+            // Botón para avanzar al siguiente paso
             <button
-              onClick={nextStep}
-              className="px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              onClick={completeStep}
+              className="px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
               style={{
                 backgroundColor: methodColor,
                 color: 'white',
@@ -659,26 +608,17 @@ export const MindMapsStepsPage: React.FC = () => {
                 e.currentTarget.style.backgroundColor = methodColor;
               }}
             >
-              Siguiente →
+              {/* Cambiar texto del botón según el paso actual */}
+              {currentStep === 0 ? 'Comenzar' : 'Siguiente'}
             </button>
           )}
-        </div>
-
-        {/* Recordatorio final */}
-        <div className="text-center mt-8">
-          <div className="bg-[#232323]/90 p-4 rounded-xl border" style={{ borderColor: `${methodColor}20` }}>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              ✏️ <strong>Recuerda:</strong> Crear el mapa mental manualmente mejora significativamente la retención de información.
-              El proceso de dibujar y organizar ideas fortalece las conexiones neuronales en tu cerebro.
-            </p>
-          </div>
         </div>
       </section>
 
       {/* Finish Later Modal */}
       <FinishLaterModal
         isOpen={showFinishLaterModal}
-        methodName={method?.titulo || "Mapas Mentales"}
+        methodName={method?.titulo || "Repaso Espaciado"}
         onConfirm={() => {
           setShowFinishLaterModal(false);
           window.location.href = "/reports";
@@ -688,4 +628,4 @@ export const MindMapsStepsPage: React.FC = () => {
   );
 };
 
-export default MindMapsStepsPage;
+export default SpacedRepetitionStepsView;

@@ -14,6 +14,9 @@ import {
   UserIcon,
   TrashIcon,
   XMarkIcon,
+  BookOpenIcon,
+  CalendarIcon,
+  MusicalNoteIcon,
 } from "@heroicons/react/24/outline";
 
 interface SidebarProps {
@@ -24,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [focusToolsMenuOpen, setFocusToolsMenuOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -159,13 +163,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
               </div>
             </li>
             <li>
-              <button
-                onClick={() => navigateTo("/preferences")}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-[#ffa200] group cursor-pointer"
-              >
-                <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
-                <span className="font-medium">Preferencias</span>
-              </button>
+              {/* Herramientas de enfoque Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setFocusToolsMenuOpen(!focusToolsMenuOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] group cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
+                    <span className="font-medium text-left hover:text-[#ffa200]">Herramientas de enfoque</span>
+                  </div>
+                  <ChevronDownIcon
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                      focusToolsMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Submenu */}
+                {focusToolsMenuOpen && (
+                  <div className="ml-8 mt-2 space-y-1">
+                    <button
+                      onClick={() => navigateTo("/study-methods")}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer"
+                    >
+                      <BookOpenIcon className="w-4 h-4" />
+                      <span className="text-sm">Métodos de estudio</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer opacity-50"
+                      disabled
+                    >
+                      <MusicalNoteIcon className="w-4 h-4" />
+                      <span className="text-sm">Álbum de música</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer opacity-50"
+                      disabled
+                    >
+                      <CalendarIcon className="w-4 h-4" />
+                      <span className="text-sm">Eventos</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </li>
             <li>
               <button

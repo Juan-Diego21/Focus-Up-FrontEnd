@@ -52,15 +52,15 @@ export const DashboardPage: React.FC = () => {
               {/* Card: Sesiones de Concentración */}
               <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl p-6 flex flex-col h-full border border-[#333]/50 items-center hover:shadow-purple-500/10 hover:border-purple-500/30 transition-all duration-300">
                 <h2 className="text-xl font-semibold text-white mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
-                  Sesión de Concentración
+                  Eventos
                 </h2>
                 <div className="flex-1 flex items-center justify-center mb-4">
                   <span className="text-gray-400 text-base text-center">
-                    No tienes sesiones de concentración programadas
+                    No tienes eventos programados
                   </span>
                 </div>
                 <button className="w-full mt-auto px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-base font-semibold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-purple-500/25 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-center cursor-pointer">
-                  Programar sesión
+                  Programar evento
                 </button>
               </div>
             </div>

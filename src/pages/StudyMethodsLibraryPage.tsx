@@ -86,6 +86,8 @@ export const StudyMethodsLibraryPage: React.FC = () => {
       window.location.href = `/pomodoro/intro/${method.id_metodo}`;
     } else if (method.nombre_metodo.toLowerCase().includes('mapa') || method.nombre_metodo.toLowerCase().includes('mentales')) {
       window.location.href = `/mind-maps/intro/${method.id_metodo}`;
+    } else if (method.nombre_metodo.toLowerCase().includes('repaso') && method.nombre_metodo.toLowerCase().includes('espaciado')) {
+      window.location.href = `/spaced-repetition/intro/${method.id_metodo}`;
     }
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };

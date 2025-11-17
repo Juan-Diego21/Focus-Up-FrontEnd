@@ -110,13 +110,13 @@ export const PomodoroExecutionView: React.FC = () => {
       setIsResuming(true);
 
       // Set step based on actual progress from report
-      if (progress === 0) {
+      if (progress === 20) {
         setCurrentStep(0); // Task selection step
-        setProgressPercentage(0);
+        setProgressPercentage(20);
         setCanFinishMethod(false);
-      } else if (progress === 50) {
+      } else if (progress === 60) {
         setCurrentStep(2); // Break phase
-        setProgressPercentage(50);
+        setProgressPercentage(60);
         setCanFinishMethod(true);
       } else if (progress === 100) {
         setCurrentStep(2); // Completed, show break phase
@@ -148,13 +148,13 @@ export const PomodoroExecutionView: React.FC = () => {
         const progress = parseInt(resumeProgress || '0');
 
         // Set step based on actual progress from report
-        if (progress === 0) {
+        if (progress === 20) {
           setCurrentStep(0); // Task selection step
-          setProgressPercentage(0);
+          setProgressPercentage(20);
           setCanFinishMethod(false);
-        } else if (progress === 50) {
+        } else if (progress === 60) {
           setCurrentStep(2); // Break phase
-          setProgressPercentage(50);
+          setProgressPercentage(60);
           setCanFinishMethod(true);
         } else if (progress === 100) {
           setCurrentStep(2); // Completed, show break phase
@@ -251,7 +251,7 @@ export const PomodoroExecutionView: React.FC = () => {
    */
   const startSession = async () => {
     // Validate progress for creation
-    if (!isValidProgressForCreation(0, 'pomodoro')) {
+    if (!isValidProgressForCreation(20, 'pomodoro')) {
       console.error('Invalid progress value for session creation');
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
       return;
@@ -262,7 +262,7 @@ export const PomodoroExecutionView: React.FC = () => {
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
         id_metodo: parseInt(id),
         estado: 'en_progreso',
-        progreso: 0
+        progreso: 20
       });
       console.log('Pomodoro session started response:', response.data);
       const session = response.data;
@@ -278,13 +278,16 @@ export const PomodoroExecutionView: React.FC = () => {
         methodId: parseInt(id),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
-        progress: 0,
+        progress: 20,
         status: 'en_progreso'
       });
 
       // Store the active method ID separately for progress updates
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
       localStorage.setItem('pomodoro-session', JSON.stringify(session));
+
+      // Update visual progress to match session creation
+      setProgressPercentage(20);
 
       // Queue success notification
       setAlertQueue({ type: 'started', message: 'Sesión de Pomodoro iniciada correctamente' });
@@ -353,29 +356,30 @@ export const PomodoroExecutionView: React.FC = () => {
   /**
    * Maneja la navegación al siguiente paso del método
    * Controla la lógica de inicio de sesión y actualización de progreso
-   * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
+   * Solo crea una nueva sesión cuando no se está reanudando una existente
    */
   const nextStep = () => {
     if (!timerCompleted && currentStep > 0) return; // No permitir avanzar si el timer no completó
 
-    if (currentStep === 0) {
-      // Always create a new session from step-by-step execution flow
+    if (currentStep === 0 && !isResuming) {
+      // Crear una nueva sesión solo si no se está reanudando una existente
       setCurrentStep(1);
       setTimerCompleted(false);
       startSession();
     } else if (currentStep === 1) {
-      // De trabajar a descanso - update progress to 50%
+      // De trabajar a descanso - update progress to 60%
       setCurrentStep(2);
       setTimerCompleted(false);
-      setProgressPercentage(50);
-      updateSessionProgress(50);
+      setProgressPercentage(60);
+      updateSessionProgress(60);
     } else if (currentStep === 2) {
-      // De descanso a trabajar - allow infinite cycles, keep progress at 50%
+      // De descanso a trabajar - update progress to 60%
       setCurrentStep(1);
       setTimerCompleted(false);
+      setProgressPercentage(60);
+      updateSessionProgress(60);
       // Enable finish button after first complete cycle (work + break)
       setCanFinishMethod(true);
-      // Progress stays at 50% until user manually finishes
     }
   };
 
@@ -385,8 +389,8 @@ export const PomodoroExecutionView: React.FC = () => {
       // Skip work, go to break
       setCurrentStep(2);
       setTimerCompleted(false);
-      setProgressPercentage(50);
-      updateSessionProgress(50);
+      setProgressPercentage(20);
+      updateSessionProgress(20);
     } else if (currentStep === 2) {
       // Skip break, go back to work
       setCurrentStep(1);
@@ -421,7 +425,7 @@ export const PomodoroExecutionView: React.FC = () => {
           title: message,
           showConfirmButton: false,
           timer: 3000,
-          background: '#22C55E20', // Green-tinted background for success
+          background: '#232323',
           color: '#ffffff',
           iconColor: '#22C55E',
         });
@@ -432,7 +436,7 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#EF4444',
-          background: '#EF444420', // Red-tinted background for error
+          background: '#232323',
           color: '#ffffff',
           iconColor: '#EF4444',
         });
@@ -443,7 +447,7 @@ export const PomodoroExecutionView: React.FC = () => {
           icon: 'success',
           confirmButtonText: 'OK',
           confirmButtonColor: '#22C55E',
-          background: '#22C55E20', // Green-tinted background for completion
+          background: '#232323',
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
@@ -511,6 +515,14 @@ export const PomodoroExecutionView: React.FC = () => {
   const methodColor = method.color_hexa || "#ef4444";
   const currentStepData = steps[currentStep];
 
+  // Custom color function for Pomodoro: blue at 60%, green at 100%
+  const getPomodoroColorByPercentage = (pct: number): string => {
+    if (pct === 0) return "#9CA3AF"; // Gray for not started
+    if (pct === 60) return "#3B82F6"; // Blue for break phase
+    if (pct === 100) return "#22C55E"; // Green for completed
+    return "#FACC15"; // Yellow for work phase (20%)
+  };
+
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
       {/* Header */}
@@ -540,8 +552,8 @@ export const PomodoroExecutionView: React.FC = () => {
         >
           {method.titulo}
         </h1>
-        {/* Botón "Terminar más tarde" solo visible después de iniciar la sesión */}
-        {sessionData && (
+        {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) */}
+        {sessionData && currentStep >= 2 && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
@@ -558,6 +570,7 @@ export const PomodoroExecutionView: React.FC = () => {
         <ProgressCircle
           percentage={progressPercentage}
           size={140}
+          getColorByPercentage={getPomodoroColorByPercentage}
         />
       </section>
 
@@ -584,6 +597,25 @@ export const PomodoroExecutionView: React.FC = () => {
             <p className="text-gray-400 text-sm italic">{currentStepData.instruction}</p>
           </div>
 
+          {/* Consejos adicionales para algunos pasos */}
+          {currentStep === 0 && (
+            <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
+              <p className="text-gray-300 text-sm">
+                💡 <strong>Tip:</strong> Elige una tarea específica y medible. En lugar de "estudiar matemáticas",
+                opta por "resolver 10 ejercicios de álgebra lineal".
+              </p>
+            </div>
+          )}
+
+          {currentStep === 1 && (
+            <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
+              <p className="text-gray-300 text-sm">
+                💡 <strong>Recuerda:</strong> Durante el tiempo de trabajo, evita distracciones como redes sociales,
+                notificaciones y conversaciones. Tu foco debe ser total.
+              </p>
+            </div>
+          )}
+
           {/* Temporizador si aplica */}
           {currentStepData.hasTimer && (
             <Timer
@@ -605,6 +637,17 @@ export const PomodoroExecutionView: React.FC = () => {
                 color: 'white',
                 boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
               }}
+              onMouseEnter={(e) => {
+                const darkerColor = methodColor.replace('#', '');
+                const r = parseInt(darkerColor.substr(0, 2), 16);
+                const g = parseInt(darkerColor.substr(2, 2), 16);
+                const b = parseInt(darkerColor.substr(4, 2), 16);
+                const darker = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
+                e.currentTarget.style.backgroundColor = darker;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = methodColor;
+              }}
             >
               Comenzar trabajo
             </button>
@@ -614,7 +657,7 @@ export const PomodoroExecutionView: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-3">
               <button
                 onClick={skipStep}
-                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl whitespace-nowrap"
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl whitespace-nowrap"
                 style={{
                   backgroundColor: '#9CA3AF',
                   boxShadow: `0 10px 15px -3px #9CA3AF30, 0 4px 6px -2px #9CA3AF20`,
@@ -626,7 +669,7 @@ export const PomodoroExecutionView: React.FC = () => {
               <button
                 onClick={nextStep}
                 disabled={!timerCompleted}
-                className="flex flex-row items-center justify-center space-x-2 px-6 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex flex-row items-center justify-center space-x-2 px-6 py-2 rounded-xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 style={{
                   backgroundColor: timerCompleted ? '#22C55E' : '#6B7280',
                   boxShadow: timerCompleted ? `0 10px 15px -3px #22C55E30, 0 4px 6px -2px #22C55E20` : 'none',
@@ -637,13 +680,13 @@ export const PomodoroExecutionView: React.FC = () => {
               <button
                 onClick={finishMethod}
                 disabled={!canFinishMethod}
-                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 style={{
                   backgroundColor: canFinishMethod ? '#EF4444' : '#6B7280',
                   boxShadow: canFinishMethod ? `0 10px 15px -3px #EF444430, 0 4px 6px -2px #EF444420` : 'none',
                 }}
               >
-                <CheckCircle className="w-5 h-5" style={{ color: canFinishMethod ? '#22C55E' : '#6B7280' }} />
+                <CheckCircle className="w-5 h-5" style={{ color: 'white' }} />
                 <span>Finalizar Método</span>
               </button>
             </div>
@@ -653,7 +696,7 @@ export const PomodoroExecutionView: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-3">
               <button
                 onClick={skipStep}
-                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl whitespace-nowrap"
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl whitespace-nowrap"
                 style={{
                   backgroundColor: '#9CA3AF',
                   boxShadow: `0 10px 15px -3px #9CA3AF30, 0 4px 6px -2px #9CA3AF20`,
@@ -665,7 +708,7 @@ export const PomodoroExecutionView: React.FC = () => {
               <button
                 onClick={nextStep}
                 disabled={!timerCompleted}
-                className="flex flex-row items-center justify-center space-x-2 px-6 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex flex-row items-center justify-center space-x-2 px-6 py-2 rounded-xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 style={{
                   backgroundColor: timerCompleted ? '#22C55E' : '#6B7280',
                   boxShadow: timerCompleted ? `0 10px 15px -3px #22C55E30, 0 4px 6px -2px #22C55E20` : 'none',
@@ -676,7 +719,7 @@ export const PomodoroExecutionView: React.FC = () => {
               <button
                 onClick={finishMethod}
                 disabled={!canFinishMethod}
-                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-2xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex flex-row items-center justify-center space-x-2 px-4 py-2 rounded-xl text-white font-semibold text-base transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 style={{
                   backgroundColor: canFinishMethod ? '#EF4444' : '#6B7280',
                   boxShadow: canFinishMethod ? `0 10px 15px -3px #EF444430, 0 4px 6px -2px #EF444420` : 'none',
