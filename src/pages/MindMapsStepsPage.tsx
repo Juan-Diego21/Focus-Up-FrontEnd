@@ -679,7 +679,11 @@ export const MindMapsStepsPage: React.FC = () => {
       <FinishLaterModal
         isOpen={showFinishLaterModal}
         methodName={method?.titulo || "Mapas Mentales"}
-        onConfirm={() => {
+        onConfirm={async () => {
+          // Save current progress before redirecting
+          if (sessionData) {
+            await updateSessionProgress(progressPercentage, getMindMapsStatusByProgress(progressPercentage));
+          }
           setShowFinishLaterModal(false);
           window.location.href = "/reports";
         }}

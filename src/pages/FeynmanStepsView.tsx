@@ -677,7 +677,11 @@ export const FeynmanStepsView: React.FC = () => {
       <FinishLaterModal
         isOpen={showFinishLaterModal}
         methodName={method?.titulo || "Método Feynman"}
-        onConfirm={() => {
+        onConfirm={async () => {
+          // Save current progress before redirecting
+          if (sessionData) {
+            await updateSessionProgress(progressPercentage, getFeynmanStatusByProgress(progressPercentage));
+          }
           setShowFinishLaterModal(false);
           window.location.href = "/reports";
         }}

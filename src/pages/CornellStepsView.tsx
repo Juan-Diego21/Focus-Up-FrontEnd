@@ -1,18 +1,17 @@
 /**
- * Componente principal para la ejecución del método Práctica Activa
+ * Componente principal para la ejecución del método Cornell
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
-import { Timer } from "../components/ui/Timer";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
-import { Clock as ClockIcon, Settings } from 'lucide-react';
+import { Clock as ClockIcon } from 'lucide-react';
 import {
-  getActiveRecallColorByProgress,
-  getActiveRecallLabelByProgress,
-  getActiveRecallStatusByProgress,
+  getCornellColorByProgress,
+  getCornellLabelByProgress,
+  getCornellStatusByProgress,
   isValidProgressForCreation,
   isValidProgressForUpdate,
   isValidProgressForResume
@@ -28,17 +27,11 @@ interface StudyMethod {
   color_hexa?: string;
 }
 
-interface ActiveRecallConfig {
-  step1Time: number;
-  step3Time: number;
-  step4Time: number;
-}
-
 /**
- * Componente que maneja la ejecución paso a paso del método Práctica Activa
- * Permite al usuario completar 4 pasos de práctica activa con progreso visual
+ * Componente que maneja la ejecución paso a paso del método Cornell
+ * Permite al usuario completar 4 pasos del método de notas estructuradas con progreso visual
  */
-export const ActiveRecallStepsView: React.FC = () => {
+export const CornellStepsView: React.FC = () => {
   // Obtener ID del método desde la URL para identificar qué método ejecutar
   const urlParts = window.location.pathname.split('/');
   const id = urlParts[urlParts.length - 1];
@@ -60,20 +53,12 @@ export const ActiveRecallStepsView: React.FC = () => {
   const [error, setError] = useState<string>("");
   // Estado para datos de la sesión activa en el backend
   const [sessionData, setSessionData] = useState<{ id: string; methodId: number; id_metodo_realizado: number; startTime: string; progress: number; status: string } | null>(null);
-  // Estado para configuración personalizada del usuario (tiempos de los pasos con temporizador)
-  const [config, setConfig] = useState<ActiveRecallConfig>({ step1Time: 5, step3Time: 10, step4Time: 15 });
-  // Estado para saber si el temporizador actual ha completado su ciclo
-  const [timerCompleted, setTimerCompleted] = useState(false);
   // Estado para cola de notificaciones/alertas que se muestran al usuario
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
   // Estado para saber si se está reanudando una sesión existente
   const [isResuming, setIsResuming] = useState(false);
   // Estado para controlar la visibilidad del modal "Terminar más tarde"
   const [showFinishLaterModal, setShowFinishLaterModal] = useState(false);
-  // Estado para controlar la visibilidad del modal de configuración del temporizador
-  const [showTimerConfigModal, setShowTimerConfigModal] = useState(false);
-  // Estado temporal para configuración del modal
-  const [tempConfig, setTempConfig] = useState<ActiveRecallConfig>({ step1Time: 5, step3Time: 10, step4Time: 15 });
 
   /**
    * Función pura que convierte el porcentaje de progreso al número de paso correspondiente
@@ -93,53 +78,37 @@ export const ActiveRecallStepsView: React.FC = () => {
     return 4;
   };
 
-  // Pasos del método Práctica Activa
+  // Pasos del método Cornell
   const steps = [
     {
       id: 0,
-      title: "1. Intento inicial de recuerdo",
-      description: "Intenta recuperar conceptos sin mirar tus notas.",
-      instruction: "Toma 5-10 minutos para recordar tanta información como sea posible sin referirte a tus notas.",
-      hasTimer: true,
-      timerMinutes: config.step1Time,
+      title: "1. Tomar notas",
+      description: "Divide tu página en secciones y toma notas detalladas del material.",
+      instruction: "Dibuja líneas para dividir tu página: área principal (derecha), columna de palabras clave (izquierda), y sección de resumen (abajo). Toma notas detalladas en el área principal.",
+      hasTimer: false,
     },
     {
       id: 1,
-      title: "2. Comparar con notas",
-      description: "Compara tu recuerdo con las notas. Identifica errores o puntos faltantes.",
-      instruction: "Revisa tus notas y compáralas con lo que recordaste. Nota cualquier brecha o inexactitud.",
+      title: "2. Palabras clave",
+      description: "Identifica las ideas principales y palabras clave más importantes.",
+      instruction: "Revisa tus notas y escribe en la columna izquierda las palabras clave, preguntas o conceptos principales que capturen la esencia de cada sección.",
       hasTimer: false,
     },
     {
       id: 2,
-      title: "3. Segunda sesión de recuerdo",
-      description: "Intenta un segundo recuerdo, idealmente verbalizando o resumiendo.",
-      instruction: "Intenta recordar la información nuevamente, esta vez verbalizando o resumiendo los conceptos.",
-      hasTimer: true,
-      timerMinutes: config.step3Time,
+      title: "3. Resumen",
+      description: "Redacta un resumen breve que capture los puntos más importantes.",
+      instruction: "En la sección inferior, escribe un resumen de 3-5 frases que condense la información más importante de tus notas.",
+      hasTimer: false,
     },
     {
       id: 3,
-      title: "4. Sesión final de recuerdo",
-      description: "Sesión final de recuerdo para confirmar la retención a largo plazo.",
-      instruction: "Realiza un intento final de recuerdo para reforzar la información en tu memoria a largo plazo.",
-      hasTimer: true,
-      timerMinutes: config.step4Time,
+      title: "4. Revisión",
+      description: "Usa las palabras clave para revisar y reforzar el aprendizaje.",
+      instruction: "Cubre tus notas principales y usa solo las palabras clave para recordar la información. Haz preguntas basadas en las palabras clave para probar tu comprensión.",
+      hasTimer: false,
     },
   ];
-
-  // Cargar configuración desde localStorage
-  useEffect(() => {
-    const savedConfig = localStorage.getItem('active-recall-config');
-    if (savedConfig) {
-      try {
-        const parsedConfig = JSON.parse(savedConfig);
-        setConfig(parsedConfig);
-      } catch (e) {
-        console.error('Error parsing saved config:', e);
-      }
-    }
-  }, []);
 
   // Obtener datos del método de estudio desde la API
   useEffect(() => {
@@ -179,7 +148,7 @@ export const ActiveRecallStepsView: React.FC = () => {
           const progress = parseInt(urlProgress);
 
           // Validar progreso para reanudar
-          if (!isValidProgressForResume(progress, 'activerecall')) {
+          if (!isValidProgressForResume(progress, 'cornell')) {
             console.error('Valor de progreso inválido para reanudar:', progress);
             setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para reanudar sesión' });
             return;
@@ -197,11 +166,11 @@ export const ActiveRecallStepsView: React.FC = () => {
             id_metodo_realizado: 0, // Se establecerá cuando tengamos la sesión real
             startTime: new Date().toISOString(),
             progress: progress,
-            status: getActiveRecallStatusByProgress(progress)
+            status: getCornellStatusByProgress(progress)
           });
 
           // Mostrar mensaje de reanudación
-          setAlertQueue({ type: 'resumed', message: `Sesión de ${method.titulo || 'Práctica Activa'} retomada correctamente` });
+          setAlertQueue({ type: 'resumed', message: `Sesión de ${method.titulo || 'Método Cornell'} retomada correctamente` });
         }
       } catch {
         setError("Error al cargar los datos del método");
@@ -221,13 +190,13 @@ export const ActiveRecallStepsView: React.FC = () => {
     const resumeProgress = localStorage.getItem('resume-progress');
     const resumeMethodType = localStorage.getItem('resume-method-type');
 
-    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'activerecall') {
-      // Reanudando un método específico de Práctica Activa sin terminar
-      console.log('Reanudando método de Práctica Activa con ID:', resumeMethodId, 'en progreso:', resumeProgress);
+    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'cornell') {
+      // Reanudando un método específico del Método Cornell sin terminar
+      console.log('Reanudando método de Cornell con ID:', resumeMethodId, 'en progreso:', resumeProgress);
       const progress = parseInt(resumeProgress || '0');
 
       // Establecer paso basado en progreso actual del reporte
-      // Pasos de Práctica Activa: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
+      // Pasos de Cornell: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
       if (progress === 20) {
         setCurrentStep(0);
         setProgressPercentage(20);
@@ -272,26 +241,26 @@ export const ActiveRecallStepsView: React.FC = () => {
   }, [id]);
 
   /**
-   * Inicia una nueva sesión en el backend para el método Práctica Activa
+   * Inicia una nueva sesión en el backend para el método Cornell
    * Valida el progreso antes de enviar la solicitud y maneja errores
    * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
    */
   const startSession = async () => {
     // Validar progreso para creación
-    if (!isValidProgressForCreation(20, 'activerecall')) {
+    if (!isValidProgressForCreation(20, 'cornell')) {
       console.error('Valor de progreso inválido para creación de sesión');
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
       return;
     }
 
     try {
-      console.log('Iniciando nueva sesión de Práctica Activa con id:', id);
+      console.log('Iniciando nueva sesión del Método Cornell con id:', id);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
         id_metodo: parseInt(id),
         estado: 'En_proceso',
         progreso: 20
       });
-      console.log('Sesión de Práctica Activa iniciada respuesta:', response.data);
+      console.log('Sesión del Método Cornell iniciada respuesta:', response.data);
       const session = response.data;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
@@ -311,16 +280,16 @@ export const ActiveRecallStepsView: React.FC = () => {
 
       // Almacenar el ID del método activo por separado para actualizaciones de progreso
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
-      localStorage.setItem('active-recall-session', JSON.stringify(session));
+      localStorage.setItem('cornell-session', JSON.stringify(session));
 
       // Poner en cola notificación de éxito
-      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Práctica Activa'} iniciada correctamente` });
+      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Método Cornell'} iniciada correctamente` });
 
       // Activar actualización de reportes
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error al iniciar sesión de Práctica Activa:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Práctica Activa' });
+      console.error('Error al iniciar sesión del Método Cornell:', error);
+      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión del Método Cornell' });
     }
   };
 
@@ -330,7 +299,7 @@ export const ActiveRecallStepsView: React.FC = () => {
    */
   const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
     // Validar progreso para actualización
-    if (!isValidProgressForUpdate(progress, 'activerecall')) {
+    if (!isValidProgressForUpdate(progress, 'cornell')) {
       console.error('Valor de progreso inválido para actualización:', progress);
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
       return;
@@ -345,28 +314,23 @@ export const ActiveRecallStepsView: React.FC = () => {
     }
 
     try {
-      console.log('Actualizando progreso de Práctica Activa para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
+      console.log('Actualizando progreso del Método Cornell para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
       await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
         progreso: progress,
         estado: status
       });
-      console.log('Progreso de Práctica Activa actualizado exitosamente');
+      console.log('Progreso del Método Cornell actualizado exitosamente');
 
       if (sessionData) {
         setSessionData(prev => prev ? { ...prev, progress, status } : null);
-        localStorage.setItem('active-recall-session', JSON.stringify({ ...sessionData, progress, status }));
+        localStorage.setItem('cornell-session', JSON.stringify({ ...sessionData, progress, status }));
       }
 
       // Activar actualización de reportes después de actualización exitosa de progreso
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error al actualizar progreso de Práctica Activa:', error);
+      console.error('Error al actualizar progreso del Método Cornell:', error);
     }
-  };
-
-  // Manejar completación del temporizador
-  const handleTimerComplete = () => {
-    setTimerCompleted(true);
   };
 
   // Manejar cola de alertas para notificaciones instantáneas
@@ -422,12 +386,12 @@ export const ActiveRecallStepsView: React.FC = () => {
       const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
       if (sessionId && sessionData && sessionData.status !== 'Terminado') {
         // Validar progreso antes de enviar beacon
-        if (isValidProgressForUpdate(progressPercentage, 'activerecall')) {
+        if (isValidProgressForUpdate(progressPercentage, 'cornell')) {
           // Actualizar progreso de forma síncrona antes de salir de la página
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
               progreso: progressPercentage,
-              estado: getActiveRecallStatusByProgress(progressPercentage)
+              estado: getCornellStatusByProgress(progressPercentage)
             })
           );
         } else {
@@ -441,12 +405,11 @@ export const ActiveRecallStepsView: React.FC = () => {
   }, [sessionData, progressPercentage, isResuming, urlSessionId]);
 
   /**
-   * Maneja la finalización de un paso del método
+   * Maneja la navegación al siguiente paso del método
    * Controla la lógica de inicio de sesión y actualización de progreso
    * Solo crea una nueva sesión cuando no se está reanudando una existente
-   * Permite avanzar independientemente del estado del temporizador (como en Pomodoro)
    */
-  const completeStep = async () => {
+  const nextStep = async () => {
     if (currentStep === 0 && !isResuming && !sessionData) {
       // Crear una nueva sesión solo si no se está reanudando una existente y no hay sesión activa
       await startSession();
@@ -455,13 +418,31 @@ export const ActiveRecallStepsView: React.FC = () => {
     if (currentStep < steps.length - 1) {
       const nextStepIndex = currentStep + 1;
       setCurrentStep(nextStepIndex);
-      setTimerCompleted(false); // Reset timer completion for next step
       // Usar el mapeo de función para valores de progreso consistentes: 20%, 40%, 60%, 80%, 100%
       const newProgress = (nextStepIndex + 1) * 20; // Paso 0 = 20%, Paso 1 = 40%, etc.
       setProgressPercentage(newProgress);
 
       // Actualizar progreso con mapeo de estado estandarizado
-      const status = getActiveRecallStatusByProgress(newProgress);
+      const status = getCornellStatusByProgress(newProgress);
+      updateSessionProgress(newProgress, status);
+    }
+  };
+
+  /**
+   * Maneja la navegación al paso anterior del método
+   * Actualiza el progreso correspondiente al paso anterior
+   */
+  const prevStep = () => {
+    if (currentStep > 0) {
+      const prevStepIndex = currentStep - 1;
+      setCurrentStep(prevStepIndex);
+      // Fixed percentages: 20%, 40%, 60%, 80%, 100%
+      const fixedPercentages = [20, 40, 60, 80, 100];
+      const newProgress = fixedPercentages[prevStepIndex];
+      setProgressPercentage(newProgress);
+
+      // Update progress with standardized status mapping
+      const status = getCornellStatusByProgress(newProgress);
       updateSessionProgress(newProgress, status);
     }
   };
@@ -470,13 +451,13 @@ export const ActiveRecallStepsView: React.FC = () => {
   const finishMethod = async () => {
     setProgressPercentage(100);
     await updateSessionProgress(100, 'Terminado');
-    localStorage.removeItem('active-recall-session');
+    localStorage.removeItem('cornell-session');
     localStorage.removeItem('activeMethodId');
 
-    // Poner en cola notificación de finalización
+    // Queue completion notification
     setAlertQueue({
       type: 'completion',
-      message: `Sesión de ${method?.titulo || 'Método Práctica Activa'} guardada`
+      message: `Sesión de ${method?.titulo || 'Método Cornell'} guardada`
     });
   };
 
@@ -511,7 +492,7 @@ export const ActiveRecallStepsView: React.FC = () => {
 
   // Usar únicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.titulo];
-  const methodColor = localAssets?.color || "#43A047";
+  const methodColor = localAssets?.color || "#3B82F6";
   const currentStepData = steps[currentStep];
 
   return (
@@ -519,7 +500,7 @@ export const ActiveRecallStepsView: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => window.location.href = `/active-recall/intro/${id}`}
+          onClick={() => window.location.href = `/cornell/intro/${id}`}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >
@@ -544,7 +525,7 @@ export const ActiveRecallStepsView: React.FC = () => {
           {method.titulo}
         </h1>
         {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) */}
-        {sessionData && currentStep >= 2 && (
+        {sessionData && currentStep >= 1 && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
@@ -561,8 +542,8 @@ export const ActiveRecallStepsView: React.FC = () => {
         <ProgressCircle
           percentage={progressPercentage}
           size={140}
-          getTextByPercentage={getActiveRecallLabelByProgress}
-          getColorByPercentage={getActiveRecallColorByProgress}
+          getTextByPercentage={getCornellLabelByProgress}
+          getColorByPercentage={getCornellColorByProgress}
         />
         <div className="text-center mt-4">
           <span className="text-gray-400 text-sm">
@@ -586,26 +567,16 @@ export const ActiveRecallStepsView: React.FC = () => {
           </h2>
           <p className="text-gray-300 mb-3">{currentStepData.description}</p>
 
-
           {/* Instrucción específica */}
           <div className="bg-[#1a1a1a]/50 p-3 rounded-lg mb-4">
             <p className="text-gray-400 text-sm italic">{currentStepData.instruction}</p>
           </div>
 
-          {/* Mensaje adicional para pasos 3 y 4 con temporizador */}
-          {(currentStep === 2 || currentStep === 3) && (
-            <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                ⏱️ <strong>Nota:</strong> El temporizador puede usarse como tiempo de memorización dedicado.
-              </p>
-            </div>
-          )}
-
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
               <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Evita mirar tus notas durante los intentos de recuerdo.
+                💡 <strong>Tip:</strong> Reserva aproximadamente 1/3 de la página para palabras clave y 1/4 para el resumen.
               </p>
             </div>
           )}
@@ -613,7 +584,7 @@ export const ActiveRecallStepsView: React.FC = () => {
           {currentStep === 1 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
               <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> Explica conceptos verbalmente para reforzar la retención.
+                💡 <strong>Recuerda:</strong> Las palabras clave deben ser preguntas o conceptos que te permitan recordar la información principal.
               </p>
             </div>
           )}
@@ -621,33 +592,16 @@ export const ActiveRecallStepsView: React.FC = () => {
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
               <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Repite el recuerdo incluso si te sientes confiado.
+                💡 <strong>Tip:</strong> El resumen debe ser conciso pero completo. Escribe como si explicaras el tema a alguien más.
               </p>
             </div>
           )}
 
-          {/* Temporizador si aplica */}
-          {currentStepData.hasTimer && (
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-white text-sm font-medium">Temporizador de estudio</h4>
-                <button
-                  onClick={() => {
-                    setTempConfig(config); // Inicializar configuración temporal
-                    setShowTimerConfigModal(true);
-                  }}
-                  className="p-1.5 rounded-md hover:bg-gray-700 transition-colors duration-200"
-                  aria-label="Configurar temporizador"
-                >
-                  <Settings className="w-4 h-4 text-gray-400 hover:text-white" />
-                </button>
-              </div>
-              <Timer
-                key={`timer-${currentStep}-${currentStepData.timerMinutes}`}
-                initialMinutes={currentStepData.timerMinutes!}
-                onComplete={handleTimerComplete}
-                color={methodColor}
-              />
+          {currentStep === 3 && (
+            <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
+              <p className="text-gray-300 text-sm">
+                💡 <strong>Recuerda:</strong> Cubre tus notas y usa solo las palabras clave para recordar. Esto fortalece la memoria a largo plazo.
+              </p>
             </div>
           )}
         </div>
@@ -655,21 +609,7 @@ export const ActiveRecallStepsView: React.FC = () => {
         {/* Navegación entre pasos */}
         <div className="flex justify-between items-center">
           <button
-            onClick={() => {
-              if (currentStep > 0) {
-                const prevStepIndex = currentStep - 1;
-                setCurrentStep(prevStepIndex);
-                setTimerCompleted(false); // Reset timer completion for previous step
-                // Fixed percentages: 20%, 40%, 60%, 80%, 100%
-                const fixedPercentages = [20, 40, 60, 80, 100];
-                const newProgress = fixedPercentages[prevStepIndex];
-                setProgressPercentage(newProgress);
-
-                // Update progress with standardized status mapping
-                const status = getActiveRecallStatusByProgress(newProgress);
-                updateSessionProgress(newProgress, status);
-              }
-            }}
+            onClick={prevStep}
             disabled={currentStep === 0}
             className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
@@ -708,7 +648,7 @@ export const ActiveRecallStepsView: React.FC = () => {
             </button>
           ) : (
             <button
-              onClick={() => completeStep()}
+              onClick={() => nextStep()}
               className="px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl focus:ring-1 focus:ring-blue-500 focus:outline-none"
               style={{
                 backgroundColor: methodColor,
@@ -727,7 +667,8 @@ export const ActiveRecallStepsView: React.FC = () => {
                 e.currentTarget.style.backgroundColor = methodColor;
               }}
             >
-              Siguiente →
+              {/* Cambiar texto del botón según el paso actual */}
+              {currentStep === 0 ? 'Comenzar' : 'Siguiente'} →
             </button>
           )}
         </div>
@@ -736,123 +677,18 @@ export const ActiveRecallStepsView: React.FC = () => {
       {/* Finish Later Modal */}
       <FinishLaterModal
         isOpen={showFinishLaterModal}
-        methodName={method?.titulo || "Práctica Activa"}
+        methodName={method?.titulo || "Método Cornell"}
         onConfirm={async () => {
           // Save current progress before redirecting
           if (sessionData) {
-            await updateSessionProgress(progressPercentage, getActiveRecallStatusByProgress(progressPercentage));
+            await updateSessionProgress(progressPercentage, getCornellStatusByProgress(progressPercentage));
           }
           setShowFinishLaterModal(false);
           window.location.href = "/reports";
         }}
       />
-
-      {/* Timer Configuration Modal */}
-      {showTimerConfigModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#232323] rounded-2xl p-6 max-w-md w-full border" style={{ borderColor: `${methodColor}33` }}>
-            <h3 className="text-xl font-semibold text-white mb-4 text-center">
-              Configurar Temporizador
-            </h3>
-
-            <div className="space-y-4">
-              {/* Paso 1 - Intento inicial */}
-              <div>
-                <label htmlFor="modal-step1-timer" className="block text-sm font-medium text-gray-300 mb-2">
-                  Paso 1 - Intento inicial de recuerdo:
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    id="modal-step1-timer"
-                    name="modal-step1-timer"
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={tempConfig.step1Time}
-                    onChange={(e) => {
-                      const newTime = Math.max(1, Math.min(60, parseInt(e.target.value) || 1));
-                      setTempConfig(prev => ({ ...prev, step1Time: newTime }));
-                    }}
-                    className="bg-[#1a1a1a] text-white px-3 py-2 rounded border border-gray-600 text-sm w-20 text-center focus:outline-none focus:border-blue-500"
-                  />
-                  <span className="text-gray-400 text-sm">minutos</span>
-                </div>
-              </div>
-
-              {/* Paso 3 - Segunda sesión */}
-              <div>
-                <label htmlFor="modal-step3-timer" className="block text-sm font-medium text-gray-300 mb-2">
-                  Paso 3 - Segunda sesión de recuerdo:
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    id="modal-step3-timer"
-                    name="modal-step3-timer"
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={tempConfig.step3Time}
-                    onChange={(e) => {
-                      const newTime = Math.max(1, Math.min(60, parseInt(e.target.value) || 1));
-                      setTempConfig(prev => ({ ...prev, step3Time: newTime }));
-                    }}
-                    className="bg-[#1a1a1a] text-white px-3 py-2 rounded border border-gray-600 text-sm w-20 text-center focus:outline-none focus:border-blue-500"
-                  />
-                  <span className="text-gray-400 text-sm">minutos</span>
-                </div>
-              </div>
-
-              {/* Paso 4 - Sesión final */}
-              <div>
-                <label htmlFor="modal-step4-timer" className="block text-sm font-medium text-gray-300 mb-2">
-                  Paso 4 - Sesión final de recuerdo:
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    id="modal-step4-timer"
-                    name="modal-step4-timer"
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={tempConfig.step4Time}
-                    onChange={(e) => {
-                      const newTime = Math.max(1, Math.min(60, parseInt(e.target.value) || 1));
-                      setTempConfig(prev => ({ ...prev, step4Time: newTime }));
-                    }}
-                    className="bg-[#1a1a1a] text-white px-3 py-2 rounded border border-gray-600 text-sm w-20 text-center focus:outline-none focus:border-blue-500"
-                  />
-                  <span className="text-gray-400 text-sm">minutos</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowTimerConfigModal(false)}
-                className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors duration-200"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => {
-                  setConfig(tempConfig);
-                  localStorage.setItem('active-recall-config', JSON.stringify(tempConfig));
-                  setShowTimerConfigModal(false);
-                }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:transform hover:scale-105"
-                style={{
-                  backgroundColor: methodColor,
-                  color: 'white',
-                }}
-              >
-                Aplicar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default ActiveRecallStepsView;
+export default CornellStepsView;

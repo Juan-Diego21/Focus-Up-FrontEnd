@@ -195,6 +195,38 @@ export const getFeynmanLabelByProgress = (progress: number): string => {
 };
 
 /**
+ * Mapea el progreso a estado para Método Cornell (igual que otros métodos de pasos)
+ * @param progress - Valor de progreso (20, 40, 60, 80, 100)
+ * @returns Estado correspondiente del método
+ */
+export const getCornellStatusByProgress = (progress: number): MethodStatus => {
+  if (progress === 20 || progress === 40) return 'En_proceso';
+  if (progress === 60 || progress === 80) return 'Casi_terminando';
+  if (progress === 100) return 'Terminado';
+  return 'En_proceso'; // Valor por defecto
+};
+
+/**
+ * Obtiene el color basado en el progreso para Método Cornell
+ * @param progress - Valor de progreso
+ * @returns Color correspondiente al progreso
+ */
+export const getCornellColorByProgress = (progress: number): string => {
+  const status = getCornellStatusByProgress(progress);
+  return getStatusColor(status);
+};
+
+/**
+ * Obtiene la etiqueta basada en el progreso para Método Cornell
+ * @param progress - Valor de progreso
+ * @returns Etiqueta correspondiente al progreso
+ */
+export const getCornellLabelByProgress = (progress: number): string => {
+  const status = getCornellStatusByProgress(progress);
+  return getStatusLabel(status);
+};
+
+/**
  * Utilidades para detectar el tipo de método basado en el nombre
  */
 
@@ -244,11 +276,20 @@ export const isFeynmanMethod = (methodName: string): boolean => {
 };
 
 /**
+ * Verifica si un método es del Método Cornell
+ * @param methodName - Nombre del método
+ * @returns true si es un método Cornell
+ */
+export const isCornellMethod = (methodName: string): boolean => {
+  return methodName.toLowerCase().includes('cornell');
+};
+
+/**
  * Obtiene el tipo de método desde los datos del método
  * @param method - Objeto con datos del método
  * @returns Tipo de método identificado
  */
-export const getMethodType = (method: any): 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman' | 'unknown' => {
+export const getMethodType = (method: any): 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman' | 'cornell' | 'unknown' => {
   if (!method) return 'unknown';
   const name = method.nombre || method.titulo || '';
   if (isPomodoroMethod(name)) return 'pomodoro';
@@ -256,6 +297,7 @@ export const getMethodType = (method: any): 'pomodoro' | 'mindmaps' | 'spacedrep
   if (isSpacedRepetitionMethod(name)) return 'spacedrepetition';
   if (isActiveRecallMethod(name)) return 'activerecall';
   if (isFeynmanMethod(name)) return 'feynman';
+  if (isCornellMethod(name)) return 'cornell';
   return 'unknown';
 };
 
@@ -283,6 +325,10 @@ export const VALID_PROGRESS_VALUES = {
   feynman: {
     creation: [20], // El Método Feynman sigue el modelo de métodos de pasos múltiples
     update: [20, 40, 60, 80, 100]
+  },
+  cornell: {
+    creation: [20], // El Método Cornell sigue el modelo de métodos de pasos múltiples
+    update: [20, 40, 60, 80, 100]
   }
 } as const;
 
@@ -292,7 +338,7 @@ export const VALID_PROGRESS_VALUES = {
  * @param methodType - El tipo de método ('pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman')
  * @returns true si es válido para creación, false en caso contrario
  */
-export const isValidProgressForCreation = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman'): boolean => {
+export const isValidProgressForCreation = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman' | 'cornell'): boolean => {
   const validValues = VALID_PROGRESS_VALUES[methodType].creation;
   return (validValues as readonly number[]).includes(progress);
 };
@@ -303,7 +349,7 @@ export const isValidProgressForCreation = (progress: number, methodType: 'pomodo
  * @param methodType - El tipo de método ('pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman')
  * @returns true si es válido para actualización, false en caso contrario
  */
-export const isValidProgressForUpdate = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman'): boolean => {
+export const isValidProgressForUpdate = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman' | 'cornell'): boolean => {
   const validValues = VALID_PROGRESS_VALUES[methodType].update;
   return (validValues as readonly number[]).includes(progress);
 };
@@ -317,7 +363,7 @@ export const isValidProgressForUpdate = (progress: number, methodType: 'pomodoro
  */
 export const getNextValidProgress = (
   currentProgress: number,
-  methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman',
+  methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman' | 'cornell',
   direction: 'next' | 'prev' = 'next'
 ): number | null => {
   const validValues = VALID_PROGRESS_VALUES[methodType].update;
@@ -340,8 +386,8 @@ export const getNextValidProgress = (
  * @param methodType - El tipo de método
  * @returns true si es válido para reanudar, false en caso contrario
  */
-export const isValidProgressForResume = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman'): boolean => {
+export const isValidProgressForResume = (progress: number, methodType: 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman' | 'cornell'): boolean => {
   // Para reanudar, permitimos cualquier valor de actualización válido, pero no 0 para métodos que no son Pomodoro
-  if ((methodType === 'mindmaps' || methodType === 'spacedrepetition' || methodType === 'activerecall' || methodType === 'feynman') && progress === 0) return false;
+  if ((methodType === 'mindmaps' || methodType === 'spacedrepetition' || methodType === 'activerecall' || methodType === 'feynman' || methodType === 'cornell') && progress === 0) return false;
   return isValidProgressForUpdate(progress, methodType);
 };

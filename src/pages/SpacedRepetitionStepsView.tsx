@@ -619,7 +619,11 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       <FinishLaterModal
         isOpen={showFinishLaterModal}
         methodName={method?.titulo || "Repaso Espaciado"}
-        onConfirm={() => {
+        onConfirm={async () => {
+          // Save current progress before redirecting
+          if (sessionData) {
+            await updateSessionProgress(progressPercentage, getSpacedRepetitionStatusByProgress(progressPercentage));
+          }
           setShowFinishLaterModal(false);
           window.location.href = "/reports";
         }}
