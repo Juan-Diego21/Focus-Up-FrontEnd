@@ -62,8 +62,6 @@ export const ActiveRecallStepsView: React.FC = () => {
   const [sessionData, setSessionData] = useState<{ id: string; methodId: number; id_metodo_realizado: number; startTime: string; progress: number; status: string } | null>(null);
   // Estado para configuración personalizada del usuario (tiempos de los pasos con temporizador)
   const [config, setConfig] = useState<ActiveRecallConfig>({ step1Time: 5, step3Time: 10, step4Time: 15 });
-  // Estado para saber si el temporizador actual ha completado su ciclo
-  const [timerCompleted, setTimerCompleted] = useState(false);
   // Estado para cola de notificaciones/alertas que se muestran al usuario
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
   // Estado para saber si se está reanudando una sesión existente
@@ -364,10 +362,6 @@ export const ActiveRecallStepsView: React.FC = () => {
     }
   };
 
-  // Manejar completación del temporizador
-  const handleTimerComplete = () => {
-    setTimerCompleted(true);
-  };
 
   // Manejar cola de alertas para notificaciones instantáneas
   useEffect(() => {
@@ -455,7 +449,6 @@ export const ActiveRecallStepsView: React.FC = () => {
     if (currentStep < steps.length - 1) {
       const nextStepIndex = currentStep + 1;
       setCurrentStep(nextStepIndex);
-      setTimerCompleted(false); // Reset timer completion for next step
       // Usar el mapeo de función para valores de progreso consistentes: 20%, 40%, 60%, 80%, 100%
       const newProgress = (nextStepIndex + 1) * 20; // Paso 0 = 20%, Paso 1 = 40%, etc.
       setProgressPercentage(newProgress);
@@ -645,7 +638,6 @@ export const ActiveRecallStepsView: React.FC = () => {
               <Timer
                 key={`timer-${currentStep}-${currentStepData.timerMinutes}`}
                 initialMinutes={currentStepData.timerMinutes!}
-                onComplete={handleTimerComplete}
                 color={methodColor}
               />
             </div>
@@ -659,7 +651,6 @@ export const ActiveRecallStepsView: React.FC = () => {
               if (currentStep > 0) {
                 const prevStepIndex = currentStep - 1;
                 setCurrentStep(prevStepIndex);
-                setTimerCompleted(false); // Reset timer completion for previous step
                 // Fixed percentages: 20%, 40%, 60%, 80%, 100%
                 const fixedPercentages = [20, 40, 60, 80, 100];
                 const newProgress = fixedPercentages[prevStepIndex];

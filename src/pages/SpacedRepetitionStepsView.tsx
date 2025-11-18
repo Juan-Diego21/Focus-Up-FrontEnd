@@ -91,7 +91,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       id: 1,
       title: "2. Después de unas horas ⏰",
       description: "Revisa el material más tarde hoy para reforzar las conexiones.",
-      instruction: "Espera al menos 2-3 horas antes de esta segunda revisión.",
+      instruction: "Espera al menos 2-3 horas antes de esta segunda revisión. Una vez lo hayas hecho da click al botón Siguiente",
       hasTimer: false,
     },
     {

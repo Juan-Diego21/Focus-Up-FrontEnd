@@ -3,6 +3,7 @@ import { Sidebar } from "../components/ui/Sidebar";
 import { Card } from "../components/ui/Card";
 import { API_BASE_URL, API_ENDPOINTS } from "../utils/constants";
 import { overrideMethodsWithLocalAssets } from "../utils/methodAssets";
+import { BookOpen } from 'lucide-react';
 
 interface Benefit {
   id_beneficio: number;
@@ -92,6 +93,8 @@ export const StudyMethodsLibraryPage: React.FC = () => {
       window.location.href = `/active-recall/intro/${method.id_metodo}`;
     } else if (method.nombre_metodo.toLowerCase().includes('feynman')) {
       window.location.href = `/feynman/intro/${method.id_metodo}`;
+    } else if (method.nombre_metodo.toLowerCase().includes('cornell')) {
+      window.location.href = `/cornell/intro/${method.id_metodo}`;
     }
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };
@@ -143,9 +146,11 @@ export const StudyMethodsLibraryPage: React.FC = () => {
       <div className="flex justify-center items-center min-h-screen">
         <main className="w-full max-w-7xl p-6 md:p-10 transition-all">
           <div className="mb-10">
-            <h1 className="text-4xl font-bold text-white mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
+            <h1 className="flex justify-center text-4xl font-bold text-white mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
               Biblioteca de Métodos de Estudio
+              <BookOpen className="w-8 h-8 md:w-10 md:h-10 ml-5" />
             </h1>
+            
             <p className="text-gray-400 text-center text-lg max-w-2xl mx-auto">
               Descubre técnicas probadas para mejorar tu concentración y eficiencia en el estudio
             </p>
