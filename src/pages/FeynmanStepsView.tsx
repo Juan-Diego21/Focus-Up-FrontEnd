@@ -1,5 +1,5 @@
 /**
- * Componente principal para la ejecución del método Repaso Espaciado
+ * Componente principal para la ejecución del método Feynman
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
@@ -9,9 +9,9 @@ import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
 import { Clock as ClockIcon } from 'lucide-react';
 import {
-  getSpacedRepetitionColorByProgress,
-  getSpacedRepetitionLabelByProgress,
-  getSpacedRepetitionStatusByProgress,
+  getFeynmanColorByProgress,
+  getFeynmanLabelByProgress,
+  getFeynmanStatusByProgress,
   isValidProgressForCreation,
   isValidProgressForUpdate,
   isValidProgressForResume
@@ -28,10 +28,10 @@ interface StudyMethod {
 }
 
 /**
- * Componente que maneja la ejecución paso a paso del método Repaso Espaciado
- * Permite al usuario completar 4 pasos de revisión espaciada con progreso visual
+ * Componente que maneja la ejecución paso a paso del método Feynman
+ * Permite al usuario completar 4 pasos del método de enseñanza con progreso visual
  */
-export const SpacedRepetitionStepsView: React.FC = () => {
+export const FeynmanStepsView: React.FC = () => {
   // Obtener ID del método desde la URL para identificar qué método ejecutar
   const urlParts = window.location.pathname.split('/');
   const id = urlParts[urlParts.length - 1];
@@ -78,34 +78,34 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     return 4;
   };
 
-  // Pasos del método Repaso Espaciado
+  // Pasos del método Feynman
   const steps = [
     {
       id: 0,
-      title: "1. Revisión inmediata 📖",
-      description: "Revisa el material justo ahora para establecer el primer rastro de memoria.",
-      instruction: "Toma 10-15 minutos para revisar activamente el material por primera vez.",
+      title: "1. Elegir y estudiar el tema",
+      description: "Selecciona un concepto que quieres aprender y estúdialo a fondo desde fuentes confiables.",
+      instruction: "Elige un tema específico y dedica tiempo a estudiarlo profundamente antes de pasar al siguiente paso.",
       hasTimer: false,
     },
     {
       id: 1,
-      title: "2. Después de unas horas ⏰",
-      description: "Revisa el material más tarde hoy para reforzar las conexiones.",
-      instruction: "Espera al menos 2-3 horas antes de esta segunda revisión.",
+      title: "2. Enseñarlo en palabras simples",
+      description: "Explica el concepto como si lo enseñaras a alguien que no sabe nada sobre el tema.",
+      instruction: "Escribe o habla como si explicaras a un niño. Usa lenguaje simple y evita jerga técnica.",
       hasTimer: false,
     },
     {
       id: 2,
-      title: "3. Al día siguiente 📅",
-      description: "Revisa el contenido mañana para fortalecer la codificación a largo plazo.",
-      instruction: "Realiza esta revisión al día siguiente de la primera sesión.",
+      title: "3. Identificar lagunas y aclarar",
+      description: "Revisa tu explicación e identifica áreas donde tuviste dificultades o usaste términos complejos.",
+      instruction: "Regresa a tus fuentes y llena las lagunas en tu comprensión.",
       hasTimer: false,
     },
     {
       id: 3,
-      title: "4. Revisión final ✅",
-      description: "Realiza la revisión final espaciada para consolidar la información.",
-      instruction: "Esta última revisión asegura la retención a largo plazo del material.",
+      title: "4. Simplificar y crear analogías",
+      description: "Simplifica aún más tu explicación y crea analogías poderosas que hagan cristalino el concepto.",
+      instruction: "Crea analogías memorables y simplifica ideas complejas en su forma más básica.",
       hasTimer: false,
     },
   ];
@@ -148,7 +148,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           const progress = parseInt(urlProgress);
 
           // Validar progreso para reanudar
-          if (!isValidProgressForResume(progress, 'spacedrepetition')) {
+          if (!isValidProgressForResume(progress, 'feynman')) {
             console.error('Valor de progreso inválido para reanudar:', progress);
             setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para reanudar sesión' });
             return;
@@ -166,11 +166,11 @@ export const SpacedRepetitionStepsView: React.FC = () => {
             id_metodo_realizado: 0, // Se establecerá cuando tengamos la sesión real
             startTime: new Date().toISOString(),
             progress: progress,
-            status: getSpacedRepetitionStatusByProgress(progress)
+            status: getFeynmanStatusByProgress(progress)
           });
 
           // Mostrar mensaje de reanudación
-          setAlertQueue({ type: 'resumed', message: `Sesión de ${method.titulo || 'Repaso Espaciado'} retomada correctamente` });
+          setAlertQueue({ type: 'resumed', message: `Sesión de ${method.titulo || 'Método Feynman'} retomada correctamente` });
         }
       } catch {
         setError("Error al cargar los datos del método");
@@ -190,13 +190,13 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     const resumeProgress = localStorage.getItem('resume-progress');
     const resumeMethodType = localStorage.getItem('resume-method-type');
 
-    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'spacedrepetition') {
-      // Reanudando un método específico de Repaso Espaciado sin terminar
-      console.log('Reanudando método de Repaso Espaciado con ID:', resumeMethodId, 'en progreso:', resumeProgress);
+    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'feynman') {
+      // Reanudando un método específico del Método Feynman sin terminar
+      console.log('Reanudando método de Feynman con ID:', resumeMethodId, 'en progreso:', resumeProgress);
       const progress = parseInt(resumeProgress || '0');
 
       // Establecer paso basado en progreso actual del reporte
-      // Pasos de Repaso Espaciado: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
+      // Pasos de Feynman: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
       if (progress === 20) {
         setCurrentStep(0);
         setProgressPercentage(20);
@@ -241,26 +241,26 @@ export const SpacedRepetitionStepsView: React.FC = () => {
   }, [id]);
 
   /**
-   * Inicia una nueva sesión en el backend para el método Repaso Espaciado
+   * Inicia una nueva sesión en el backend para el método Feynman
    * Valida el progreso antes de enviar la solicitud y maneja errores
    * Siempre crea una nueva sesión desde el flujo de ejecución paso a paso
    */
   const startSession = async () => {
     // Validar progreso para creación
-    if (!isValidProgressForCreation(20, 'spacedrepetition')) {
+    if (!isValidProgressForCreation(20, 'feynman')) {
       console.error('Valor de progreso inválido para creación de sesión');
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
       return;
     }
 
     try {
-      console.log('Iniciando nueva sesión de Repaso Espaciado con id:', id);
+      console.log('Iniciando nueva sesión del Método Feynman con id:', id);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
         id_metodo: parseInt(id),
         estado: 'En_proceso',
         progreso: 20
       });
-      console.log('Sesión de Repaso Espaciado iniciada respuesta:', response.data);
+      console.log('Sesión del Método Feynman iniciada respuesta:', response.data);
       const session = response.data;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
@@ -280,16 +280,16 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
       // Almacenar el ID del método activo por separado para actualizaciones de progreso
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
-      localStorage.setItem('spaced-repetition-session', JSON.stringify(session));
+      localStorage.setItem('feynman-session', JSON.stringify(session));
 
       // Poner en cola notificación de éxito
-      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Repaso Espaciado'} iniciada correctamente` });
+      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Método Feynman'} iniciada correctamente` });
 
       // Activar actualización de reportes
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error al iniciar sesión de Repaso Espaciado:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Repaso Espaciado' });
+      console.error('Error al iniciar sesión del Método Feynman:', error);
+      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión del Método Feynman' });
     }
   };
 
@@ -299,7 +299,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
    */
   const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
     // Validar progreso para actualización
-    if (!isValidProgressForUpdate(progress, 'spacedrepetition')) {
+    if (!isValidProgressForUpdate(progress, 'feynman')) {
       console.error('Valor de progreso inválido para actualización:', progress);
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
       return;
@@ -314,22 +314,22 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     }
 
     try {
-      console.log('Actualizando progreso de Repaso Espaciado para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
+      console.log('Actualizando progreso del Método Feynman para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
       await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
         progreso: progress,
         estado: status
       });
-      console.log('Progreso de Repaso Espaciado actualizado exitosamente');
+      console.log('Progreso del Método Feynman actualizado exitosamente');
 
       if (sessionData) {
         setSessionData(prev => prev ? { ...prev, progress, status } : null);
-        localStorage.setItem('spaced-repetition-session', JSON.stringify({ ...sessionData, progress, status }));
+        localStorage.setItem('feynman-session', JSON.stringify({ ...sessionData, progress, status }));
       }
 
       // Activar actualización de reportes después de actualización exitosa de progreso
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
-      console.error('Error al actualizar progreso de Repaso Espaciado:', error);
+      console.error('Error al actualizar progreso del Método Feynman:', error);
     }
   };
 
@@ -386,12 +386,12 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
       if (sessionId && sessionData && sessionData.status !== 'Terminado') {
         // Validar progreso antes de enviar beacon
-        if (isValidProgressForUpdate(progressPercentage, 'spacedrepetition')) {
+        if (isValidProgressForUpdate(progressPercentage, 'feynman')) {
           // Actualizar progreso de forma síncrona antes de salir de la página
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
               progreso: progressPercentage,
-              estado: getSpacedRepetitionStatusByProgress(progressPercentage)
+              estado: getFeynmanStatusByProgress(progressPercentage)
             })
           );
         } else {
@@ -405,14 +405,14 @@ export const SpacedRepetitionStepsView: React.FC = () => {
   }, [sessionData, progressPercentage, isResuming, urlSessionId]);
 
   /**
-   * Maneja la finalización de un paso del método
+   * Maneja la navegación al siguiente paso del método
    * Controla la lógica de inicio de sesión y actualización de progreso
    * Solo crea una nueva sesión cuando no se está reanudando una existente
    */
-  const completeStep = () => {
-    if (currentStep === 0 && !isResuming) {
-      // Crear una nueva sesión solo si no se está reanudando una existente
-      startSession();
+  const nextStep = async () => {
+    if (currentStep === 0 && !isResuming && !sessionData) {
+      // Crear una nueva sesión solo si no se está reanudando una existente y no hay sesión activa
+      await startSession();
     }
 
     if (currentStep < steps.length - 1) {
@@ -423,7 +423,26 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       setProgressPercentage(newProgress);
 
       // Actualizar progreso con mapeo de estado estandarizado
-      const status = getSpacedRepetitionStatusByProgress(newProgress);
+      const status = getFeynmanStatusByProgress(newProgress);
+      updateSessionProgress(newProgress, status);
+    }
+  };
+
+  /**
+   * Maneja la navegación al paso anterior del método
+   * Actualiza el progreso correspondiente al paso anterior
+   */
+  const prevStep = () => {
+    if (currentStep > 0) {
+      const prevStepIndex = currentStep - 1;
+      setCurrentStep(prevStepIndex);
+      // Fixed percentages: 20%, 40%, 60%, 80%, 100%
+      const fixedPercentages = [20, 40, 60, 80, 100];
+      const newProgress = fixedPercentages[prevStepIndex];
+      setProgressPercentage(newProgress);
+
+      // Update progress with standardized status mapping
+      const status = getFeynmanStatusByProgress(newProgress);
       updateSessionProgress(newProgress, status);
     }
   };
@@ -432,13 +451,13 @@ export const SpacedRepetitionStepsView: React.FC = () => {
   const finishMethod = async () => {
     setProgressPercentage(100);
     await updateSessionProgress(100, 'Terminado');
-    localStorage.removeItem('spaced-repetition-session');
+    localStorage.removeItem('feynman-session');
     localStorage.removeItem('activeMethodId');
 
-    // Poner en cola notificación de finalización
+    // Queue completion notification
     setAlertQueue({
       type: 'completion',
-      message: `Sesión de ${method?.titulo || 'Método Repaso Espaciado'} guardada`
+      message: `Sesión de ${method?.titulo || 'Método Feynman'} guardada`
     });
   };
 
@@ -473,7 +492,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
   // Usar únicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.titulo];
-  const methodColor = localAssets?.color || "#7E57C2";
+  const methodColor = localAssets?.color || "#FFD54F";
   const currentStepData = steps[currentStep];
 
   return (
@@ -481,7 +500,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => window.location.href = `/spaced-repetition/intro/${id}`}
+          onClick={() => window.location.href = `/feynman/intro/${id}`}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >
@@ -506,7 +525,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           {method.titulo}
         </h1>
         {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) */}
-        {sessionData && currentStep >= 2 && (
+        {sessionData && currentStep >= 1 && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
@@ -523,8 +542,8 @@ export const SpacedRepetitionStepsView: React.FC = () => {
         <ProgressCircle
           percentage={progressPercentage}
           size={140}
-          getTextByPercentage={getSpacedRepetitionLabelByProgress}
-          getColorByPercentage={getSpacedRepetitionColorByProgress}
+          getTextByPercentage={getFeynmanLabelByProgress}
+          getColorByPercentage={getFeynmanColorByProgress}
         />
         <div className="text-center mt-4">
           <span className="text-gray-400 text-sm">
@@ -557,7 +576,15 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
               <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Enfócate en comprender los conceptos principales. No intentes memorizar todo de una vez.
+                💡 <strong>Tip:</strong> Elige un tema que realmente te interese aprender. Esto hará que el proceso de enseñanza sea más atractivo y efectivo.
+              </p>
+            </div>
+          )}
+
+          {currentStep === 1 && (
+            <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
+              <p className="text-gray-300 text-sm">
+                💡 <strong>Recuerda:</strong> Si no puedes explicarlo simplemente, no lo entiendes lo suficientemente bien. Este paso revela las lagunas en tu conocimiento.
               </p>
             </div>
           )}
@@ -565,32 +592,64 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
               <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> El espacio entre revisiones es crucial. Cada repaso espaciado fortalece las conexiones neuronales.
+                💡 <strong>Tip:</strong> Sé honesto contigo mismo. Cada vez que uses jerga técnica o tengas dificultades para explicar, has encontrado un área que necesita más estudio.
+              </p>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
+              <p className="text-gray-300 text-sm">
+                💡 <strong>Recuerda:</strong> Los grandes maestros crean analogías que perduran. Las mejores explicaciones usan conceptos familiares para iluminar los desconocidos.
               </p>
             </div>
           )}
         </div>
 
-        {/* Botones de acción */}
-        <div className="text-center space-y-4">
+        {/* Navegación entre pasos */}
+        <div className="flex justify-between items-center">
+          <button
+            onClick={prevStep}
+            disabled={currentStep === 0}
+            className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            ← Anterior
+          </button>
+
+          <div className="flex gap-2">
+            {steps.map((_, index) => (
+              <div
+                key={index}
+                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  index === currentStep
+                    ? 'bg-current'
+                    : index < currentStep
+                      ? 'bg-gray-500'
+                      : 'bg-gray-700'
+                }`}
+                style={{
+                  backgroundColor: index === currentStep ? methodColor : undefined
+                }}
+              />
+            ))}
+          </div>
+
           {currentStep === steps.length - 1 ? (
-            // Botón para finalizar el método en el último paso
             <button
               onClick={finishMethod}
-              className="px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl focus:ring-1 focus:ring-blue-500 focus:outline-none"
               style={{
                 backgroundColor: '#22C55E',
                 color: 'white',
                 boxShadow: `0 10px 15px -3px #22C55E30, 0 4px 6px -2px #22C55E20`,
               }}
             >
-              Finalizar Método
+              Finalizar método
             </button>
           ) : (
-            // Botón para avanzar al siguiente paso
             <button
-              onClick={completeStep}
-              className="px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
+              onClick={() => nextStep()}
+              className="px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl focus:ring-1 focus:ring-blue-500 focus:outline-none"
               style={{
                 backgroundColor: methodColor,
                 color: 'white',
@@ -608,8 +667,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
                 e.currentTarget.style.backgroundColor = methodColor;
               }}
             >
-              {/* Cambiar texto del botón según el paso actual */}
-              {currentStep === 0 ? 'Comenzar' : 'Siguiente'}
+              Siguiente →
             </button>
           )}
         </div>
@@ -618,11 +676,11 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       {/* Finish Later Modal */}
       <FinishLaterModal
         isOpen={showFinishLaterModal}
-        methodName={method?.titulo || "Repaso Espaciado"}
+        methodName={method?.titulo || "Método Feynman"}
         onConfirm={async () => {
           // Save current progress before redirecting
           if (sessionData) {
-            await updateSessionProgress(progressPercentage, getSpacedRepetitionStatusByProgress(progressPercentage));
+            await updateSessionProgress(progressPercentage, getFeynmanStatusByProgress(progressPercentage));
           }
           setShowFinishLaterModal(false);
           window.location.href = "/reports";
@@ -632,4 +690,4 @@ export const SpacedRepetitionStepsView: React.FC = () => {
   );
 };
 
-export default SpacedRepetitionStepsView;
+export default FeynmanStepsView;

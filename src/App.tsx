@@ -21,6 +21,12 @@ import { MindMapsInfoPage } from "./pages/MindMapsInfoPage";
 import { MindMapsStepsPage } from "./pages/MindMapsStepsPage";
 import { SpacedRepetitionIntroView } from "./pages/SpacedRepetitionIntroView";
 import { SpacedRepetitionStepsView } from "./pages/SpacedRepetitionStepsView";
+import { ActiveRecallIntroView } from "./pages/ActiveRecallIntroView";
+import { ActiveRecallStepsView } from "./pages/ActiveRecallStepsView";
+import { FeynmanIntroView } from "./pages/FeynmanIntroView";
+import { FeynmanStepsView } from "./pages/FeynmanStepsView";
+import { CornellIntroView } from "./pages/CornellIntroView";
+import { CornellStepsView } from "./pages/CornellStepsView";
 import { ReportsPage } from "./pages/ReportsPage";
 
 // Componente principal de la aplicación
@@ -93,6 +99,30 @@ function App() {
 
     if (path.startsWith("/spaced-repetition/steps/")) {
       return renderProtectedPage(SpacedRepetitionStepsView);
+    }
+
+    if (path.startsWith("/active-recall/intro/")) {
+      return renderProtectedPage(ActiveRecallIntroView);
+    }
+
+    if (path.startsWith("/active-recall/steps/")) {
+      return renderProtectedPage(ActiveRecallStepsView);
+    }
+
+    if (path.startsWith("/feynman/intro/")) {
+      return renderProtectedPage(FeynmanIntroView);
+    }
+
+    if (path.startsWith("/feynman/steps/")) {
+      return renderProtectedPage(FeynmanStepsView);
+    }
+
+    if (path.startsWith("/cornell/intro/")) {
+      return renderProtectedPage(CornellIntroView);
+    }
+
+    if (path.startsWith("/cornell/steps/")) {
+      return renderProtectedPage(CornellStepsView);
     }
 
     // Ruta por defecto (dashboard)

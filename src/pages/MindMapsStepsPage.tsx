@@ -415,10 +415,10 @@ export const MindMapsStepsPage: React.FC = () => {
    * Controla la lógica de inicio de sesión y actualización de progreso
    * Solo crea una nueva sesión cuando no se está reanudando una existente
    */
-  const nextStep = () => {
-    if (currentStep === 0 && !isResuming) {
-      // Crear una nueva sesión solo si no se está reanudando una existente
-      startSession();
+  const nextStep = async () => {
+    if (currentStep === 0 && !isResuming && !sessionData) {
+      // Crear una nueva sesión solo si no se está reanudando una existente y no hay sesión activa
+      await startSession();
     }
 
     if (currentStep < steps.length - 1) {
@@ -640,7 +640,7 @@ export const MindMapsStepsPage: React.FC = () => {
             </button>
           ) : (
             <button
-              onClick={nextStep}
+              onClick={() => nextStep()}
               className="px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl focus:ring-1 focus:ring-blue-500 focus:outline-none"
               style={{
                 backgroundColor: methodColor,
@@ -679,7 +679,11 @@ export const MindMapsStepsPage: React.FC = () => {
       <FinishLaterModal
         isOpen={showFinishLaterModal}
         methodName={method?.titulo || "Mapas Mentales"}
-        onConfirm={() => {
+        onConfirm={async () => {
+          // Save current progress before redirecting
+          if (sessionData) {
+            await updateSessionProgress(progressPercentage, getMindMapsStatusByProgress(progressPercentage));
+          }
           setShowFinishLaterModal(false);
           window.location.href = "/reports";
         }}

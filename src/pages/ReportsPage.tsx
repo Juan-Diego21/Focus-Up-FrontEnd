@@ -23,6 +23,12 @@ import {
   getMindMapsLabelByProgress,
   getSpacedRepetitionColorByProgress,
   getSpacedRepetitionLabelByProgress,
+  getActiveRecallColorByProgress,
+  getActiveRecallLabelByProgress,
+  getFeynmanColorByProgress,
+  getFeynmanLabelByProgress,
+  getCornellColorByProgress,
+  getCornellLabelByProgress,
   getMethodType,
   isValidProgressForResume
 } from '../utils/methodStatus';
@@ -629,6 +635,12 @@ export const ReportsPage: React.FC = () => {
                                   ? getMindMapsColorByProgress(method.progreso)
                                   : methodType === 'spacedrepetition'
                                   ? getSpacedRepetitionColorByProgress(method.progreso)
+                                  : methodType === 'activerecall'
+                                  ? getActiveRecallColorByProgress(method.progreso)
+                                  : methodType === 'feynman'
+                                  ? getFeynmanColorByProgress(method.progreso)
+                                  : methodType === 'cornell'
+                                  ? getCornellColorByProgress(method.progreso)
                                   : methodType === 'pomodoro'
                                   ? getPomodoroColorByProgress(method.progreso)
                                   : (isCompleted ? '#22C55E' : '#FACC15'),
@@ -636,6 +648,12 @@ export const ReportsPage: React.FC = () => {
                                   ? getMindMapsColorByProgress(method.progreso)
                                   : methodType === 'spacedrepetition'
                                   ? getSpacedRepetitionColorByProgress(method.progreso)
+                                  : methodType === 'activerecall'
+                                  ? getActiveRecallColorByProgress(method.progreso)
+                                  : methodType === 'feynman'
+                                  ? getFeynmanColorByProgress(method.progreso)
+                                  : methodType === 'cornell'
+                                  ? getCornellColorByProgress(method.progreso)
                                   : methodType === 'pomodoro'
                                   ? getPomodoroColorByProgress(method.progreso)
                                   : (isCompleted ? '#22C55E' : '#FACC15')}30`
@@ -680,6 +698,12 @@ export const ReportsPage: React.FC = () => {
                                     ? getMindMapsColorByProgress(method.progreso)
                                     : getMethodType(method.metodo) === 'spacedrepetition'
                                     ? getSpacedRepetitionColorByProgress(method.progreso)
+                                    : getMethodType(method.metodo) === 'activerecall'
+                                    ? getActiveRecallColorByProgress(method.progreso)
+                                    : getMethodType(method.metodo) === 'feynman'
+                                    ? getFeynmanColorByProgress(method.progreso)
+                                    : getMethodType(method.metodo) === 'cornell'
+                                    ? getCornellColorByProgress(method.progreso)
                                     : getMethodType(method.metodo) === 'pomodoro'
                                     ? getPomodoroColorByProgress(method.progreso)
                                     : (isCompleted ? '#22C55E' : '#FACC15') // Green for completed, Yellow for in progress
@@ -695,6 +719,12 @@ export const ReportsPage: React.FC = () => {
                                 ? getMindMapsLabelByProgress(method.progreso)
                                 : getMethodType(method.metodo) === 'spacedrepetition'
                                 ? getSpacedRepetitionLabelByProgress(method.progreso)
+                                : getMethodType(method.metodo) === 'activerecall'
+                                ? getActiveRecallLabelByProgress(method.progreso)
+                                : getMethodType(method.metodo) === 'feynman'
+                                ? getFeynmanLabelByProgress(method.progreso)
+                                : getMethodType(method.metodo) === 'cornell'
+                                ? getCornellLabelByProgress(method.progreso)
                                 : (isCompleted ? 'Terminado' : 'En proceso')}
                             </span>
                           </div>
@@ -751,6 +781,15 @@ export const ReportsPage: React.FC = () => {
                                     } else if (methodType === 'spacedrepetition') {
                                       // Pass sessionId and progress in URL for Spaced Repetition
                                       window.location.href = `/spaced-repetition/steps/${method.metodo?.id}?progreso=${method.progreso}&sessionId=${method.id}`;
+                                    } else if (methodType === 'activerecall') {
+                                      // Pass sessionId and progress in URL for Active Recall
+                                      window.location.href = `/active-recall/steps/${method.metodo?.id}?progreso=${method.progreso}&sessionId=${method.id}`;
+                                    } else if (methodType === 'feynman') {
+                                      // Pass sessionId and progress in URL for Feynman
+                                      window.location.href = `/feynman/steps/${method.metodo?.id}?progreso=${method.progreso}&sessionId=${method.id}`;
+                                    } else if (methodType === 'cornell') {
+                                      // Pass sessionId and progress in URL for Cornell
+                                      window.location.href = `/cornell/steps/${method.metodo?.id}?progreso=${method.progreso}&sessionId=${method.id}`;
                                     } else {
                                       // Pass sessionId and progress in URL for Pomodoro
                                       window.location.href = `/pomodoro/execute/${method.metodo?.id || 1}?progreso=${method.progreso}&sessionId=${method.id}`;
