@@ -3,6 +3,7 @@
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
@@ -32,14 +33,17 @@ interface StudyMethod {
  * Permite al usuario navegar entre los 5 pasos del método con progreso visual
  */
 export const MindMapsStepsPage: React.FC = () => {
-  // Extraer el ID del método desde la URL para identificar qué método ejecutar
-  const urlParts = window.location.pathname.split('/');
-  const id = urlParts[urlParts.length - 1];
+  const navigate = useNavigate();
+  const { methodId } = useParams<{ methodId: string }>();
+  const [searchParams] = useSearchParams();
+  const urlProgress = searchParams.get('progreso');
+  const urlSessionId = searchParams.get('sessionId');
 
-  // Leer parámetros de URL para reanudar sesiones existentes
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlProgress = urlParams.get('progreso');
-  const urlSessionId = urlParams.get('sessionId');
+  // Guard against undefined methodId
+  if (!methodId) {
+    navigate('/study-methods');
+    return null;
+  }
 
   // Estado para almacenar la información del método de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
@@ -126,11 +130,11 @@ export const MindMapsStepsPage: React.FC = () => {
 
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
 
-        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${id}`, {
+        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${methodId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -140,14 +144,15 @@ export const MindMapsStepsPage: React.FC = () => {
         if (!response.ok) {
           if (response.status === 401) {
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            navigate("/login");
             return;
           }
           throw new Error("Error al cargar datos del método");
         }
 
         const methodData = await response.json();
-        setMethod(methodData);
+        const method = methodData.data || methodData;
+        setMethod(method);
 
         // After loading method, check for resumption
         if (urlSessionId && urlProgress) {
@@ -185,10 +190,10 @@ export const MindMapsStepsPage: React.FC = () => {
       }
     };
 
-    if (id) {
+    if (methodId) {
       fetchMethodData();
     }
-  }, [id, urlSessionId, urlProgress]);
+  }, [methodId, urlSessionId, urlProgress]);
 
   // Load resume data from localStorage
   useEffect(() => {
@@ -196,7 +201,7 @@ export const MindMapsStepsPage: React.FC = () => {
     const resumeProgress = localStorage.getItem('resume-progress');
     const resumeMethodType = localStorage.getItem('resume-method-type');
 
-    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'mindmaps') {
+    if (resumeMethodId && resumeMethodId === methodId && resumeMethodType === 'mindmaps') {
       // Resuming a specific unfinished Mind Maps method
       console.log('Resuming Mind Maps method with ID:', resumeMethodId, 'at progress:', resumeProgress);
       const progress = parseInt(resumeProgress || '0');
@@ -244,7 +249,7 @@ export const MindMapsStepsPage: React.FC = () => {
       localStorage.removeItem('resume-progress');
       localStorage.removeItem('resume-method-type');
     }
-  }, [id]);
+  }, [methodId]);
 
   /**
    * Inicia una nueva sesión en el backend para el método Mapas Mentales
@@ -260,9 +265,9 @@ export const MindMapsStepsPage: React.FC = () => {
     }
 
     try {
-      console.log('Starting new Mind Maps session with id:', id);
+      console.log('Starting new Mind Maps session with id:', methodId);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(id),
+        id_metodo: parseInt(methodId),
         estado: 'En_proceso',
         progreso: 20
       });
@@ -277,7 +282,7 @@ export const MindMapsStepsPage: React.FC = () => {
 
       setSessionData({
         id: session.id,
-        methodId: parseInt(id),
+        methodId: parseInt(methodId),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
         progress: 20,
@@ -378,7 +383,7 @@ export const MindMapsStepsPage: React.FC = () => {
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
-          window.location.href = '/dashboard';
+          navigate('/dashboard');
         });
       }
 
@@ -487,7 +492,7 @@ export const MindMapsStepsPage: React.FC = () => {
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => window.location.href = "/study-methods"}
+            onClick={() => navigate("/study-methods")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
             Volver a métodos
@@ -508,7 +513,7 @@ export const MindMapsStepsPage: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => window.location.href = `/mind-maps/intro/${id}`}
+          onClick={() => navigate(`/mind-maps/intro/${methodId}`)}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform focus:outline-none"
           aria-label="Volver atrás"
         >
@@ -685,7 +690,7 @@ export const MindMapsStepsPage: React.FC = () => {
             await updateSessionProgress(progressPercentage, getMindMapsStatusByProgress(progressPercentage));
           }
           setShowFinishLaterModal(false);
-          window.location.href = "/reports";
+          navigate("/reports");
         }}
       />
     </div>

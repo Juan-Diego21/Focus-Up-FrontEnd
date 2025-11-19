@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../contexts/AuthContext";
 import { apiClient } from "../../utils/apiClient";
 import { API_ENDPOINTS } from "../../utils/constants";
@@ -25,6 +26,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [focusToolsMenuOpen, setFocusToolsMenuOpen] = useState(false);
@@ -35,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   const handleDeleteAccount = () => {
@@ -60,21 +62,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
       // Cerrar sesión y redirigir después de un breve retraso
       setTimeout(() => {
         logout();
-        window.location.href = "/login";
+        navigate("/login");
       }, 2000);
 
     } catch {
       // ✅ Cerrar sesión y redirigir incluso si falla la API
       setShowDeleteModal(false);
       logout();
-      window.location.href = "/login";
+      navigate("/login");
     } finally {
       setDeleteLoading(false);
     }
   };
 
   const navigateTo = (path: string) => {
-    window.location.href = path;
+    navigate(path);
   };
 
   return (
@@ -191,8 +193,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
                       <span className="text-sm">Métodos de estudio</span>
                     </button>
                     <button
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer opacity-50"
-                      disabled
+                      onClick={() => navigateTo("/music/albums")}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer"
                     >
                       <MusicalNoteIcon className="w-4 h-4" />
                       <span className="text-sm">Álbum de música</span>

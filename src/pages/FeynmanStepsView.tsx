@@ -3,6 +3,7 @@
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
@@ -32,14 +33,17 @@ interface StudyMethod {
  * Permite al usuario completar 4 pasos del método de enseñanza con progreso visual
  */
 export const FeynmanStepsView: React.FC = () => {
-  // Obtener ID del método desde la URL para identificar qué método ejecutar
-  const urlParts = window.location.pathname.split('/');
-  const id = urlParts[urlParts.length - 1];
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const urlProgress = searchParams.get('progreso');
+  const urlSessionId = searchParams.get('sessionId');
 
-  // Leer parámetros de URL para reanudar sesiones existentes
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlProgress = urlParams.get('progreso');
-  const urlSessionId = urlParams.get('sessionId');
+  // Guard against undefined id
+  if (!id) {
+    navigate('/study-methods');
+    return null;
+  }
 
   // Estado para almacenar la información del método de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
@@ -119,7 +123,7 @@ export const FeynmanStepsView: React.FC = () => {
 
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
 
@@ -133,7 +137,7 @@ export const FeynmanStepsView: React.FC = () => {
         if (!response.ok) {
           if (response.status === 401) {
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            navigate("/login");
             return;
           }
           throw new Error("Error al cargar datos del método");
@@ -372,7 +376,7 @@ export const FeynmanStepsView: React.FC = () => {
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
-          window.location.href = '/dashboard';
+          navigate('/dashboard');
         });
       }
 
@@ -480,7 +484,7 @@ export const FeynmanStepsView: React.FC = () => {
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => window.location.href = "/study-methods"}
+            onClick={() => navigate("/study-methods")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
           >
             Volver a métodos
@@ -500,7 +504,7 @@ export const FeynmanStepsView: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => window.location.href = `/feynman/intro/${id}`}
+          onClick={() => navigate(`/feynman/intro/${id}`)}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >
@@ -683,7 +687,7 @@ export const FeynmanStepsView: React.FC = () => {
             await updateSessionProgress(progressPercentage, getFeynmanStatusByProgress(progressPercentage));
           }
           setShowFinishLaterModal(false);
-          window.location.href = "/reports";
+          navigate("/reports");
         }}
       />
     </div>

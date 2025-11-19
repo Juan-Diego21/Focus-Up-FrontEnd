@@ -1,6 +1,6 @@
 // Importaciones de contextos y componentes
-import { AuthProvider } from "./contexts/AuthContext";
 import { RequireAuth } from "./components/auth/RequireAuth";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Importaciones de páginas públicas
 import { LoginPage } from "./pages/LoginPage";
@@ -18,7 +18,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { PomodoroIntroView } from "./pages/PomodoroIntroView";
 import { PomodoroExecutionView } from "./pages/PomodoroExecutionView";
 import { MindMapsInfoPage } from "./pages/MindMapsInfoPage";
-import { MindMapsStepsPage } from "./pages/MindMapsStepsPage";
+import MindMapsStepsPage from "./pages/MindMapsStepsPage";
 import { SpacedRepetitionIntroView } from "./pages/SpacedRepetitionIntroView";
 import { SpacedRepetitionStepsView } from "./pages/SpacedRepetitionStepsView";
 import { ActiveRecallIntroView } from "./pages/ActiveRecallIntroView";
@@ -28,113 +28,49 @@ import { FeynmanStepsView } from "./pages/FeynmanStepsView";
 import { CornellIntroView } from "./pages/CornellIntroView";
 import { CornellStepsView } from "./pages/CornellStepsView";
 import { ReportsPage } from "./pages/ReportsPage";
+import { MusicAlbumsPage } from "./pages/MusicAlbumsPage";
+import { MusicSongsPage } from "./pages/MusicSongsPage";
 
 // Componente principal de la aplicación
 function App() {
-  // Función auxiliar para renderizar páginas protegidas
-  const renderProtectedPage = (PageComponent: React.ComponentType) => (
-    <RequireAuth>
-      <PageComponent />
-    </RequireAuth>
-  );
-
-  // Función auxiliar para obtener la ruta actual
-  const getCurrentPath = () => window.location.pathname;
-
-  // Función principal para renderizar la página basada en la ruta
-  const renderPage = () => {
-    const path = getCurrentPath();
-
-    // Rutas públicas (no requieren autenticación)
-    const publicRoutes: Record<string, React.ComponentType> = {
-      "/login": LoginPage,
-      "/register": RegisterPage,
-      "/confirmation": ConfirmationPage,
-      "/survey": SurveyPage,
-      "/forgot-password": ForgotPasswordPage,
-      "/forgot-password-code": ForgotPasswordCodePage,
-      "/forgot-password-reset": ForgotPasswordResetPage,
-    };
-
-    // Verificar rutas públicas primero
-    if (publicRoutes[path]) {
-      const PageComponent = publicRoutes[path];
-      return <PageComponent />;
-    }
-
-    // Rutas protegidas (requieren autenticación)
-    const protectedRoutes: Record<string, React.ComponentType> = {
-      "/profile": ProfilePage,
-      "/study-methods": StudyMethodsLibraryPage,
-      "/dashboard": DashboardPage,
-      "/reports": ReportsPage,
-    };
-
-    // Verificar rutas protegidas directas
-    if (protectedRoutes[path]) {
-      const PageComponent = protectedRoutes[path];
-      return renderProtectedPage(PageComponent);
-    }
-
-    // Manejar rutas dinámicas con parámetros
-    if (path.startsWith("/pomodoro/intro/")) {
-      return renderProtectedPage(PomodoroIntroView);
-    }
-
-    if (path.startsWith("/pomodoro/execute/")) {
-      return renderProtectedPage(PomodoroExecutionView);
-    }
-
-    if (path.startsWith("/mind-maps/intro/")) {
-      return renderProtectedPage(MindMapsInfoPage);
-    }
-
-    if (path.startsWith("/mind-maps/steps/")) {
-      return renderProtectedPage(MindMapsStepsPage);
-    }
-
-    if (path.startsWith("/spaced-repetition/intro/")) {
-      return renderProtectedPage(SpacedRepetitionIntroView);
-    }
-
-    if (path.startsWith("/spaced-repetition/steps/")) {
-      return renderProtectedPage(SpacedRepetitionStepsView);
-    }
-
-    if (path.startsWith("/active-recall/intro/")) {
-      return renderProtectedPage(ActiveRecallIntroView);
-    }
-
-    if (path.startsWith("/active-recall/steps/")) {
-      return renderProtectedPage(ActiveRecallStepsView);
-    }
-
-    if (path.startsWith("/feynman/intro/")) {
-      return renderProtectedPage(FeynmanIntroView);
-    }
-
-    if (path.startsWith("/feynman/steps/")) {
-      return renderProtectedPage(FeynmanStepsView);
-    }
-
-    if (path.startsWith("/cornell/intro/")) {
-      return renderProtectedPage(CornellIntroView);
-    }
-
-    if (path.startsWith("/cornell/steps/")) {
-      return renderProtectedPage(CornellStepsView);
-    }
-
-    // Ruta por defecto (dashboard)
-    return renderProtectedPage(DashboardPage);
-  };
-
   return (
-    <AuthProvider>
-      <div className="App">
-        {renderPage()}
-      </div>
-    </AuthProvider>
+    <div className="App">
+      <Routes>
+        {/* Rutas públicas */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/confirmation" element={<ConfirmationPage />} />
+        <Route path="/survey" element={<SurveyPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/forgot-password-code" element={<ForgotPasswordCodePage />} />
+        <Route path="/forgot-password-reset" element={<ForgotPasswordResetPage />} />
+
+        {/* Rutas protegidas */}
+        <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+        <Route path="/study-methods" element={<RequireAuth><StudyMethodsLibraryPage /></RequireAuth>} />
+        <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+        <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
+        <Route path="/music/albums" element={<RequireAuth><MusicAlbumsPage /></RequireAuth>} />
+        <Route path="/music/albums/:albumId" element={<RequireAuth><MusicSongsPage /></RequireAuth>} />
+
+        {/* Rutas dinámicas con parámetros */}
+        <Route path="/pomodoro/intro/:methodId" element={<RequireAuth><PomodoroIntroView /></RequireAuth>} />
+        <Route path="/pomodoro/execute/:methodId" element={<RequireAuth><PomodoroExecutionView /></RequireAuth>} />
+        <Route path="/mind-maps/intro/:methodId" element={<RequireAuth><MindMapsInfoPage /></RequireAuth>} />
+        <Route path="/mind-maps/steps/:methodId" element={<RequireAuth><MindMapsStepsPage /></RequireAuth>} />
+        <Route path="/spaced-repetition/intro/:methodId" element={<RequireAuth><SpacedRepetitionIntroView /></RequireAuth>} />
+        <Route path="/spaced-repetition/steps/:methodId" element={<RequireAuth><SpacedRepetitionStepsView /></RequireAuth>} />
+        <Route path="/active-recall/intro/:methodId" element={<RequireAuth><ActiveRecallIntroView /></RequireAuth>} />
+        <Route path="/active-recall/steps/:methodId" element={<RequireAuth><ActiveRecallStepsView /></RequireAuth>} />
+        <Route path="/feynman/intro/:methodId" element={<RequireAuth><FeynmanIntroView /></RequireAuth>} />
+        <Route path="/feynman/steps/:methodId" element={<RequireAuth><FeynmanStepsView /></RequireAuth>} />
+        <Route path="/cornell/intro/:methodId" element={<RequireAuth><CornellIntroView /></RequireAuth>} />
+        <Route path="/cornell/steps/:methodId" element={<RequireAuth><CornellStepsView /></RequireAuth>} />
+
+        {/* Ruta por defecto */}
+        <Route path="/" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+      </Routes>
+    </div>
   );
 }
 

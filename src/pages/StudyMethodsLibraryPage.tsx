@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from "../components/ui/Sidebar";
 import { Card } from "../components/ui/Card";
 import { API_BASE_URL, API_ENDPOINTS } from "../utils/constants";
 import { overrideMethodsWithLocalAssets } from "../utils/methodAssets";
+import { BookOpen } from 'lucide-react';
 
 interface Benefit {
   id_beneficio: number;
@@ -25,6 +27,7 @@ interface StudyMethod {
 
 // Página que muestra la biblioteca de métodos de estudio
 export const StudyMethodsLibraryPage: React.FC = () => {
+  const navigate = useNavigate();
   const [studyMethods, setStudyMethods] = useState<StudyMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -40,7 +43,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
         const token = localStorage.getItem("token");
         if (!token) {
           // ✅ Redirigir al login si no hay token
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
 
@@ -58,7 +61,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
             localStorage.removeItem("userData");
-            window.location.href = "/login";
+            navigate("/login");
             return;
           }
           throw new Error("Error al cargar métodos de estudio");
@@ -83,15 +86,17 @@ export const StudyMethodsLibraryPage: React.FC = () => {
   // Manejar navegación a vista paso a paso del método
   const handleViewStepByStep = (method: StudyMethod) => {
     if (method.nombre_metodo.toLowerCase().includes('pomodoro')) {
-      window.location.href = `/pomodoro/intro/${method.id_metodo}`;
+      navigate(`/pomodoro/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('mapa') || method.nombre_metodo.toLowerCase().includes('mentales')) {
-      window.location.href = `/mind-maps/intro/${method.id_metodo}`;
+      navigate(`/mind-maps/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('repaso') && method.nombre_metodo.toLowerCase().includes('espaciado')) {
-      window.location.href = `/spaced-repetition/intro/${method.id_metodo}`;
+      navigate(`/spaced-repetition/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('práctica') && method.nombre_metodo.toLowerCase().includes('activa')) {
-      window.location.href = `/active-recall/intro/${method.id_metodo}`;
+      navigate(`/active-recall/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('feynman')) {
-      window.location.href = `/feynman/intro/${method.id_metodo}`;
+      navigate(`/feynman/intro/${method.id_metodo}`);
+    } else if (method.nombre_metodo.toLowerCase().includes('cornell')) {
+      navigate(`/cornell/intro/${method.id_metodo}`);
     }
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };
@@ -143,9 +148,11 @@ export const StudyMethodsLibraryPage: React.FC = () => {
       <div className="flex justify-center items-center min-h-screen">
         <main className="w-full max-w-7xl p-6 md:p-10 transition-all">
           <div className="mb-10">
-            <h1 className="text-4xl font-bold text-white mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
+            <h1 className="flex justify-center text-4xl font-bold text-white mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
               Biblioteca de Métodos de Estudio
+              <BookOpen className="w-8 h-8 md:w-10 md:h-10 ml-5" />
             </h1>
+            
             <p className="text-gray-400 text-center text-lg max-w-2xl mx-auto">
               Descubre técnicas probadas para mejorar tu concentración y eficiencia en el estudio
             </p>
