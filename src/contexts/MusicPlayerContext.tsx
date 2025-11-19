@@ -49,11 +49,7 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   // Ref to access current state in event handlers
   const stateRef = useRef<MusicPlayerState | null>(null);
 
-  // Log provider lifecycle
-  useEffect(() => {
-    console.log('[MusicProvider] Mounted');
-    return () => console.log('[MusicProvider] Unmounting');
-  }, []);
+  // Provider lifecycle - no logging needed in production
 
   // Estado inicial
   const [state, setState] = useState<MusicPlayerState>({
@@ -128,7 +124,6 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     const audio = audioRef.current;
     if (!audio) return;
 
-    console.log('[MusicProvider] Audio element mounted in DOM:', !!audio);
 
     // Set initial volume
     audio.volume = state.volume;
@@ -280,7 +275,6 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
       // En modo desarrollo, simular reproducción para URLs de placeholder
       if (validation.reason?.includes('placeholder')) {
-        console.log('Modo desarrollo: Simulando reproducción para URL de placeholder');
         simulatePlayback(song);
         return;
       }
@@ -304,7 +298,6 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       setState(prev => ({ ...prev, duration: song.duracion || 0 }));
 
       audioRef.current.play().then(() => {
-        console.log('[Audio] Play started - paused:', audioRef.current!.paused, 'currentTime:', audioRef.current!.currentTime);
         // Manually set isPlaying since events might not fire for external URLs
         setState(prev => ({ ...prev, isPlaying: true }));
       }).catch((error: any) => {
@@ -326,7 +319,6 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   // Función para simular reproducción en modo desarrollo
   const simulatePlayback = (song: Song) => {
-    console.log(`🎵 Simulando reproducción: "${song.nombre_cancion}" por ${song.artista}`);
 
     setState(prev => ({
       ...prev,
@@ -371,7 +363,6 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
           alert('Error: El formato de audio no es soportado.');
           break;
         case MediaError.MEDIA_ERR_ABORTED:
-          console.log('Carga de audio cancelada');
           break;
         default:
           alert('Error desconocido al cargar el archivo de audio.');
