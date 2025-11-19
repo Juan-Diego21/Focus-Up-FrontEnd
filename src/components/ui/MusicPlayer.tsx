@@ -17,6 +17,7 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { useMusicPlayer, type PlaybackMode } from '../../contexts/MusicPlayerContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Función auxiliar para obtener imagen del álbum
 const getAlbumImage = (albumName: string) => {
@@ -39,6 +40,7 @@ const getArtistName = (song: any): string => {
 };
 
 export const MusicPlayer: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const {
     currentSong,
     currentAlbum,
@@ -65,10 +67,26 @@ export const MusicPlayer: React.FC = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Si no hay canción actual, no mostrar el reproductor
-  if (!currentSong) {
+  // Calcular si hay canción siguiente/anterior disponible
+  const currentIndex = currentSong ? playlist.findIndex(song => song.id_cancion === currentSong.id_cancion) : -1;
+  const hasNextSong = currentIndex >= 0 && (
+    playbackMode === 'loop-all' ||
+    isShuffling ||
+    (playbackMode === 'ordered' && currentIndex < playlist.length - 1)
+  );
+  const hasPreviousSong = currentIndex >= 0 && (
+    playbackMode === 'loop-all' ||
+    isShuffling ||
+    (playbackMode === 'ordered' && currentIndex > 0)
+  );
+
+  // Si no está autenticado o no hay canción actual, no mostrar el reproductor
+  if (!isAuthenticated || !currentSong) {
+    console.log('[MusicPlayer] Hidden - authenticated:', isAuthenticated, 'song:', !!currentSong);
     return null;
   }
+
+  console.log('[MusicPlayer] Rendered - playing:', isPlaying, 'currentTime:', currentTime);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -216,7 +234,7 @@ export const MusicPlayer: React.FC = () => {
               <button
                 onClick={previousSong}
                 className="text-gray-400 hover:text-violet-400 hover:scale-110 transition-all duration-200 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-5"
-                disabled={playlist.length <= 1}
+                disabled={!hasPreviousSong}
               >
                 <BackwardIcon className="w-5 h-5" />
               </button>
@@ -238,7 +256,7 @@ export const MusicPlayer: React.FC = () => {
               <button
                 onClick={nextSong}
                 className="text-gray-400 hover:text-violet-400 hover:scale-110 transition-all duration-200 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-5"
-                disabled={playlist.length <= 1}
+                disabled={!hasNextSong}
               >
                 <ForwardIcon className="w-5 h-5" />
               </button>

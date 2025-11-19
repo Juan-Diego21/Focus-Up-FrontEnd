@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from "../components/ui/Sidebar";
 import { Card } from "../components/ui/Card";
 import { API_BASE_URL, API_ENDPOINTS } from "../utils/constants";
@@ -26,6 +27,7 @@ interface StudyMethod {
 
 // Página que muestra la biblioteca de métodos de estudio
 export const StudyMethodsLibraryPage: React.FC = () => {
+  const navigate = useNavigate();
   const [studyMethods, setStudyMethods] = useState<StudyMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -41,7 +43,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
         const token = localStorage.getItem("token");
         if (!token) {
           // ✅ Redirigir al login si no hay token
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
 
@@ -59,7 +61,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
             localStorage.removeItem("userData");
-            window.location.href = "/login";
+            navigate("/login");
             return;
           }
           throw new Error("Error al cargar métodos de estudio");
@@ -84,17 +86,17 @@ export const StudyMethodsLibraryPage: React.FC = () => {
   // Manejar navegación a vista paso a paso del método
   const handleViewStepByStep = (method: StudyMethod) => {
     if (method.nombre_metodo.toLowerCase().includes('pomodoro')) {
-      window.location.href = `/pomodoro/intro/${method.id_metodo}`;
+      navigate(`/pomodoro/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('mapa') || method.nombre_metodo.toLowerCase().includes('mentales')) {
-      window.location.href = `/mind-maps/intro/${method.id_metodo}`;
+      navigate(`/mind-maps/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('repaso') && method.nombre_metodo.toLowerCase().includes('espaciado')) {
-      window.location.href = `/spaced-repetition/intro/${method.id_metodo}`;
+      navigate(`/spaced-repetition/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('práctica') && method.nombre_metodo.toLowerCase().includes('activa')) {
-      window.location.href = `/active-recall/intro/${method.id_metodo}`;
+      navigate(`/active-recall/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('feynman')) {
-      window.location.href = `/feynman/intro/${method.id_metodo}`;
+      navigate(`/feynman/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('cornell')) {
-      window.location.href = `/cornell/intro/${method.id_metodo}`;
+      navigate(`/cornell/intro/${method.id_metodo}`);
     }
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };

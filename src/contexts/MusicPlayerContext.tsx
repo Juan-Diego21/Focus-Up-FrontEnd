@@ -42,10 +42,19 @@ const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(und
 
 const MUSIC_PLAYER_STORAGE_KEY = 'focusup-music-player';
 
-// Audio element persistente - creado una sola vez y nunca destruido
-const audioRef = React.createRef<HTMLAudioElement>();
-
 export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Persistent audio element ref
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Ref to access current state in event handlers
+  const stateRef = useRef<MusicPlayerState | null>(null);
+
+  // Log provider lifecycle
+  useEffect(() => {
+    console.log('[MusicProvider] Mounted');
+    return () => console.log('[MusicProvider] Unmounting');
+  }, []);
+
   // Estado inicial
   const [state, setState] = useState<MusicPlayerState>({
     currentSong: null,
@@ -109,53 +118,57 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       volume: state.volume,
     };
     localStorage.setItem(MUSIC_PLAYER_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [state.playlist, state.playbackMode, state.volume]);
 
-  // Crear elemento de audio persistente una sola vez
+    // Update state ref for event handlers
+    stateRef.current = state;
+  }, [state.playlist, state.playbackMode, state.volume, state.currentSong, state.isPlaying, state.isShuffling, state.currentTime, state.duration, state.isLoading, state.currentAlbum]);
+
+  // Setup audio element when ref is available
   useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.volume = state.volume;
+    const audio = audioRef.current;
+    if (!audio) return;
 
-      // Eventos del audio
-      const handleLoadedMetadata = () => {
-        setState(prev => ({ ...prev, duration: audioRef.current!.duration, isLoading: false }));
-      };
+    console.log('[MusicProvider] Audio element mounted in DOM:', !!audio);
 
-      const handleTimeUpdate = () => {
-        setState(prev => ({ ...prev, currentTime: audioRef.current!.currentTime }));
-      };
+    // Set initial volume
+    audio.volume = state.volume;
 
-      const handleCanPlay = () => {
-        setState(prev => ({ ...prev, isLoading: false }));
-      };
+    // Eventos del audio
+    const handleLoadedMetadata = () => {
+      setState(prev => ({ ...prev, duration: audio.duration, isLoading: false }));
+    };
 
-      const handleLoadStart = () => {
-        setState(prev => ({ ...prev, isLoading: true }));
-      };
+    const handleTimeUpdate = () => {
+      setState(prev => ({ ...prev, currentTime: audio.currentTime }));
+    };
 
-      const handleEnded = () => {
-        handleSongEnd();
-      };
+    const handleCanPlay = () => {
+      setState(prev => ({ ...prev, isLoading: false }));
+    };
 
-      audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
-      audioRef.current.addEventListener('ended', handleEnded);
-      audioRef.current.addEventListener('canplay', handleCanPlay);
-      audioRef.current.addEventListener('loadstart', handleLoadStart);
+    const handleLoadStart = () => {
+      setState(prev => ({ ...prev, isLoading: true }));
+    };
 
-      // Cleanup function - NO pausar el audio para mantener reproducción persistente
-      return () => {
-        if (audioRef.current) {
-          audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
-          audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-          audioRef.current.removeEventListener('ended', handleEnded);
-          audioRef.current.removeEventListener('canplay', handleCanPlay);
-          audioRef.current.removeEventListener('loadstart', handleLoadStart);
-          // Nota: No llamamos audio.pause() para mantener reproducción persistente
-        }
-      };
-    }
+    const handleEnded = () => {
+      handleSongEnd();
+    };
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('loadstart', handleLoadStart);
+
+    // Cleanup function - NO pausar el audio para mantener reproducción persistente
+    return () => {
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('loadstart', handleLoadStart);
+      // Nota: No llamamos audio.pause() para mantener reproducción persistente
+    };
   }, []);
 
   // Actualizar volumen cuando cambie
@@ -166,44 +179,61 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [state.volume]);
 
   const handleSongEnd = () => {
-    if (state.playbackMode === 'loop-one' && state.currentSong) {
+    const currentState = stateRef.current;
+    if (!currentState) return;
+
+    if (currentState.playbackMode === 'loop-one' && currentState.currentSong) {
       // Repetir la misma canción
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
         audioRef.current.play();
       }
     } else {
-      // Ir a la siguiente canción
-      nextSong();
+      // Para otros modos, intentar reproducir la siguiente canción
+      const nextIndex = getNextSongIndex();
+      if (nextIndex >= 0 && currentState.playlist[nextIndex]) {
+        playSong(currentState.playlist[nextIndex]);
+      } else {
+        // No hay siguiente canción (fin de la lista en modo 'ordered')
+        setState(prev => ({ ...prev, isPlaying: false }));
+      }
     }
   };
 
   const getNextSongIndex = (): number => {
-    if (!state.currentSong || state.playlist.length === 0) return -1;
+    const currentState = stateRef.current;
+    if (!currentState || !currentState.currentSong || currentState.playlist.length === 0) return -1;
 
-    const currentIndex = state.playlist.findIndex(song => song.id_cancion === state.currentSong!.id_cancion);
+    const currentIndex = currentState.playlist.findIndex(song => song.id_cancion === currentState.currentSong!.id_cancion);
 
-    if (state.isShuffling) {
-      // Modo aleatorio
-      return Math.floor(Math.random() * state.playlist.length);
+    if (currentState.isShuffling) {
+      // Modo aleatorio - canción aleatoria
+      return Math.floor(Math.random() * currentState.playlist.length);
+    } else if (currentState.playbackMode === 'loop-all') {
+      // Modo loop-all - volver al inicio cuando llegue al final
+      return (currentIndex + 1) % currentState.playlist.length;
     } else {
-      // Modo ordenado o loop-all
-      const nextIndex = (currentIndex + 1) % state.playlist.length;
-      return nextIndex;
+      // Modo ordered - siguiente canción o -1 si es la última
+      const nextIndex = currentIndex + 1;
+      return nextIndex < currentState.playlist.length ? nextIndex : -1;
     }
   };
 
   const getPreviousSongIndex = (): number => {
-    if (!state.currentSong || state.playlist.length === 0) return -1;
+    const currentState = stateRef.current;
+    if (!currentState || !currentState.currentSong || currentState.playlist.length === 0) return -1;
 
-    const currentIndex = state.playlist.findIndex(song => song.id_cancion === state.currentSong!.id_cancion);
+    const currentIndex = currentState.playlist.findIndex(song => song.id_cancion === currentState.currentSong!.id_cancion);
 
-    if (state.isShuffling) {
+    if (currentState.isShuffling) {
       // En modo aleatorio, ir a una canción aleatoria
-      return Math.floor(Math.random() * state.playlist.length);
+      return Math.floor(Math.random() * currentState.playlist.length);
+    } else if (currentState.playbackMode === 'loop-all') {
+      // Modo loop-all - ir a la anterior, o a la última si estamos en la primera
+      return currentIndex > 0 ? currentIndex - 1 : currentState.playlist.length - 1;
     } else {
-      // Modo ordenado
-      return currentIndex > 0 ? currentIndex - 1 : state.playlist.length - 1;
+      // Modo ordered - ir a la anterior, o -1 si estamos en la primera
+      return currentIndex > 0 ? currentIndex - 1 : -1;
     }
   };
 
@@ -274,9 +304,10 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       setState(prev => ({ ...prev, duration: song.duracion || 0 }));
 
       audioRef.current.play().then(() => {
+        console.log('[Audio] Play started - paused:', audioRef.current!.paused, 'currentTime:', audioRef.current!.currentTime);
         // Manually set isPlaying since events might not fire for external URLs
         setState(prev => ({ ...prev, isPlaying: true }));
-      }).catch(error => {
+      }).catch((error: any) => {
         console.error('Error reproduciendo canción:', error);
         setState(prev => ({ ...prev, isPlaying: false, isLoading: false }));
 
@@ -387,16 +418,26 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const nextSong = () => {
     const nextIndex = getNextSongIndex();
-    if (nextIndex >= 0 && state.playlist[nextIndex]) {
-      playSong(state.playlist[nextIndex]);
+    const currentState = stateRef.current;
+    if (nextIndex >= 0 && currentState && currentState.playlist[nextIndex]) {
+      playSong(currentState.playlist[nextIndex]);
+    } else if (currentState && currentState.playbackMode === 'ordered') {
+      // En modo ordered, si no hay siguiente canción, detener reproducción
+      setState(prev => ({ ...prev, isPlaying: false }));
     }
+    // En otros modos (shuffle, loop-all), getNextSongIndex ya maneja el comportamiento correcto
   };
 
   const previousSong = () => {
     const prevIndex = getPreviousSongIndex();
-    if (prevIndex >= 0 && state.playlist[prevIndex]) {
-      playSong(state.playlist[prevIndex]);
+    const currentState = stateRef.current;
+    if (prevIndex >= 0 && currentState && currentState.playlist[prevIndex]) {
+      playSong(currentState.playlist[prevIndex]);
+    } else if (currentState && currentState.playbackMode === 'ordered') {
+      // En modo ordered, si no hay canción anterior, detener reproducción
+      setState(prev => ({ ...prev, isPlaying: false }));
     }
+    // En otros modos (shuffle, loop-all), getPreviousSongIndex ya maneja el comportamiento correcto
   };
 
   const setShuffle = (shuffle: boolean) => {
@@ -481,6 +522,12 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   return (
     <MusicPlayerContext.Provider value={contextValue}>
       {children}
+      <audio
+        ref={audioRef}
+        id="global-audio-element"
+        preload="metadata"
+        style={{ display: 'none' }}
+      />
     </MusicPlayerContext.Provider>
   );
 };
