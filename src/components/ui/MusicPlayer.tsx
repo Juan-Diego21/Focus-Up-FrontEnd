@@ -10,9 +10,6 @@ import {
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
   XMarkIcon,
-  MusicalNoteIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
@@ -36,7 +33,7 @@ const getAlbumImage = (albumName: string) => {
 
 // Función auxiliar para obtener el nombre del artista
 const getArtistName = (song: any): string => {
-  return song.artista || song.artist_song || 'Artista desconocido';
+  return song.artista_cancion || 'Artista desconocido';
 };
 
 export const MusicPlayer: React.FC = () => {
@@ -86,7 +83,6 @@ export const MusicPlayer: React.FC = () => {
     return null;
   }
 
-  console.log('[MusicPlayer] Rendered - playing:', isPlaying, 'currentTime:', currentTime);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -360,7 +356,7 @@ export const MusicPlayer: React.FC = () => {
                 onClick={() => setShowQueue(false)}
                 className="text-gray-400 hover:text-white p-1"
               >
-                <XMarkIcon className="w-6 h-6" />
+                <XMarkIcon className="w-6 h-6 cursor-pointer" />
               </button>
             </div>
 
@@ -401,7 +397,7 @@ export const MusicPlayer: React.FC = () => {
                       {song.nombre_cancion}
                     </p>
                     <p className="text-gray-400 text-xs truncate">
-                      {song.artista}
+                      {song.artista_cancion}
                     </p>
                   </div>
 

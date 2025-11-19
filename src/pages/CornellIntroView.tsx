@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from 'react-router-dom';
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
@@ -17,9 +18,8 @@ interface StudyMethod {
 }
 
 export const CornellIntroView: React.FC = () => {
-  // Obtener ID del método desde la URL
-  const urlParts = window.location.pathname.split('/');
-  const id = urlParts[urlParts.length - 1];
+  const navigate = useNavigate();
+  const { methodId } = useParams<{ methodId: string }>();
   const [method, setMethod] = useState<StudyMethod | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -34,11 +34,11 @@ export const CornellIntroView: React.FC = () => {
 
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
 
-        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${id}`, {
+        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${methodId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -48,7 +48,7 @@ export const CornellIntroView: React.FC = () => {
         if (!response.ok) {
           if (response.status === 401) {
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            navigate("/login");
             return;
           }
           throw new Error("Error al cargar datos del método");
@@ -64,10 +64,10 @@ export const CornellIntroView: React.FC = () => {
       }
     };
 
-    if (id) {
+    if (methodId) {
       fetchMethodData();
     }
-  }, [id]);
+  }, [methodId]);
 
   if (loading) {
     return (
@@ -88,7 +88,7 @@ export const CornellIntroView: React.FC = () => {
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => window.location.href = "/study-methods"}
+            onClick={() => navigate("/study-methods")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
           >
             Volver a métodos
@@ -105,7 +105,7 @@ export const CornellIntroView: React.FC = () => {
 
   // Manejar inicio del método
   const handleStartMethod = () => {
-    window.location.href = `/cornell/steps/${id}`;
+    navigate(`/cornell/steps/${methodId}`);
   };
 
   return (
@@ -113,7 +113,7 @@ export const CornellIntroView: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-8">
         <button
-          onClick={() => window.location.href = "/study-methods"}
+          onClick={() => navigate("/study-methods")}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >

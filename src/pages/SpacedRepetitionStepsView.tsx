@@ -3,6 +3,7 @@
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
@@ -32,14 +33,23 @@ interface StudyMethod {
  * Permite al usuario completar 4 pasos de revisión espaciada con progreso visual
  */
 export const SpacedRepetitionStepsView: React.FC = () => {
-  // Obtener ID del método desde la URL para identificar qué método ejecutar
-  const urlParts = window.location.pathname.split('/');
-  const id = urlParts[urlParts.length - 1];
+  const navigate = useNavigate();
+  const { methodId } = useParams<{ methodId: string }>();
+  const [searchParams] = useSearchParams();
+  const urlProgress = searchParams.get('progreso');
+  const urlSessionId = searchParams.get('sessionId');
 
-  // Leer parámetros de URL para reanudar sesiones existentes
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlProgress = urlParams.get('progreso');
-  const urlSessionId = urlParams.get('sessionId');
+  // Guard against undefined methodId
+  useEffect(() => {
+    if (!methodId) {
+      navigate('/study-methods');
+    }
+  }, [methodId, navigate]);
+
+  // Early return if methodId is undefined
+  if (!methodId) {
+    return null;
+  }
 
   // Estado para almacenar la información del método de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
@@ -119,11 +129,11 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
 
-        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${id}`, {
+        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${methodId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -133,7 +143,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
         if (!response.ok) {
           if (response.status === 401) {
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            navigate("/login");
             return;
           }
           throw new Error("Error al cargar datos del método");
@@ -162,7 +172,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           // Establecer datos de sesión para sesión existente
           setSessionData({
             id: urlSessionId,
-            methodId: parseInt(id),
+            methodId: parseInt(methodId),
             id_metodo_realizado: 0, // Se establecerá cuando tengamos la sesión real
             startTime: new Date().toISOString(),
             progress: progress,
@@ -179,10 +189,10 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       }
     };
 
-    if (id) {
+    if (methodId) {
       fetchMethodData();
     }
-  }, [id, urlSessionId, urlProgress]);
+  }, [methodId, urlSessionId, urlProgress]);
 
   // Cargar datos de reanudación desde localStorage
   useEffect(() => {
@@ -190,7 +200,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     const resumeProgress = localStorage.getItem('resume-progress');
     const resumeMethodType = localStorage.getItem('resume-method-type');
 
-    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'spacedrepetition') {
+    if (resumeMethodId && resumeMethodId === methodId && resumeMethodType === 'spacedrepetition') {
       // Reanudando un método específico de Repaso Espaciado sin terminar
       console.log('Reanudando método de Repaso Espaciado con ID:', resumeMethodId, 'en progreso:', resumeProgress);
       const progress = parseInt(resumeProgress || '0');
@@ -238,7 +248,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       localStorage.removeItem('resume-progress');
       localStorage.removeItem('resume-method-type');
     }
-  }, [id]);
+  }, [methodId]);
 
   /**
    * Inicia una nueva sesión en el backend para el método Repaso Espaciado
@@ -254,9 +264,9 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     }
 
     try {
-      console.log('Iniciando nueva sesión de Repaso Espaciado con id:', id);
+      console.log('Iniciando nueva sesión de Repaso Espaciado con id:', methodId);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(id),
+        id_metodo: parseInt(methodId),
         estado: 'En_proceso',
         progreso: 20
       });
@@ -271,7 +281,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
       setSessionData({
         id: session.id,
-        methodId: parseInt(id),
+        methodId: parseInt(methodId),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
         progress: 20,
@@ -372,7 +382,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
-          window.location.href = '/dashboard';
+          navigate('/dashboard');
         });
       }
 
@@ -461,7 +471,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => window.location.href = "/study-methods"}
+            onClick={() => navigate("/study-methods")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
           >
             Volver a métodos
@@ -481,7 +491,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => window.location.href = `/spaced-repetition/intro/${id}`}
+          onClick={() => navigate(`/spaced-repetition/intro/${methodId}`)}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >
@@ -625,7 +635,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
             await updateSessionProgress(progressPercentage, getSpacedRepetitionStatusByProgress(progressPercentage));
           }
           setShowFinishLaterModal(false);
-          window.location.href = "/reports";
+          navigate("/reports");
         }}
       />
     </div>

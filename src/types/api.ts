@@ -22,12 +22,11 @@ export interface Album {
 export interface Song {
   id_cancion: number;
   nombre_cancion: string;
-  artista?: string;
-  artist_song?: string; // Alternative field name from backend
+  artista_cancion?: string; 
   categoria: string;
   url_musica: string;
   id_album: number;
-  duracion?: number; // in seconds
+  duracion?: number; // En segundos
 }
 
 

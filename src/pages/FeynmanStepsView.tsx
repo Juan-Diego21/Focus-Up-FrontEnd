@@ -34,14 +34,20 @@ interface StudyMethod {
  */
 export const FeynmanStepsView: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { methodId } = useParams<{ methodId: string }>();
   const [searchParams] = useSearchParams();
   const urlProgress = searchParams.get('progreso');
   const urlSessionId = searchParams.get('sessionId');
 
-  // Guard against undefined id
-  if (!id) {
-    navigate('/study-methods');
+  // Guard against undefined methodId - moved to useEffect to avoid render-time navigation
+  useEffect(() => {
+    if (!methodId) {
+      navigate('/study-methods');
+    }
+  }, [methodId, navigate]);
+
+  // Early return if methodId is undefined (navigation will happen in useEffect)
+  if (!methodId) {
     return null;
   }
 
@@ -127,7 +133,7 @@ export const FeynmanStepsView: React.FC = () => {
           return;
         }
 
-        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${id}`, {
+        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${methodId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -166,7 +172,7 @@ export const FeynmanStepsView: React.FC = () => {
           // Establecer datos de sesión para sesión existente
           setSessionData({
             id: urlSessionId,
-            methodId: parseInt(id),
+            methodId: parseInt(methodId),
             id_metodo_realizado: 0, // Se establecerá cuando tengamos la sesión real
             startTime: new Date().toISOString(),
             progress: progress,
@@ -183,10 +189,10 @@ export const FeynmanStepsView: React.FC = () => {
       }
     };
 
-    if (id) {
+    if (methodId) {
       fetchMethodData();
     }
-  }, [id, urlSessionId, urlProgress]);
+  }, [methodId, urlSessionId, urlProgress]);
 
   // Cargar datos de reanudación desde localStorage
   useEffect(() => {
@@ -194,7 +200,7 @@ export const FeynmanStepsView: React.FC = () => {
     const resumeProgress = localStorage.getItem('resume-progress');
     const resumeMethodType = localStorage.getItem('resume-method-type');
 
-    if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'feynman') {
+    if (resumeMethodId && resumeMethodId === methodId && resumeMethodType === 'feynman') {
       // Reanudando un método específico del Método Feynman sin terminar
       console.log('Reanudando método de Feynman con ID:', resumeMethodId, 'en progreso:', resumeProgress);
       const progress = parseInt(resumeProgress || '0');
@@ -242,7 +248,7 @@ export const FeynmanStepsView: React.FC = () => {
       localStorage.removeItem('resume-progress');
       localStorage.removeItem('resume-method-type');
     }
-  }, [id]);
+  }, [methodId]);
 
   /**
    * Inicia una nueva sesión en el backend para el método Feynman
@@ -258,9 +264,9 @@ export const FeynmanStepsView: React.FC = () => {
     }
 
     try {
-      console.log('Iniciando nueva sesión del Método Feynman con id:', id);
+      console.log('Iniciando nueva sesión del Método Feynman con id:', methodId);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(id),
+        id_metodo: parseInt(methodId),
         estado: 'En_proceso',
         progreso: 20
       });
@@ -275,7 +281,7 @@ export const FeynmanStepsView: React.FC = () => {
 
       setSessionData({
         id: session.id,
-        methodId: parseInt(id),
+        methodId: parseInt(methodId),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
         progress: 20,
@@ -376,7 +382,7 @@ export const FeynmanStepsView: React.FC = () => {
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
-          navigate('/dashboard');
+          navigate('/feynman/steps/5');
         });
       }
 
@@ -504,7 +510,7 @@ export const FeynmanStepsView: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => navigate(`/feynman/intro/${id}`)}
+          onClick={() => navigate(`/feynman/intro/${methodId}`)}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >

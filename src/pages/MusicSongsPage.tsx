@@ -131,7 +131,7 @@ export const MusicSongsPage: React.FC = () => {
 
   // Función auxiliar para obtener el nombre del artista
   const getArtistName = (song: Song): string => {
-    return song.artista || song.artist_song || 'Artista desconocido';
+    return song.artista_cancion || 'Artista desconocido';
   };
 
   // Precargar duraciones de canciones
@@ -195,7 +195,7 @@ export const MusicSongsPage: React.FC = () => {
             <p className="text-gray-400 mb-6">{error || 'Álbum no encontrado'}</p>
             <button
               onClick={() => navigate('/music/albums')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 cursor-pointer"
             >
               Volver a álbumes
             </button>
@@ -217,7 +217,7 @@ export const MusicSongsPage: React.FC = () => {
         <div className="text-center mb-6">
           <button
             onClick={() => navigate('/music/albums')}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mx-auto"
+            className="flex items-center gap-2 text-gray-400 cursor-pointer hover:text-white transition-colors mx-auto"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -277,7 +277,7 @@ export const MusicSongsPage: React.FC = () => {
             </div>
           ) : (
             <div className="divide-y divide-[#333]">
-              {songs.map((song, index) => (
+              {songs.map((song) => (
                 <div
                   key={song.id_cancion}
                   className="flex items-center gap-4 p-4 hover:bg-[#2a2a2a] transition-colors group"
@@ -309,13 +309,8 @@ export const MusicSongsPage: React.FC = () => {
                     <h3 className="text-white font-medium truncate">{song.nombre_cancion}</h3>
                   </div>
 
-                  {/* Category */}
-                  <div className="hidden md:block text-gray-400 text-sm px-3 py-1 bg-[#333] rounded-full">
-                    {song.categoria}
-                  </div>
-
                   {/* Artist */}
-                  <div className="text-gray-400 text-sm w-20 text-right truncate">
+                  <div className="text-gray-400 text-sm w-35 text-right truncate">
                     {getArtistName(song)}
                   </div>
 
