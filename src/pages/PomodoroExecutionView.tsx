@@ -3,6 +3,7 @@
  * Maneja la lógica de temporización, progreso y navegación entre pasos
  */
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Timer } from "../components/ui/Timer";
 import { ProgressCircle } from "../components/ui/ProgressCircle";
 import { apiClient } from "../utils/apiClient";
@@ -50,14 +51,11 @@ interface StudyMethod {
  * Incluye temporización, navegación de pasos y gestión de sesiones
  */
 export const PomodoroExecutionView: React.FC = () => {
-  // Extraer el ID del método desde la URL para identificar qué método ejecutar
-  const urlParts = window.location.pathname.split('/');
-  const id = urlParts[urlParts.length - 1];
-
-  // Leer parámetros de URL para reanudar sesiones existentes
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlProgress = urlParams.get('progreso');
-  const urlSessionId = urlParams.get('sessionId');
+  const navigate = useNavigate();
+  const { methodId } = useParams<{ methodId: string }>();
+  const [searchParams] = useSearchParams();
+  const urlProgress = searchParams.get('progreso');
+  const urlSessionId = searchParams.get('sessionId');
 
   // Estado para almacenar la información del método de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
@@ -127,7 +125,7 @@ export const PomodoroExecutionView: React.FC = () => {
       // Set session data for existing session
       setSessionData({
         id: urlSessionId,
-        methodId: parseInt(id),
+        methodId: parseInt(methodId!),
         id_metodo_realizado: 0, // Will be set when we have the real session
         startTime: new Date().toISOString(),
         progress: progress,
@@ -142,7 +140,7 @@ export const PomodoroExecutionView: React.FC = () => {
       const resumeProgress = localStorage.getItem('resume-progress');
       const resumeMethodType = localStorage.getItem('resume-method-type');
 
-      if (resumeMethodId && resumeMethodId === id && resumeMethodType === 'pomodoro') {
+      if (resumeMethodId && resumeMethodId === methodId && resumeMethodType === 'pomodoro') {
         // Resuming a specific unfinished Pomodoro method
         console.log('Resuming Pomodoro method with ID:', resumeMethodId, 'at progress:', resumeProgress);
         const progress = parseInt(resumeProgress || '0');
@@ -168,7 +166,7 @@ export const PomodoroExecutionView: React.FC = () => {
         localStorage.removeItem('resume-method-type');
       }
     }
-  }, [id, urlSessionId, urlProgress]);
+  }, [methodId, urlSessionId, urlProgress]);
 
   // Pasos del método Pomodoro
   const steps = [
@@ -209,11 +207,11 @@ export const PomodoroExecutionView: React.FC = () => {
 
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "/login";
+          navigate("/login");
           return;
         }
 
-        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${id}`, {
+        const response = await fetch(`${apiClient.defaults.baseURL}${API_ENDPOINTS.STUDY_METHODS}/${methodId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -223,7 +221,7 @@ export const PomodoroExecutionView: React.FC = () => {
         if (!response.ok) {
           if (response.status === 401) {
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            navigate("/login");
             return;
           }
           throw new Error("Error al cargar datos del método");
@@ -239,10 +237,10 @@ export const PomodoroExecutionView: React.FC = () => {
       }
     };
 
-    if (id) {
+    if (methodId) {
       fetchMethodData();
     }
-  }, [id]);
+  }, [methodId]);
 
   /**
    * Inicia una nueva sesión en el backend para el método Pomodoro
@@ -258,9 +256,9 @@ export const PomodoroExecutionView: React.FC = () => {
     }
 
     try {
-      console.log('Starting new Pomodoro session with id:', id, 'parsed:', parseInt(id));
+      console.log('Starting new Pomodoro session with id:', methodId, 'parsed:', parseInt(methodId!));
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(id),
+        id_metodo: parseInt(methodId!),
         estado: 'en_progreso',
         progreso: 20
       });
@@ -275,7 +273,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
       setSessionData({
         id: session.id,
-        methodId: parseInt(id),
+        methodId: parseInt(methodId!),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
         progress: 20,
@@ -451,7 +449,7 @@ export const PomodoroExecutionView: React.FC = () => {
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
-          window.location.href = '/dashboard';
+          navigate('/dashboard');
         });
       }
 
@@ -502,7 +500,7 @@ export const PomodoroExecutionView: React.FC = () => {
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => window.location.href = "/study-methods"}
+            onClick={() => navigate("/study-methods")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
           >
             Volver a métodos
@@ -528,7 +526,7 @@ export const PomodoroExecutionView: React.FC = () => {
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-6">
         <button
-          onClick={() => window.location.href = `/pomodoro/intro/${id}`}
+          onClick={() => navigate(`/pomodoro/intro/${methodId}`)}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
           aria-label="Volver atrás"
         >
@@ -739,7 +737,7 @@ export const PomodoroExecutionView: React.FC = () => {
         methodName={method?.titulo || "Método Pomodoro"}
         onConfirm={() => {
           setShowFinishLaterModal(false);
-          window.location.href = "/reports";
+          navigate("/reports");
         }}
       />
     </div>
