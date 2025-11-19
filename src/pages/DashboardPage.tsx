@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from "../components/ui/Sidebar";
 import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
 import { BookOpen, Calendar, Music, Zap } from 'lucide-react';
@@ -6,6 +7,7 @@ import { BookOpen, Calendar, Music, Zap } from 'lucide-react';
 export const DashboardPage: React.FC = () => {
   // Get the number of available study methods
   const studyMethodsCount = Object.keys(LOCAL_METHOD_ASSETS).length;
+  const navigate = useNavigate();
 
   // Estado para controlar la visibilidad del indicador de scroll
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
@@ -27,7 +29,11 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   const navigateToStudyMethods = () => {
-    window.location.href = "/study-methods";
+    navigate("/study-methods");
+  };
+
+  const navigateToMusic = () => {
+    navigate("/music/albums");
   };
 
   return (
@@ -88,7 +94,7 @@ export const DashboardPage: React.FC = () => {
                     Explora playlists destinadas a mejorar tus sesiones de estudio
                   </span>
                 </div>
-                <button className="w-full mt-auto px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm md:text-base font-semibold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-purple-500/25 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-center cursor-pointer flex items-center justify-center gap-2">
+                <button onClick={navigateToMusic} className="w-full mt-auto px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm md:text-base font-semibold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-purple-500/25 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-center cursor-pointer flex items-center justify-center gap-2">
                   <Music className="w-4 h-4" />
                   Explorar música
                 </button>
