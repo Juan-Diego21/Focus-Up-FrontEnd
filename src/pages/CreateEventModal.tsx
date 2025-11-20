@@ -36,7 +36,6 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Reiniciar formulario cuando se abre el modal
   React.useEffect(() => {
@@ -86,12 +85,24 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
     if (!formData.fechaEvento) {
       newErrors.fechaEvento = 'La fecha del evento es requerida';
     } else {
-      const eventDate = new Date(formData.fechaEvento);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Convertir hora de 12h a 24h formato
+      const convertTo24Hour = (hours: number, period: string): string => {
+        let hour24 = hours;
+        if (period === 'PM' && hours !== 12) {
+          hour24 = hours + 12;
+        } else if (period === 'AM' && hours === 12) {
+          hour24 = 0;
+        }
+        return `${hour24.toString().padStart(2, '0')}:${formData.minutes.toString().padStart(2, '0')}:00`;
+      };
 
-      if (eventDate < today) {
-        newErrors.fechaEvento = 'La fecha no puede ser anterior a hoy';
+      // Check if the full date and time is in the future
+      const eventDateTimeString = `${formData.fechaEvento}T${convertTo24Hour(formData.hours, formData.period)}`;
+      const eventDateTime = new Date(eventDateTimeString);
+      const now = new Date();
+
+      if (eventDateTime <= now) {
+        newErrors.fechaEvento = 'No se pueden crear eventos en el pasado. Para eventos del mismo día, la hora debe ser futura.';
       }
     }
 
@@ -135,7 +146,21 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
       };
 
       await onSave(eventData);
-      setShowSuccessModal(true);
+
+      // Show small, non-intrusive success message and close modal after
+      Swal.fire({
+        title: '¡Evento creado!',
+        text: 'Tu evento ha sido guardado correctamente.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#22C55E',
+        didClose: () => {
+          onClose();
+        },
+      });
     } catch (error: any) {
       console.error('Error creando evento:', error);
 
@@ -608,31 +633,6 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         </div>
       </div>
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-[#232323] rounded-2xl shadow-2xl w-full max-w-md border border-[#333] p-8 text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">¡Evento creado exitosamente!</h3>
-              <p className="text-gray-400">Tu evento ha sido guardado correctamente.</p>
-            </div>
-            <button
-              onClick={() => {
-                setShowSuccessModal(false);
-                onClose();
-              }}
-              className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors cursor-pointer"
-            >
-              Continuar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

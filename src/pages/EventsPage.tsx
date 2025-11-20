@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
  * Muestra todos los eventos del usuario en una cuadrícula con funcionalidad de creación
  */
 export const EventsPage: React.FC = () => {
-  const { events, loading, error, fetchEvents, createEvent, updateEvent, deleteEvent } = useEvents();
+  const { events, loading, error, fetchEvents, createEvent, updateEvent, optimisticDelete } = useEvents();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<IEvento | null>(null);
@@ -41,7 +41,7 @@ export const EventsPage: React.FC = () => {
     setShowEditModal(true);
   };
 
-  // Manejar eliminación de un evento
+  // Manejar eliminación de un evento con UI optimista
   const handleDeleteEvent = async (eventId: number) => {
     const result = await Swal.fire({
       title: '¿Eliminar evento?',
@@ -58,7 +58,8 @@ export const EventsPage: React.FC = () => {
 
     if (result.isConfirmed) {
       try {
-        await deleteEvent(eventId);
+        // Optimistic deletion: remove from UI immediately to prevent reloads and audio interruptions
+        await optimisticDelete(eventId);
 
         Swal.fire({
           title: 'Eliminado',
@@ -72,7 +73,7 @@ export const EventsPage: React.FC = () => {
         console.error('Error eliminando evento:', error);
         Swal.fire({
           title: 'Error',
-          text: 'No se pudo eliminar el evento',
+          text: 'No se pudo eliminar el evento. Se ha revertido el cambio.',
           icon: 'error',
           confirmButtonColor: '#EF4444',
           background: '#232323',

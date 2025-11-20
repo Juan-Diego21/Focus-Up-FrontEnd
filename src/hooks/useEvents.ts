@@ -70,7 +70,7 @@ export const useEvents = () => {
   };
 
   /**
-   * Delete an event
+   * Delete an event (non-optimistic)
    */
   const deleteEvent = async (eventId: number) => {
     setLoading(true);
@@ -84,6 +84,22 @@ export const useEvents = () => {
       throw err;
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Optimistically delete an event - removes from UI immediately, rolls back on error
+   * This prevents page reloads and ensures audio playback continuity
+   */
+  const optimisticDelete = async (eventId: number) => {
+    const previous = events; // backup for rollback
+    setEvents(prev => prev.filter(e => (e.idEvento ?? e.id_evento) !== eventId)); // optimistic UI update
+
+    try {
+      await eventsApi.deleteEvent(eventId);
+    } catch (err) {
+      setEvents(previous); // rollback on error
+      throw err;
     }
   };
 
@@ -102,6 +118,7 @@ export const useEvents = () => {
     createEvent,
     updateEvent,
     deleteEvent,
+    optimisticDelete,
     clearError,
   };
 };
