@@ -232,14 +232,6 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   };
 
-  // Función para obtener el tipo MIME basado en la extensión del archivo
-  const getMimeType = (url: string): string => {
-    if (url.endsWith('.mp3')) return 'audio/mpeg';
-    if (url.endsWith('.m4a')) return 'audio/mp4';
-    if (url.endsWith('.wav')) return 'audio/wav';
-    if (url.endsWith('.ogg')) return 'audio/ogg';
-    return 'audio/mpeg'; // Tipo por defecto
-  };
 
   // Función para validar URL de audio
   const validateAudioUrl = (url: string): { isValid: boolean; reason?: string } => {

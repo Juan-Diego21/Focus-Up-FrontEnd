@@ -10,7 +10,6 @@ import { PlayIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 export const MusicSongsPage: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [album, setAlbum] = useState<Album | null>(null);
-  const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [songDurations, setSongDurations] = useState<Record<number, number>>({});
@@ -49,8 +48,7 @@ export const MusicSongsPage: React.FC = () => {
         setError('');
 
         // Fetch albums first for proper association
-        const allAlbums = await getAlbums();
-        setAlbums(allAlbums);
+        await getAlbums();
 
         // Fetch album details
         const albumData = await getAlbumById(albumIdNum);

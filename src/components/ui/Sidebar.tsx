@@ -200,8 +200,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
                       <span className="text-sm">Álbum de música</span>
                     </button>
                     <button
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer opacity-50"
-                      disabled
+                      onClick={() => navigateTo("/events")}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer"
                     >
                       <CalendarIcon className="w-4 h-4" />
                       <span className="text-sm">Eventos</span>
