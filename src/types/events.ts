@@ -10,6 +10,8 @@ export interface IEvento {
   horaEvento?: string;
   descripcion_evento?: string;
   descripcionEvento?: string;
+  estado?: string | null; // "completado" | "pendiente" | null
+  estado_evento?: string | null; // snake_case version
   id_usuario?: number;
   idUsuario?: number;
   id_metodo?: number;
@@ -39,6 +41,11 @@ export interface IEventoUpdate {
   fecha_evento?: string; // ISO date string (YYYY-MM-DD)
   hora_evento?: string;
   descripcion_evento?: string;
+  estado?: string | null; // "completado" | "pendiente" | null
   id_metodo?: number;
   id_album?: number;
+}
+
+export interface IEventoStatusUpdate {
+  estado: "completado" | "pendiente" | null;
 }

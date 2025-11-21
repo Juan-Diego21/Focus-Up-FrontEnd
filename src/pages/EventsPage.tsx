@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, CalendarIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from '../components/ui/Sidebar';
 import { EventCard } from '../components/ui/EventCard';
 import { CreateEventModal } from './CreateEventModal';
 import { EditEventModal } from './EditEventModal';
 import { useEvents } from '../hooks/useEvents';
+import { eventsApi } from '../utils/eventsApi';
 import type { IEvento, IEventoCreate, IEventoUpdate } from '../types/events';
 import Swal from 'sweetalert2';
 
@@ -13,10 +15,18 @@ import Swal from 'sweetalert2';
  * Muestra todos los eventos del usuario en una cuadrícula con funcionalidad de creación
  */
 export const EventsPage: React.FC = () => {
-  const { events, loading, error, fetchEvents, createEvent, updateEvent, optimisticDelete } = useEvents();
+  const { events: hookEvents, loading, error, fetchEvents, createEvent, updateEvent, optimisticDelete } = useEvents();
+  const [events, setEvents] = useState<IEvento[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<IEvento | null>(null);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Sync local events state with hook events
+  useEffect(() => {
+    setEvents(hookEvents);
+  }, [hookEvents]);
 
   // Cargar eventos al montar el componente
   useEffect(() => {
@@ -88,6 +98,80 @@ export const EventsPage: React.FC = () => {
     await updateEvent(eventId, eventData);
   };
 
+  // Filtrar eventos según el filtro seleccionado
+  const getFilteredEvents = () => {
+    if (filter === 'all') return events;
+
+    return events.filter(event => {
+      const fecha = event.fecha_evento || event.fechaEvento;
+      const hora = event.hora_evento || event.horaEvento;
+      const isPast = fecha && hora ? new Date(`${fecha.split('T')[0]}T${hora}`) < new Date() : false;
+
+      if (!isPast) return false; // Only show events that have passed
+
+      const status = event.estado || event.estado_evento;
+
+      if (filter === 'completed') {
+        return status === 'completado';
+      } else if (filter === 'pending') {
+        return status === 'pendiente' || (status === null && isPast);
+      }
+
+      return true;
+    });
+  };
+
+  // Manejar cambio de estado del evento (completado/pendiente)
+  const handleToggleEventState = async (event: IEvento) => {
+    const eventId = event.id_evento || event.idEvento;
+    if (!eventId) return;
+
+    const currentStatus = event.estado || event.estado_evento;
+    const newStatus = currentStatus === "completado" ? "pendiente" : "completado";
+
+    // Optimistic update - update local state immediately
+    const previousEvents = [...events];
+    setEvents(prev => prev.map(e =>
+      (e.id_evento || e.idEvento) === eventId
+        ? { ...e, estado: newStatus }
+        : e
+    ));
+
+    try {
+      // Call appropriate API endpoint
+      if (newStatus === "completado") {
+        await eventsApi.markEventCompleted(eventId);
+      } else {
+        await eventsApi.markEventPending(eventId);
+      }
+
+      // Show success alert
+      Swal.fire({
+        title: 'Evento actualizado correctamente',
+        text: `El evento ha sido marcado como ${newStatus === "completado" ? "completado" : "pendiente"}`,
+        icon: 'success',
+        confirmButtonColor: '#22C55E',
+        background: '#232323',
+        color: '#ffffff',
+        timer: 2500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      // Revert optimistic update on failure
+      setEvents(previousEvents);
+
+      console.error('Error updating event status:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo actualizar el estado del evento',
+        icon: 'error',
+        confirmButtonColor: '#EF4444',
+        background: '#232323',
+        color: '#ffffff',
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
       <Sidebar currentPage="events" />
@@ -107,15 +191,66 @@ export const EventsPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Botón FAB para crear evento */}
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="flex justify-center aling-center text-center fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto md:mb-0 p-4 md:p-3 bg-green-600 hover:bg-green-700 text-white rounded-full md:rounded-xl shadow-lg hover:shadow-green-500/25 transition-all duration-300 cursor-pointer transform hover:scale-105 md:transform-none"
-                aria-label="Crear nuevo evento"
-              >
-                <PlusIcon className="w-6 h-6 md:w-5 md:h-5" />
-                <span className="hidden md:inline ml-5 font-medium">Crear Evento</span>
-              </button>
+              <div className="flex items-center gap-4">
+                {/* Filter Button */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="p-3 bg-[#2a2a2a] text-white rounded-lg hover:bg-[#3a3a3a] transition-all duration-200 cursor-pointer"
+                    aria-label="Filtrar eventos"
+                  >
+                    <FunnelIcon className="w-5 h-5" />
+                  </button>
+
+                  {/* Filter Options with Animation */}
+                  <AnimatePresence>
+                    {showFilters && (
+                      <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.95, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-12 w-48 bg-[#232323] rounded-lg shadow-2xl border border-[#333] py-2 z-10"
+                      >
+                        <button
+                          onClick={() => { setFilter('all'); setShowFilters(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-[#2a2a2a] transition-colors ${
+                            filter === 'all' ? 'text-blue-400 bg-[#2a2a2a]' : 'text-white'
+                          }`}
+                        >
+                          Todos
+                        </button>
+                        <button
+                          onClick={() => { setFilter('pending'); setShowFilters(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-[#2a2a2a] transition-colors ${
+                            filter === 'pending' ? 'text-yellow-400 bg-[#2a2a2a]' : 'text-white'
+                          }`}
+                        >
+                          Pendientes
+                        </button>
+                        <button
+                          onClick={() => { setFilter('completed'); setShowFilters(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-[#2a2a2a] transition-colors ${
+                            filter === 'completed' ? 'text-green-400 bg-[#2a2a2a]' : 'text-white'
+                          }`}
+                        >
+                          Completados
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Botón FAB para crear evento */}
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="flex justify-center aling-center text-center fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto md:mb-0 p-4 md:p-3 bg-green-600 hover:bg-green-700 text-white rounded-full md:rounded-xl shadow-lg hover:shadow-green-500/25 transition-all duration-300 cursor-pointer transform hover:scale-105 md:transform-none"
+                  aria-label="Crear nuevo evento"
+                >
+                  <PlusIcon className="w-6 h-6 md:w-5 md:h-5" />
+                  <span className="hidden md:inline ml-5 font-medium">Crear Evento</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -168,7 +303,7 @@ export const EventsPage: React.FC = () => {
               ) : (
                 /* Cuadrícula de eventos */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {events
+                  {getFilteredEvents()
                     .filter((event) => {
                       const isValid = event && typeof event === 'object' &&
                         (event.id_evento || event.idEvento) &&
@@ -188,6 +323,7 @@ export const EventsPage: React.FC = () => {
                           event={event}
                           onEdit={handleEditEvent}
                           onDelete={handleDeleteEvent}
+                          onToggleState={handleToggleEventState}
                         />
                       );
                     })}

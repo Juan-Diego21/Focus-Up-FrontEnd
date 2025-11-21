@@ -121,4 +121,56 @@ export const eventsApi = {
       throw new Error('Failed to delete event');
     }
   },
+
+  /**
+   * Mark event as completed
+   */
+  markEventCompleted: async (eventId: number): Promise<void> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}/${eventId}/completed`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        throw new Error('Authentication expired');
+      }
+      throw new Error('Failed to mark event as completed');
+    }
+  },
+
+  /**
+   * Mark event as pending
+   */
+  markEventPending: async (eventId: number): Promise<void> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}/${eventId}/pending`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        throw new Error('Authentication expired');
+      }
+      throw new Error('Failed to mark event as pending');
+    }
+  },
 };

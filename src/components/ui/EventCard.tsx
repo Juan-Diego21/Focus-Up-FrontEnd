@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalendarIcon, ClockIcon, BookOpenIcon, MusicalNoteIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, BookOpenIcon, MusicalNoteIcon, PencilIcon, TrashIcon, CheckIcon } from '@heroicons/react/24/outline';
 import type { IEvento } from '../../types/events';
 import { formatLocalDateReadable } from '../../utils/dateUtils';
 
@@ -22,6 +22,7 @@ interface EventCardProps {
   event: IEvento;
   onEdit: (event: IEvento) => void;
   onDelete: (eventId: number) => void;
+  onToggleState: (event: IEvento) => void;
 }
 
 /**
@@ -29,7 +30,7 @@ interface EventCardProps {
  * Displays event details with edit and delete actions
  * Supports both camelCase and snake_case property naming
  */
-export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete }) => {
+export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onToggleState }) => {
   // Early return if event is invalid
   if (!event || typeof event !== 'object') {
     return null;
@@ -45,8 +46,32 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
   const getFecha = () => getProperty('fecha_evento', 'fechaEvento') as string;
   const getHora = () => getProperty('hora_evento', 'horaEvento') as string;
   const getDescripcion = () => getProperty('descripcion_evento', 'descripcionEvento') as string;
+  const getEstado = () => getProperty('estado', 'estado_evento') as string | null;
   const getIdMetodo = () => getProperty('id_metodo', 'idMetodo') as number;
   const getIdAlbum = () => getProperty('id_album', 'idAlbum') as number;
+
+  // Check if event time has passed
+  const isPast = (() => {
+    const fecha = getFecha();
+    const hora = getHora();
+    if (!fecha || !hora) return false;
+
+    const eventDateTime = new Date(`${fecha.split('T')[0]}T${hora}`);
+    const now = new Date();
+
+    return eventDateTime < now;
+  })();
+
+  // Compute status for display (only show when past)
+  const getComputedStatus = () => {
+    if (!isPast) return null;
+
+    const estado = getEstado();
+    if (estado) return estado;
+
+    // If no explicit status but past, show as pending
+    return "pendiente";
+  };
 
   // Format date for display without timezone conversion
   const eventDateRaw = getFecha();
@@ -175,6 +200,38 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Status Badge and Button - Only show when event time has passed */}
+      {isPast && (
+        <div className="mt-4 flex items-center justify-between">
+          {/* Status Badge */}
+          <div>
+            {getComputedStatus() && (
+              <span
+                role="status"
+                className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full border ${
+                  getComputedStatus() === "completado"
+                    ? "bg-green-100 text-green-800 border-green-200"
+                    : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                }`}
+              >
+                {getComputedStatus() === "completado" ? "Completado" : "Pendiente"}
+              </span>
+            )}
+          </div>
+
+          {/* Status Toggle Button */}
+          <button
+            onClick={() => onToggleState(event)}
+            className="flex items-center gap-2 px-3 py-1 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            aria-label={getEstado() === "completado" ? "Marcar como pendiente" : "Marcar como completado"}
+            aria-pressed={getEstado() === "completado"}
+          >
+            <CheckIcon className="w-4 h-4" />
+            <span>{getEstado() === "completado" ? "Marcar como pendiente" : "Marcar como completado"}</span>
+          </button>
         </div>
       )}
     </div>
