@@ -1,6 +1,6 @@
 // Importaciones de contextos y componentes
 import { RequireAuth } from "./components/auth/RequireAuth";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 // Importaciones de páginas públicas
 import { LoginPage } from "./pages/LoginPage";
@@ -30,6 +30,8 @@ import { CornellStepsView } from "./pages/CornellStepsView";
 import { ReportsPage } from "./pages/ReportsPage";
 import { MusicAlbumsPage } from "./pages/MusicAlbumsPage";
 import { MusicSongsPage } from "./pages/MusicSongsPage";
+import { EventsPage } from "./pages/EventsPage";
+import { NotificationPage } from "./pages/NotificationPage";
 
 // Componente principal de la aplicación
 function App() {
@@ -50,6 +52,8 @@ function App() {
         <Route path="/study-methods" element={<RequireAuth><StudyMethodsLibraryPage /></RequireAuth>} />
         <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
         <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
+        <Route path="/events" element={<RequireAuth><EventsPage /></RequireAuth>} />
+        <Route path="/notifications" element={<RequireAuth><NotificationPage /></RequireAuth>} />
         <Route path="/music/albums" element={<RequireAuth><MusicAlbumsPage /></RequireAuth>} />
         <Route path="/music/albums/:albumId" element={<RequireAuth><MusicSongsPage /></RequireAuth>} />
 

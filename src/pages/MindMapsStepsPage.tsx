@@ -173,7 +173,7 @@ export const MindMapsStepsPage: React.FC = () => {
           // Set session data for existing session
           setSessionData({
             id: urlSessionId,
-            methodId: parseInt(id),
+            methodId: parseInt(methodId),
             id_metodo_realizado: 0, // Will be set when we have the real session
             startTime: new Date().toISOString(),
             progress: progress,
