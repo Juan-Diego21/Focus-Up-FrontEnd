@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Sidebar } from "../components/ui/Sidebar";
-import { User, MapPin, Users, Lock, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { User, MapPin, Users, Lock, Eye, EyeOff, ChevronDown, TrashIcon } from "lucide-react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Listbox } from "@headlessui/react";
 
 const countries = [
@@ -35,6 +36,9 @@ export const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   // Cargar datos del usuario al montar el componente
   useEffect(() => {
@@ -148,6 +152,46 @@ export const ProfilePage: React.FC = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+  };
+
+  // Función para confirmar eliminación de cuenta
+  const confirmDeleteAccount = async () => {
+    if (!user?.id_usuario) {
+      setShowDeleteModal(false);
+      return;
+    }
+
+    setDeleteLoading(true);
+    try {
+      const { apiClient } = await import("../utils/apiClient");
+      const { API_ENDPOINTS } = await import("../utils/constants");
+
+      await apiClient.delete(`${API_ENDPOINTS.USERS}/${user.id_usuario}`);
+
+      // Mostrar alerta de éxito
+      setShowSuccessAlert(true);
+      setShowDeleteModal(false);
+
+      // Cerrar sesión y redirigir después de un breve retraso
+      setTimeout(() => {
+        const { logout } = useAuth();
+        logout();
+        window.location.href = "/login";
+      }, 2000);
+
+    } catch {
+      // ✅ Cerrar sesión y redirigir incluso si falla la API
+      setShowDeleteModal(false);
+      const { logout } = useAuth();
+      logout();
+      window.location.href = "/login";
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -514,6 +558,18 @@ export const ProfilePage: React.FC = () => {
               )}
             </div>
 
+            {/* Eliminar cuenta */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                className="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <TrashIcon className="w-5 h-5" />
+                Eliminar cuenta
+              </button>
+            </div>
+
             {/* Botones */}
             <div className="flex flex-col sm:flex-row gap-4">
               <button
@@ -536,8 +592,65 @@ export const ProfilePage: React.FC = () => {
       </div>
     </main>
   </div>
+
+  {/* Account Deletion Modal */}
+  {showDeleteModal && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="bg-[#232323] rounded-2xl shadow-2xl p-8 w-full max-w-md border border-[#333]">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold text-white">Eliminar Cuenta</h3>
+          <button
+            onClick={() => setShowDeleteModal(false)}
+            className="p-1 hover:bg-[#333] rounded-full transition-colors cursor-pointer"
+          >
+            <XMarkIcon className="w-6 h-6 text-gray-400" />
+          </button>
+        </div>
+        <p className="mb-6 text-gray-300 text-lg">
+          ¿Estás seguro de que quieres eliminar tu cuenta y todos tus datos
+          asociados a ella?
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => setShowDeleteModal(false)}
+            disabled={deleteLoading}
+            className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            No
+          </button>
+          <button
+            onClick={confirmDeleteAccount}
+            disabled={deleteLoading}
+            className="px-5 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {deleteLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Eliminando...
+              </>
+            ) : (
+              "Estoy seguro"
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Success Alert */}
+  {showSuccessAlert && (
+    <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg border border-green-600">
+      <div className="flex items-center gap-3">
+        <div className="text-2xl">✅</div>
+        <div>
+          <h4 className="font-semibold">Cuenta eliminada</h4>
+          <p className="text-sm opacity-90">Se redirigirá al inicio de sesión...</p>
+        </div>
+      </div>
+    </div>
+  )}
 </div>
-  );
+);
 };
 
 export default ProfilePage;

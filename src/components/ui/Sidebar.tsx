@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../contexts/AuthContext";
-import { apiClient } from "../../utils/apiClient";
-import { API_ENDPOINTS } from "../../utils/constants";
 import {
   Bars3Icon,
   HomeIcon,
@@ -12,9 +10,6 @@ import {
   ChartBarIcon,
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
-  UserIcon,
-  TrashIcon,
-  XMarkIcon,
   BookOpenIcon,
   CalendarIcon,
   MusicalNoteIcon,
@@ -28,51 +23,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [focusToolsMenuOpen, setFocusToolsMenuOpen] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
 
   const handleLogout = () => {
     logout();
     navigate("/login");
-  };
-
-  const handleDeleteAccount = () => {
-    setShowDeleteModal(true);
-  };
-
-  // Función para confirmar eliminación de cuenta
-  const confirmDeleteAccount = async () => {
-    if (!user?.id_usuario) {
-      setShowDeleteModal(false);
-      return;
-    }
-
-    setDeleteLoading(true);
-    try {
-      await apiClient.delete(`${API_ENDPOINTS.USERS}/${user.id_usuario}`);
-
-      // Mostrar alerta de éxito
-      setShowSuccessAlert(true);
-      setShowDeleteModal(false);
-
-      // Cerrar sesión y redirigir después de un breve retraso
-      setTimeout(() => {
-        logout();
-        navigate("/login");
-      }, 2000);
-
-    } catch {
-      // ✅ Cerrar sesión y redirigir incluso si falla la API
-      setShowDeleteModal(false);
-      logout();
-      navigate("/login");
-    } finally {
-      setDeleteLoading(false);
-    }
   };
 
   const navigateTo = (path: string) => {
@@ -126,43 +82,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
               </button>
             </li>
             <li>
-              {/* Account Settings Button */}
-              <div className="relative">
-                <button
-                  onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] group cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <Cog6ToothIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
-                    <span className="font-medium text-left hover:text-[#ffa200]">Configuración de cuenta</span>
-                  </div>
-                  <ChevronDownIcon
-                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                      accountMenuOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {/* Submenu */}
-                {accountMenuOpen && (
-                  <div className="ml-8 mt-2 space-y-1">
-                    <button
-                      onClick={() => navigateTo("/profile")}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-[#ffa200] cursor-pointer"
-                    >
-                      <UserIcon className="w-4 h-4" />
-                      <span className="text-sm">Editar perfil</span>
-                    </button>
-                    <button
-                      onClick={handleDeleteAccount}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2a2a2a] transition-all text-gray-400 hover:text-red-400 cursor-pointer"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                      <span className="text-sm">Eliminar cuenta</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => navigateTo("/profile")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-[#ffa200] group cursor-pointer ${
+                  currentPage === "profile" ? "bg-[#2a2a2a] text-[#ffa200]" : ""
+                }`}
+              >
+                <Cog6ToothIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
+                <span className="font-medium">Perfil</span>
+              </button>
             </li>
             <li>
               {/* Herramientas de enfoque Button */}
@@ -173,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
                 >
                   <div className="flex items-center gap-3">
                     <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
-                    <span className="font-medium text-left hover:text-[#ffa200]">Herramientas de enfoque</span>
+                    <span className="font-medium text-left hover:text-[#ffa200]">Herramientas</span>
                   </div>
                   <ChevronDownIcon
                     className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
@@ -240,62 +168,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
         </button>
       </aside>
 
-      {/* Account Deletion Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-opacity-40 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#232323] rounded-2xl shadow-2xl p-8 w-full max-w-md border border-[#333]">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-white">Eliminar Cuenta</h3>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="p-1 hover:bg-[#333] rounded-full transition-colors cursor-pointer"
-              >
-                <XMarkIcon className="w-6 h-6 text-gray-400" />
-              </button>
-            </div>
-            <p className="mb-6 text-gray-300 text-lg">
-              ¿Estás seguro de que quieres eliminar tu cuenta y todos tus datos
-              asociados a ella?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                disabled={deleteLoading}
-                className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                No
-              </button>
-              <button
-                onClick={confirmDeleteAccount}
-                disabled={deleteLoading}
-                className="px-5 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {deleteLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Eliminando...
-                  </>
-                ) : (
-                  "Estoy seguro"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Alert */}
-      {showSuccessAlert && (
-        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg border border-green-600">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">✅</div>
-            <div>
-              <h4 className="font-semibold">Cuenta eliminada</h4>
-              <p className="text-sm opacity-90">Se redirigirá al inicio de sesión...</p>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

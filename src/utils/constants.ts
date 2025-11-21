@@ -15,4 +15,6 @@ export const API_ENDPOINTS = {
   ACTIVE_METHODS: "/reports/active-methods",
   METHOD_PROGRESS: "/reports/methods",
   SESSION_PROGRESS: "/reports/sessions",
+  NOTIFICATIONS_PREFERENCES: "/notificaciones/preferencias",
+  NOTIFICATIONS_SCHEDULED: "/notificaciones/programadas",
 } as const;

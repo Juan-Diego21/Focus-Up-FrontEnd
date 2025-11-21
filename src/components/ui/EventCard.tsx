@@ -1,6 +1,7 @@
 import React from 'react';
 import { CalendarIcon, ClockIcon, BookOpenIcon, MusicalNoteIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { IEvento } from '../../types/events';
+import { formatLocalDateReadable } from '../../utils/dateUtils';
 
 /**
  * Convierte una hora en formato 24h (HH:MM) a formato 12h (HH:MM AM/PM)
@@ -47,36 +48,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
   const getIdMetodo = () => getProperty('id_metodo', 'idMetodo') as number;
   const getIdAlbum = () => getProperty('id_album', 'idAlbum') as number;
 
-  // Safely parse date from string - supports both YYYY-MM-DD and ISO formats
-  const parseEventDate = () => {
-    try {
-      const fecha = getFecha();
-      if (!fecha) return null;
-
-      // Handle YYYY-MM-DD format
-      if (fecha.length === 10) {
-        return new Date(fecha + 'T00:00:00');
-      }
-      // Handle ISO format or other date strings
-      return new Date(fecha);
-    } catch (error) {
-      console.log('EventCard: Error parsing date:', getFecha(), error);
-      return null;
-    }
-  };
-
-  // Format date and time for display
-  const formatDate = () => {
-    const date = parseEventDate();
-    if (!date) return 'Fecha inválida';
-
-    return date.toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  // Format date for display without timezone conversion
+  const eventDateRaw = getFecha();
+  const dateString = eventDateRaw && eventDateRaw.includes('T') ? eventDateRaw.split('T')[0] : eventDateRaw;
+  const formattedDate = formatLocalDateReadable(dateString);
 
   const formatTime = (time: string) => {
     return formatTime12Hour(time);
@@ -84,13 +59,25 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
 
   // Calculate event status with safe date parsing
   const getEventStatus = () => {
-    const eventDate = parseEventDate();
-    if (!eventDate) {
+    const fecha = getFecha();
+    if (!fecha) {
+      return { status: 'error', color: 'text-red-400', borderColor: 'border-red-600' };
+    }
+    let eventDate: Date;
+    try {
+      if (fecha.length === 10) {
+        eventDate = new Date(fecha + 'T00:00:00');
+      } else {
+        eventDate = new Date(fecha);
+      }
+    } catch {
+      return { status: 'error', color: 'text-red-400', borderColor: 'border-red-600' };
+    }
+    if (!eventDate || isNaN(eventDate.getTime())) {
       return { status: 'error', color: 'text-red-400', borderColor: 'border-red-600' };
     }
 
     const now = new Date();
-    const fecha = getFecha();
     const hora = getHora();
 
     if (!fecha || !hora) {
@@ -115,9 +102,17 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
 
   const { color, borderColor } = getEventStatus();
 
+  // Generate random accent border color
+  const getRandomAccentBorder = () => {
+    const colors = ['border-blue-500/50', 'border-purple-500/50', 'border-green-500/50'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  const accentBorder = getRandomAccentBorder();
+
   return (
     <div
-      className={`bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-xl shadow-2xl p-6 flex flex-col h-full border ${borderColor} transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-2xl`}
+      className={`bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-xl shadow-2xl p-6 flex flex-col h-full border-2 ${borderColor} ${accentBorder} transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-2xl`}
     >
       {/* Header with title and status */}
       <div className="flex items-start justify-between mb-4">
@@ -146,7 +141,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
       <div className="mb-4 space-y-2">
         <div className="flex items-center gap-2 text-gray-300">
           <CalendarIcon className="w-4 h-4" />
-          <span className="text-sm">{formatDate()}</span>
+          <span className="text-sm">{formattedDate}</span>
         </div>
         <div className="flex items-center gap-2 text-gray-300">
           <ClockIcon className="w-4 h-4" />
