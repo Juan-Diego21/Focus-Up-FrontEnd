@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   REQUEST_PASSWORD_RESET: "/users/request-password-reset",
   RESET_PASSWORD_WITH_CODE: "/users/reset-password-with-code",
   STUDY_METHODS: "/metodos-estudio",
+  STUDY_METHODS_DETAILS: "/bibliotecametodosestudio",
   BENEFITS: "/beneficios",
   EVENTS: "/eventos",
   REPORTS: "/reports",
@@ -17,4 +18,13 @@ export const API_ENDPOINTS = {
   SESSION_PROGRESS: "/reports/sessions",
   NOTIFICATIONS_PREFERENCES: "/notificaciones/preferencias",
   NOTIFICATIONS_SCHEDULED: "/notificaciones/programadas",
+  // Endpoints de sesiones
+  SESSIONS: "/sessions",
+  SESSION_BY_ID: "/sessions/:id",
+  SESSION_PAUSE: "/sessions/:id/pause",
+  SESSION_RESUME: "/sessions/:id/resume",
+  SESSION_FINISH_LATER: "/sessions/:id/finish-later",
+  SESSION_COMPLETE: "/sessions/:id/complete",
+  // Albums para sesiones
+  ALBUMS: "/albumes",
 } as const;

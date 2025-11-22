@@ -40,6 +40,10 @@ export const DashboardPage: React.FC = () => {
     navigate("/events");
   };
 
+  const navigateToStartSession = () => {
+    navigate("/start-session");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
       <Sidebar currentPage="dashboard" />
@@ -186,7 +190,7 @@ export const DashboardPage: React.FC = () => {
               Inicia una sesión de estudio con música y métodos de estudio para maximizar tu productividad
             </p>
             <div className="flex flex-col items-center gap-3 md:gap-4 w-full">
-              <button className="w-full md:w-auto px-6 md:px-8 py-2.5 md:py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm md:text-base font-semibold rounded-xl shadow-lg hover:from-cyan-700 hover:to-blue-700 hover:shadow-cyan-500/25 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 cursor-pointer transform hover:scale-105 transition-transform flex items-center justify-center gap-2">
+              <button onClick={navigateToStartSession} className="w-full md:w-auto px-6 md:px-8 py-2.5 md:py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm md:text-base font-semibold rounded-xl shadow-lg hover:from-cyan-700 hover:to-blue-700 hover:shadow-cyan-500/25 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 cursor-pointer transform hover:scale-105 transition-transform flex items-center justify-center gap-2">
                 <Zap className="w-4 h-4" />
                 Empezar sesión de concentración
               </button>
