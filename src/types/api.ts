@@ -124,4 +124,34 @@ export interface StudyMethod {
   color_hexa?: string;
 }
 
+// Tipos para reportes de sesiones y métodos
+export interface SessionReport {
+  idReporte: number;
+  idSesion: number;
+  idUsuario: number;
+  nombreSesion: string;
+  descripcion: string;
+  estado: 'pendiente' | 'completado';
+  tiempoTotal: number;
+  metodoAsociado?: {
+    idMetodo: number;
+    nombreMetodo: string;
+  };
+  albumAsociado?: {
+    idAlbum: number;
+    nombreAlbum: string;
+  };
+  fechaCreacion: string;
+}
+
+export interface MethodReport {
+  idReporte: number;
+  idMetodo: number;
+  idUsuario: number;
+  nombreMetodo: string;
+  progreso: number;
+  estado: string;
+  fechaCreacion: string;
+}
+
 
