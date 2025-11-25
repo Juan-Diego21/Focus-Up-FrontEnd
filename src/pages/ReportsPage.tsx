@@ -4,6 +4,7 @@
  * Incluye componentes reutilizables y manejo de errores consistente
  */
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/ui/Sidebar";
 import { PageLayout } from "../components/ui/PageLayout";
 import { reportsService } from "../services/reportsService";
@@ -57,6 +58,7 @@ const getMethodImage = (methodName: string): string => {
  * Página principal de reportes
  */
 export const ReportsPage: React.FC = () => {
+  const navigate = useNavigate();
 
   // Estado para los reportes
   const [sessionReports, setSessionReports] = useState<SessionReport[]>([]);
@@ -520,17 +522,17 @@ export const ReportsPage: React.FC = () => {
                                   localStorage.setItem('resume-method-type', methodType);
 
                                   if (methodType === 'mindmaps') {
-                                    window.location.href = `/mind-maps/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                    navigate(`/mind-maps/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`);
                                   } else if (methodType === 'spacedrepetition') {
-                                    window.location.href = `/spaced-repetition/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                    navigate(`/spaced-repetition/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`);
                                   } else if (methodType === 'activerecall') {
-                                    window.location.href = `/active-recall/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                    navigate(`/active-recall/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`);
                                   } else if (methodType === 'feynman') {
-                                    window.location.href = `/feynman/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                    navigate(`/feynman/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`);
                                   } else if (methodType === 'cornell') {
-                                    window.location.href = `/cornell/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                    navigate(`/cornell/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`);
                                   } else {
-                                    window.location.href = `/pomodoro/execute/${method.idMetodo || 1}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                    navigate(`/pomodoro/execute/${method.idMetodo || 1}?progreso=${method.progreso}&sessionId=${method.idReporte}`);
                                   }
 
                                   // Show success alert for method resumption
