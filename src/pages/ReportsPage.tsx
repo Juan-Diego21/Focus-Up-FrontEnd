@@ -193,8 +193,8 @@ export const ReportsPage: React.FC = () => {
   // Filtrar métodos según el estado seleccionado por el usuario
   const filteredMethods = methodReports.filter(method => {
     if (statusFilter === 'todos') return true;
-    if (statusFilter === 'pendiente') return method.estado !== 'completed';
-    if (statusFilter === 'terminado') return method.estado === 'completed';
+    if (statusFilter === 'pendiente') return method.estado !== 'completed' && method.progreso < 100;
+    if (statusFilter === 'terminado') return method.estado === 'completed' || method.progreso === 100;
     return true;
   });
 
@@ -512,15 +512,43 @@ export const ReportsPage: React.FC = () => {
                                 if (isCompleted) {
                                   deleteReport(method.idReporte);
                                 } else {
-                                  // For now, just show an alert since we don't have the resume logic
-                                  Swal.fire({
-                                    title: 'Continuar sesión',
-                                    text: 'Funcionalidad de reanudar sesión próximamente disponible',
-                                    icon: 'info',
-                                    confirmButtonColor: '#22C55E',
-                                    background: '#232323',
-                                    color: '#ffffff',
-                                  });
+                                  const methodType = getMethodType({ nombre: method.nombreMetodo });
+
+                                  // Store fallback data in localStorage
+                                  localStorage.setItem('resume-session-id', method.idReporte.toString());
+                                  localStorage.setItem('resume-progress', method.progreso.toString());
+                                  localStorage.setItem('resume-method-type', methodType);
+
+                                  if (methodType === 'mindmaps') {
+                                    window.location.href = `/mind-maps/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                  } else if (methodType === 'spacedrepetition') {
+                                    window.location.href = `/spaced-repetition/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                  } else if (methodType === 'activerecall') {
+                                    window.location.href = `/active-recall/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                  } else if (methodType === 'feynman') {
+                                    window.location.href = `/feynman/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                  } else if (methodType === 'cornell') {
+                                    window.location.href = `/cornell/steps/${method.idMetodo}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                  } else {
+                                    window.location.href = `/pomodoro/execute/${method.idMetodo || 1}?progreso=${method.progreso}&sessionId=${method.idReporte}`;
+                                  }
+
+                                  // Show success alert for method resumption
+                                  setTimeout(() => {
+                                    import('sweetalert2').then(Swal => {
+                                      Swal.default.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: `Sesión de ${method.nombreMetodo} retomada correctamente`,
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        background: '#232323',
+                                        color: '#ffffff',
+                                        iconColor: '#22C55E',
+                                      });
+                                    });
+                                  }, 100);
                                 }
                               }}
                               className={
