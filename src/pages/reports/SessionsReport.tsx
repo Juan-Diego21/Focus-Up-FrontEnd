@@ -136,7 +136,9 @@ export const SessionsReport: React.FC = () => {
    */
   const handleCompleteSession = async (session: SessionDto) => {
     try {
-      await sessionService.completeSession(session.sessionId);
+      // Calcular tiempo transcurrido para el nuevo endpoint
+      const elapsedMs = session.elapsedMs || 0;
+      await sessionService.completeSession(session.sessionId, elapsedMs);
       // Recargar sesiones
       loadSessions();
     } catch (error) {

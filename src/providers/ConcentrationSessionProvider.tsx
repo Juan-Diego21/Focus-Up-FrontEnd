@@ -18,7 +18,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { ReactNode } from 'react';
 import type { ActiveSession, SessionCreateDto } from '../types/api';
 import { sessionService } from '../services/sessionService';
-import { audioService } from '../services/audioService';
 import { getBroadcastChannel, type BroadcastMessage } from '../utils/broadcastChannel';
 import { getOfflineQueue } from '../utils/offlineQueue';
 import { getSleepDetector } from '../utils/sleepDetector';
@@ -34,12 +33,14 @@ interface ProviderState {
   showContinueModal: boolean;
   isSyncing: boolean; // Indicador de sincronización offline
   tabLockToken: string | null; // Token para control multi-pestaña
+  showCountdown: boolean; // Mostrar cuenta regresiva
 }
 
 // API del contexto
 interface ConcentrationSessionContextType {
   // Gestión de sesiones
   startSession: (payload: SessionCreateDto) => Promise<void>;
+  startSessionWithCountdown: (payload: SessionCreateDto) => Promise<void>;
   pauseSession: () => Promise<void>;
   resumeSession: () => Promise<void>;
   finishLater: () => Promise<void>;
@@ -48,6 +49,9 @@ interface ConcentrationSessionContextType {
   // Control de UI
   minimize: () => void;
   maximize: () => void;
+  hideContinueModal: () => void;
+  showCountdown: () => void;
+  hideCountdown: () => void;
 
   // Acceso a estado
   getState: () => ProviderState;
@@ -81,6 +85,7 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
     showContinueModal: false,
     isSyncing: false,
     tabLockToken: null,
+    showCountdown: false,
   });
 
   // Refs para callbacks y estado persistente
@@ -221,6 +226,8 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
   /**
    * Inicia una nueva sesión
+   * Nota: La reproducción de música se maneja en el componente StartSession
+   * para evitar el uso de hooks en servicios y mantener la separación de responsabilidades
    */
   const startSession = useCallback(async (payload: SessionCreateDto) => {
     try {
@@ -230,15 +237,17 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
       const sessionDto = await sessionService.startSession(payload);
       const session = mapServerSession(sessionDto);
 
-      // Aplicar álbum si fue seleccionado
-      if (payload.albumId) {
-        await audioService.replaceIfSessionAlbum(payload.albumId);
-      }
+      // Para sesiones nuevas, asegurar que startTime esté establecido
+      const sessionWithStartTime = {
+        ...session,
+        startTime: session.startTime || new Date().toISOString(),
+        isRunning: true, // Nueva sesión siempre inicia corriendo
+      };
 
       // Actualizar estado
       setState(prev => ({
         ...prev,
-        activeSession: session,
+        activeSession: sessionWithStartTime,
         isMinimized: false,
         showContinueModal: false,
         isSyncing: false,
@@ -258,7 +267,10 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
   }, [persistState]);
 
   /**
-   * Pausa la sesión actual
+   * Pausa la sesión actual usando el nuevo endpoint de reportes
+   *
+   * Actualización crítica: Se calcula elapsedMs correctamente y se usa
+   * PATCH /api/v1/reports/sessions/{id}/progress con status "pending".
    */
   const pauseSession = useCallback(async () => {
     if (!state.activeSession || !state.activeSession.isRunning) return;
@@ -266,11 +278,16 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
     try {
       setState(prev => ({ ...prev, isSyncing: true }));
 
-      // Intentar pausa en servidor, o enqueue si offline
+      // Calcular tiempo transcurrido correctamente
+      // Fórmula: elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
+      const currentElapsedMs = (state.activeSession.elapsedMs || 0) +
+        (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
+
+      // Intentar pausa en servidor usando nuevo endpoint, o enqueue si offline
       if (navigator.onLine) {
-        await sessionService.pauseSession(state.activeSession.sessionId);
+        await sessionService.pauseSession(state.activeSession.sessionId, currentElapsedMs);
       } else {
-        offlineQueue.enqueue('pause', state.activeSession.sessionId);
+        offlineQueue.enqueue('pause', state.activeSession.sessionId, { elapsedMs: currentElapsedMs });
       }
 
       // Actualizar estado local
@@ -341,6 +358,10 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
   /**
    * Marca la sesión como "terminar más tarde"
+   *
+   * Actualización crítica: Se calcula elapsedMs correctamente usando la fórmula:
+   * elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
+   * y se pasa al nuevo endpoint PATCH /api/v1/reports/sessions/{id}/progress
    */
   const finishLater = useCallback(async () => {
     if (!state.activeSession) return;
@@ -348,10 +369,16 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
     try {
       setState(prev => ({ ...prev, isSyncing: true }));
 
+      // Calcular tiempo transcurrido correctamente
+      // Fórmula: elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
+      const currentElapsedMs = (state.activeSession.elapsedMs || 0) +
+        (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
+
       if (navigator.onLine) {
-        await sessionService.finishLater(state.activeSession.sessionId);
+        // Se corrige la llamada para incluir elapsedMs requerido por el nuevo endpoint
+        await sessionService.finishLater(state.activeSession.sessionId, currentElapsedMs);
       } else {
-        offlineQueue.enqueue('finish-later', state.activeSession.sessionId);
+        offlineQueue.enqueue('finish-later', state.activeSession.sessionId, { elapsedMs: currentElapsedMs });
       }
 
       // Limpiar estado
@@ -374,6 +401,10 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
   /**
    * Completa la sesión
+   *
+   * Actualización crítica: Se calcula elapsedMs correctamente usando la fórmula:
+   * elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
+   * y se pasa al nuevo endpoint PATCH /api/v1/reports/sessions/{id}/progress
    */
   const completeSession = useCallback(async () => {
     if (!state.activeSession) return;
@@ -381,10 +412,16 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
     try {
       setState(prev => ({ ...prev, isSyncing: true }));
 
+      // Calcular tiempo transcurrido correctamente
+      // Fórmula: elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
+      const currentElapsedMs = (state.activeSession.elapsedMs || 0) +
+        (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
+
       if (navigator.onLine) {
-        await sessionService.completeSession(state.activeSession.sessionId);
+        // Se corrige la llamada para incluir elapsedMs requerido por el nuevo endpoint
+        await sessionService.completeSession(state.activeSession.sessionId, currentElapsedMs);
       } else {
-        offlineQueue.enqueue('complete', state.activeSession.sessionId);
+        offlineQueue.enqueue('complete', state.activeSession.sessionId, { elapsedMs: currentElapsedMs });
       }
 
       // Limpiar estado
@@ -418,6 +455,13 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
    */
   const maximize = useCallback(() => {
     setState(prev => ({ ...prev, isMinimized: false }));
+  }, []);
+
+  /**
+   * Oculta el modal de continuar sesión
+   */
+  const hideContinueModal = useCallback(() => {
+    setState(prev => ({ ...prev, showContinueModal: false }));
   }, []);
 
   /**
@@ -478,6 +522,28 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
     broadcastChannel.broadcastLockReleased();
   }, []);
 
+  /**
+   * Inicia sesión con cuenta regresiva
+   */
+  const startSessionWithCountdown = useCallback(async (_payload: SessionCreateDto) => {
+    // Mostrar cuenta regresiva
+    setState(prev => ({ ...prev, showCountdown: true }));
+  }, []);
+
+  /**
+   * Muestra la cuenta regresiva
+   */
+  const showCountdown = useCallback(() => {
+    setState(prev => ({ ...prev, showCountdown: true }));
+  }, []);
+
+  /**
+   * Oculta la cuenta regresiva
+   */
+  const hideCountdown = useCallback(() => {
+    setState(prev => ({ ...prev, showCountdown: false }));
+  }, []);
+
   // Notificar cambios de estado
   useEffect(() => {
     stateChangeCallbacks.current.forEach(callback => {
@@ -492,12 +558,16 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
   // API del contexto
   const contextValue: ConcentrationSessionContextType = {
     startSession,
+    startSessionWithCountdown,
     pauseSession,
     resumeSession,
     finishLater,
     completeSession,
     minimize,
     maximize,
+    hideContinueModal,
+    showCountdown,
+    hideCountdown,
     getState,
     onMethodCompleted,
     onStateChange,

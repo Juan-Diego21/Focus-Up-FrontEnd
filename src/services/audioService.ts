@@ -1,10 +1,9 @@
 /**
  * Servicio de audio para integración con sesiones de concentración
  *
- * Este módulo proporciona una abstracción sobre el MusicPlayerContext
- * para controlar la reproducción de música durante las sesiones.
- * Es crítico que el audio nunca se interrumpa durante las transiciones
- * de sesión, manteniendo la experiencia de concentración ininterrumpida.
+ * Este módulo proporciona funciones puras para controlar la reproducción de música
+ * durante las sesiones. Las funciones aceptan una API de musicPlayer inyectada
+ * para evitar el uso de hooks fuera de componentes React.
  *
  * Reglas de reproducción:
  * - Si no se selecciona álbum y el audio ya está reproduciendo → continuar
@@ -12,152 +11,136 @@
  * - Minimizar/maximizar no afecta el audio
  */
 
-import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import type { Song } from '../types/api';
+
+// Interfaz para la API del music player inyectada
+export interface MusicPlayerApi {
+  playPlaylist: (songs: Song[], startIndex?: number, albumInfo?: { id_album: number; nombre_album: string }) => void;
+  currentAlbum: { id_album: number; nombre_album: string } | null;
+  isPlaying: boolean;
+  togglePlayPause: () => void;
+}
 
 /**
- * Servicio de audio para sesiones de concentración
+ * Reproduce un álbum específico filtrando canciones por id_album
+ *
+ * Esta función es pura y requiere que se le inyecte la API del music player
+ * y la lista completa de canciones. Se filtran las canciones por id_album
+ * para reproducir únicamente las del álbum seleccionado.
+ *
+ * @param musicPlayerApi - API del music player inyectada desde componente React
+ * @param albumId - ID del álbum a reproducir
+ * @param allSongs - Lista completa de canciones desde la API
+ * @param albumInfo - Información del álbum para metadata
  */
-class AudioService {
-  /**
-   * Reproduce un álbum específico
-   *
-   * @param albumId - ID del álbum a reproducir
-   */
-  async playAlbum(albumId: number): Promise<void> {
-    try {
-      // Aquí iría la lógica para obtener las canciones del álbum
-      // y reproducir la primera canción
-      // Por ahora, delegamos al contexto existente
+export async function replaceIfSessionAlbum(
+  musicPlayerApi: MusicPlayerApi,
+  albumId: number | undefined,
+  allSongs: Song[],
+  albumInfo?: { id_album: number; nombre_album: string }
+): Promise<void> {
+  try {
+    // Se filtran las canciones por id_album para reproducir únicamente las del álbum seleccionado
+    const albumTracks = allSongs.filter(song => song.id_album === albumId);
 
-      console.log(`Reproduciendo álbum ${albumId} para sesión`);
-    } catch (error) {
-      console.error('Error reproduciendo álbum:', error);
-      throw error;
+    if (albumTracks.length === 0) {
+      console.warn(`No se encontraron canciones para el álbum ${albumId}`);
+      return;
     }
-  }
 
-  /**
-   * Pausa la reproducción actual
-   */
-  pause(): void {
-    try {
-      const musicPlayer = useMusicPlayer();
-      musicPlayer.togglePlayPause();
-    } catch (error) {
-      console.error('Error pausando audio:', error);
+    // Verificar si ya está reproduciendo el álbum correcto
+    if (musicPlayerApi.currentAlbum && musicPlayerApi.currentAlbum.id_album === albumId) {
+      console.log('Álbum de sesión ya está reproduciendo');
+      return;
     }
-  }
 
-  /**
-   * Reanuda la reproducción
-   */
-  resume(): void {
-    try {
-      const musicPlayer = useMusicPlayer();
-      musicPlayer.togglePlayPause();
-    } catch (error) {
-      console.error('Error reanudando audio:', error);
-    }
-  }
+    // Reemplazar reproducción con el álbum de sesión
+    console.log(`Reproduciendo ${albumTracks.length} canciones del álbum ${albumInfo?.nombre_album || albumId}`);
+    musicPlayerApi.playPlaylist(albumTracks, 0, albumInfo);
 
-  /**
-   * Obtiene información del álbum actualmente reproduciendo
-   *
-   * @returns Información del álbum actual o null
-   */
-  getCurrentAlbum(): { id: number; name: string } | null {
-    try {
-      const musicPlayer = useMusicPlayer();
-      if (musicPlayer.currentAlbum) {
-        return {
-          id: musicPlayer.currentAlbum.id_album,
-          name: musicPlayer.currentAlbum.nombre_album,
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error obteniendo álbum actual:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Reemplaza la reproducción si hay un álbum de sesión
-   *
-   * Reglas de reemplazo:
-   * - Si no hay álbum de sesión y audio ya está reproduciendo → continuar
-   * - Si hay álbum de sesión → reemplazar reproducción actual
-   *
-   * @param sessionAlbumId - ID del álbum de la sesión (opcional)
-   */
-  async replaceIfSessionAlbum(sessionAlbumId?: number): Promise<void> {
-    try {
-      const _musicPlayer = useMusicPlayer();
-      const currentAlbum = this.getCurrentAlbum();
-
-      // Si no hay álbum de sesión, verificar si debemos continuar reproducción actual
-      if (!sessionAlbumId) {
-        // Si ya hay algo reproduciendo, continuar (no pausar)
-        if (_musicPlayer.isPlaying) {
-          console.log('Continuando reproducción actual - no hay álbum de sesión');
-          return;
-        }
-        // Si no hay nada reproduciendo, no hacer nada
-        return;
-      }
-
-      // Si hay álbum de sesión, verificar si es diferente al actual
-      if (currentAlbum && currentAlbum.id === sessionAlbumId) {
-        // Ya está reproduciendo el álbum correcto
-        console.log('Álbum de sesión ya está reproduciendo');
-        return;
-      }
-
-      // Reemplazar con el álbum de sesión
-      console.log(`Reemplazando reproducción con álbum de sesión ${sessionAlbumId}`);
-      await this.playAlbum(sessionAlbumId);
-    } catch (error) {
-      console.error('Error reemplazando álbum de sesión:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Determina si se debe reemplazar la reproducción actual
-   *
-   * @param sessionAlbumId - ID del álbum de la sesión
-   * @returns true si se debe reemplazar
-   */
-  shouldReplacePlayback(sessionAlbumId?: number): boolean {
-    try {
-      const currentAlbum = this.getCurrentAlbum();
-
-      // Si no hay álbum de sesión, no reemplazar
-      if (!sessionAlbumId) {
-        return false;
-      }
-
-      // Si hay álbum de sesión y es diferente al actual, reemplazar
-      if (currentAlbum && currentAlbum.id !== sessionAlbumId) {
-        return true;
-      }
-
-      // Si no hay álbum actual pero hay álbum de sesión, reemplazar
-      if (!currentAlbum && sessionAlbumId) {
-        return true;
-      }
-
-      // En cualquier otro caso, no reemplazar
-      return false;
-    } catch (error) {
-      console.error('Error determinando si reemplazar reproducción:', error);
-      return false;
-    }
+  } catch (error) {
+    console.error('Error reemplazando álbum de sesión:', error);
+    throw error;
   }
 }
 
-// Instancia singleton del servicio
-const audioServiceInstance = new AudioService();
+/**
+ * Pausa la reproducción actual
+ *
+ * @param musicPlayerApi - API del music player inyectada
+ */
+export function pausePlayback(musicPlayerApi: MusicPlayerApi): void {
+  try {
+    musicPlayerApi.togglePlayPause();
+  } catch (error) {
+    console.error('Error pausando reproducción:', error);
+  }
+}
 
-export { audioServiceInstance as audioService };
-export default audioServiceInstance;
+/**
+ * Reanuda la reproducción
+ *
+ * @param musicPlayerApi - API del music player inyectada
+ */
+export function resumePlayback(musicPlayerApi: MusicPlayerApi): void {
+  try {
+    musicPlayerApi.togglePlayPause();
+  } catch (error) {
+    console.error('Error reanudando reproducción:', error);
+  }
+}
+
+/**
+ * Obtiene información del álbum actualmente reproduciendo
+ *
+ * @param musicPlayerApi - API del music player inyectada
+ * @returns Información del álbum actual o null
+ */
+export function getCurrentAlbum(musicPlayerApi: MusicPlayerApi): { id: number; name: string } | null {
+  try {
+    if (musicPlayerApi.currentAlbum) {
+      return {
+        id: musicPlayerApi.currentAlbum.id_album,
+        name: musicPlayerApi.currentAlbum.nombre_album,
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error obteniendo álbum actual:', error);
+    return null;
+  }
+}
+
+/**
+ * Determina si se debe reemplazar la reproducción actual
+ *
+ * @param musicPlayerApi - API del music player inyectada
+ * @param sessionAlbumId - ID del álbum de la sesión
+ * @returns true si se debe reemplazar
+ */
+export function shouldReplacePlayback(musicPlayerApi: MusicPlayerApi, sessionAlbumId?: number): boolean {
+  try {
+    const currentAlbum = getCurrentAlbum(musicPlayerApi);
+
+    // Si no hay álbum de sesión, no reemplazar
+    if (!sessionAlbumId) {
+      return false;
+    }
+
+    // Si hay álbum de sesión y es diferente al actual, reemplazar
+    if (currentAlbum && currentAlbum.id !== sessionAlbumId) {
+      return true;
+    }
+
+    // Si no hay álbum actual pero hay álbum de sesión, reemplazar
+    if (!currentAlbum && sessionAlbumId) {
+      return true;
+    }
+
+    // En cualquier otro caso, no reemplazar
+    return false;
+  } catch (error) {
+    console.error('Error determinando si reemplazar reproducción:', error);
+    return false;
+  }
+}

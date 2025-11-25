@@ -18,7 +18,7 @@ import { getVisibleTime, formatTime } from '../../utils/sessionMappers';
  * Modal para continuar sesión anterior
  */
 export const ContinueSessionModal: React.FC = () => {
-  const { getState, minimize } = useConcentrationSession();
+  const { getState, minimize, hideContinueModal, finishLater } = useConcentrationSession();
   const state = getState();
 
   const { activeSession } = state;
@@ -34,11 +34,12 @@ export const ContinueSessionModal: React.FC = () => {
    */
   const handleContinue = async () => {
     try {
-      // La sesión ya está cargada, solo ocultar el modal
-      // El provider ya tiene la sesión activa
       console.log('Continuando sesión anterior');
 
-      // Minimizar inicialmente para no interrumpir
+      // Ocultar el modal de continuar
+      hideContinueModal();
+
+      // Minimizar inicialmente para no interrumpir el flujo del usuario
       minimize();
     } catch (error) {
       console.error('Error continuando sesión:', error);
@@ -48,16 +49,30 @@ export const ContinueSessionModal: React.FC = () => {
   /**
    * Descarta la sesión anterior
    */
-  const handleDiscard = () => {
+  const handleDiscard = async () => {
     try {
-      // Aquí iría la lógica para descartar la sesión
-      // Por ahora, simplemente limpiar el estado local
       console.log('Descartando sesión anterior');
 
-      // El provider debería manejar esto limpiando el estado
-      window.location.reload(); // Recargar para limpiar estado
+      // Ocultar el modal primero para feedback inmediato al usuario
+      hideContinueModal();
+
+      // Usar finishLater para marcar la sesión como terminada más tarde
+      // Esto limpiará el estado local y el almacenamiento persistente
+      await finishLater();
     } catch (error) {
       console.error('Error descartando sesión:', error);
+      // Fallback: recargar la página si hay error
+      window.location.reload();
+    }
+  };
+
+  /**
+   * Maneja el clic en el fondo del modal para descartar la sesión
+   */
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      // Solo descartar si se hace clic directamente en el fondo
+      handleDiscard();
     }
   };
 
@@ -68,7 +83,7 @@ export const ContinueSessionModal: React.FC = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleBackdropClick}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

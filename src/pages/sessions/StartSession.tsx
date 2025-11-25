@@ -9,15 +9,19 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { PlayIcon, ChevronDownIcon, XMarkIcon, BookOpenIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useConcentrationSession } from '../../hooks/useConcentrationSession';
+import Swal from 'sweetalert2';
+import { useConcentrationSession } from '../../providers/ConcentrationSessionProvider';
 import { sessionService } from '../../services/sessionService';
 import { mapServerSession } from '../../utils/sessionMappers';
 import { useMusicPlayer } from '../../contexts/MusicPlayerContext';
+import { replaceIfSessionAlbum } from '../../services/audioService';
+import { getMethodType } from '../../utils/methodStatus';
 import { MethodSelectionModal } from '../../components/MethodSelectionModal';
 import { AlbumSelectionModal } from '../../components/AlbumSelectionModal';
+import { CountdownOverlay } from '../../components/ui/CountdownOverlay';
 import { BackButton } from '../../components/ui/BackButton';
 import { PageLayout } from '../../components/ui/PageLayout';
 import { Sidebar } from '../../components/ui/Sidebar';
@@ -28,8 +32,9 @@ import type { SessionCreateDto, SessionDto, Song } from '../../types/api';
  * Página de inicio de sesión
  */
 export const StartSession: React.FC = () => {
+  const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
-  const { startSession } = useConcentrationSession();
+  const { startSession, startSessionWithCountdown, getState, minimize } = useConcentrationSession();
   const { playPlaylist } = useMusicPlayer();
 
   // Estado del formulario
@@ -46,9 +51,6 @@ export const StartSession: React.FC = () => {
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
   const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
 
-  // Estado para canciones del álbum seleccionado (cache para evitar múltiples llamadas)
-  const [albumSongs, setAlbumSongs] = useState<Song[]>([]);
-  const [songsLoaded, setSongsLoaded] = useState(false);
 
   // Cargar datos para deep link
   useEffect(() => {
@@ -133,8 +135,7 @@ export const StartSession: React.FC = () => {
   };
 
   /**
-   * Maneja envío del formulario e integra reproducción de álbum
-   * Si se seleccionó un álbum, carga las canciones y las reproduce automáticamente
+   * Maneja envío del formulario e inicia sesión con cuenta regresiva
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,42 +156,119 @@ export const StartSession: React.FC = () => {
         albumId: selectedAlbum?.id_album,
       };
 
-      // Iniciar sesión primero
+      // Iniciar sesión con cuenta regresiva
+      await startSessionWithCountdown(payload);
+
+    } catch (error) {
+      console.error('Error iniciando sesión:', error);
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Maneja la finalización de la cuenta regresiva
+   * Se asegura de que la sesión se inicie correctamente incluso si la música falla
+   */
+  const handleCountdownComplete = async () => {
+    try {
+      const payload: SessionCreateDto = {
+        title: title.trim() || 'Sesión de concentración',
+        description: description.trim() || undefined,
+        type: sessionId ? 'scheduled' : 'rapid',
+        eventId: sessionId ? parseInt(sessionId) : undefined,
+        methodId: selectedMethod?.id_metodo,
+        albumId: selectedAlbum?.id_album,
+      };
+
+      // Iniciar sesión real primero
       await startSession(payload);
 
-      // Si se seleccionó un álbum, cargar y reproducir sus canciones
+      // Si se seleccionó un método, minimizar la sesión y redirigir a la ejecución del método
+      if (payload.methodId) {
+        minimize();
+
+        // Redirigir a la página de ejecución del método correspondiente
+        const methodType = getMethodType(selectedMethod);
+        if (methodType === 'pomodoro') {
+          navigate(`/pomodoro/execute/${payload.methodId}`);
+        } else if (methodType === 'mindmaps') {
+          navigate(`/mind-maps/steps/${payload.methodId}`);
+        } else if (methodType === 'spacedrepetition') {
+          navigate(`/spaced-repetition/steps/${payload.methodId}`);
+        } else if (methodType === 'activerecall') {
+          navigate(`/active-recall/steps/${payload.methodId}`);
+        } else if (methodType === 'feynman') {
+          navigate(`/feynman/steps/${payload.methodId}`);
+        } else if (methodType === 'cornell') {
+          navigate(`/cornell/steps/${payload.methodId}`);
+        }
+      }
+
+      // Manejar reproducción de música con manejo de errores robusto
       if (selectedAlbum?.id_album) {
         try {
           console.log('Iniciando reproducción del álbum seleccionado:', selectedAlbum.nombre_album);
-          const albumSongs = await loadAlbumSongs(selectedAlbum.id_album);
 
-          if (albumSongs.length > 0) {
-            // Usar el contexto global de música para reproducir la playlist del álbum
-            // Se reemplaza cualquier reproducción actual con las canciones del álbum
-            playPlaylist(albumSongs, 0, {
+          // Cargar todas las canciones desde la API
+          const response = await apiClient.get('/musica');
+          const allSongs: Song[] = response.data?.data || response.data || [];
+
+          // Usar función pura para reemplazar música
+          await replaceIfSessionAlbum(
+            {
+              playPlaylist,
+              currentAlbum: null, // No hay álbum actual en este contexto
+              isPlaying: false,   // No importa el estado actual
+              togglePlayPause: () => {}, // No usado en este contexto
+            },
+            selectedAlbum.id_album,
+            allSongs,
+            {
               id_album: selectedAlbum.id_album,
               nombre_album: selectedAlbum.nombre_album
-            });
-            console.log(`Reproduciendo ${albumSongs.length} canciones del álbum ${selectedAlbum.nombre_album}`);
-          } else {
-            console.warn('No se encontraron canciones para el álbum seleccionado');
-          }
+            }
+          );
+
+          console.log(`Reproducción del álbum ${selectedAlbum.nombre_album} iniciada correctamente`);
         } catch (musicError) {
+          // Se registra el error pero no se interrumpe la sesión
           console.error('Error reproduciendo música del álbum:', musicError);
-          // No mostrar error al usuario - la sesión ya está iniciada
+
+          // Mostrar notificación no intrusiva al usuario
+          try {
+            // Mostrar toast de advertencia
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'warning',
+              title: 'La música no pudo cargarse, pero la sesión continúa normalmente',
+              showConfirmButton: false,
+              timer: 3000,
+              background: '#232323',
+              color: '#ffffff',
+            });
+          } catch (toastError) {
+            console.warn('No se pudo mostrar notificación de error de música');
+          }
         }
       } else {
-        // Si no se seleccionó álbum pero había música reproduciéndose, mantenerla
+        // Si no se seleccionó álbum, mantener reproducción actual si existe
         console.log('Sesión iniciada sin álbum - manteniendo reproducción actual si existe');
       }
-
-      // Navegar al dashboard o mantener en la página
-      // La sesión ya está activa, el provider maneja la UI
     } catch (error) {
-      console.error('Error iniciando sesión:', error);
+      console.error('Error iniciando sesión después de cuenta regresiva:', error);
+      // Mostrar error crítico al usuario
+      alert('Error al iniciar la sesión. Por favor, inténtalo de nuevo.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Maneja la cancelación de la cuenta regresiva
+   */
+  const handleCountdownCancel = () => {
+    setIsLoading(false);
   };
 
   /**
@@ -225,37 +303,6 @@ export const StartSession: React.FC = () => {
     setIsAlbumModalOpen(false);
   };
 
-  /**
-   * Carga canciones del álbum seleccionado desde la API
-   * Filtra las canciones por ID de álbum y las prepara para reproducción
-   * Se ejecuta una vez por sesión para evitar múltiples llamadas a la API
-   */
-  const loadAlbumSongs = async (albumId: number): Promise<Song[]> => {
-    if (songsLoaded && albumSongs.length > 0) {
-      // Retornar cache si ya están cargadas
-      return albumSongs.filter(song => song.id_album === albumId);
-    }
-
-    try {
-      console.log('Cargando canciones del álbum:', albumId);
-      const response = await apiClient.get('/musica');
-      const allSongs: Song[] = response.data?.data || response.data || [];
-
-      // Filtrar canciones por álbum seleccionado (filtrado cliente-side como especificado)
-      const filteredSongs = allSongs.filter((song: Song) => song.id_album === albumId);
-
-      console.log(`Encontradas ${filteredSongs.length} canciones para el álbum ${albumId}`);
-      setAlbumSongs(filteredSongs);
-      setSongsLoaded(true);
-
-      return filteredSongs;
-    } catch (error) {
-      console.error('Error cargando canciones del álbum:', error);
-      // Mostrar mensaje de error al usuario
-      alert('No se pudieron cargar las canciones del álbum. La sesión se iniciará sin música.');
-      return [];
-    }
-  };
 
   return (
     <PageLayout
@@ -426,7 +473,7 @@ export const StartSession: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -523,6 +570,13 @@ export const StartSession: React.FC = () => {
         onClose={() => setIsAlbumModalOpen(false)}
         onSelect={handleAlbumSelect}
         selectedAlbum={selectedAlbum}
+      />
+
+      {/* Overlay de cuenta regresiva */}
+      <CountdownOverlay
+        isVisible={getState().showCountdown}
+        onCountdownComplete={handleCountdownComplete}
+        onCancel={handleCountdownCancel}
       />
     </PageLayout>
   );

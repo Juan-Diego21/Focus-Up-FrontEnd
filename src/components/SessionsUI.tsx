@@ -12,23 +12,45 @@
  */
 
 import React from 'react';
-import { useConcentrationSession } from '../hooks/useConcentrationSession';
+import { useConcentrationSession } from '../providers/ConcentrationSessionProvider';
 import { ConcentrationCard } from './ConcentrationCard/ConcentrationCard';
 import { MiniSessionCard } from './ConcentrationCard/MiniSessionCard';
 import { SessionFloatingButton } from './ConcentrationCard/SessionFloatingButton';
 import { ContinueSessionModal } from './ConcentrationCard/ContinueSessionModal';
+import { CountdownOverlay } from './ui/CountdownOverlay';
 
 /**
  * Componente principal que renderiza la UI de sesiones
  */
 export const SessionsUI: React.FC = () => {
-  const { getState } = useConcentrationSession();
+  const { getState, hideCountdown } = useConcentrationSession();
   const state = getState();
 
-  const { activeSession, isMinimized, showContinueModal } = state;
+  const { activeSession, isMinimized, showContinueModal, showCountdown } = state;
+
+  /**
+   * Maneja la finalización de la cuenta regresiva
+   */
+  const handleCountdownComplete = () => {
+    hideCountdown();
+  };
+
+  /**
+   * Maneja la cancelación de la cuenta regresiva
+   */
+  const handleCountdownCancel = () => {
+    hideCountdown();
+  };
 
   return (
     <>
+      {/* Overlay de cuenta regresiva */}
+      <CountdownOverlay
+        isVisible={showCountdown}
+        onCountdownComplete={handleCountdownComplete}
+        onCancel={handleCountdownCancel}
+      />
+
       {/* Modal para continuar sesión anterior */}
       {showContinueModal && <ContinueSessionModal />}
 

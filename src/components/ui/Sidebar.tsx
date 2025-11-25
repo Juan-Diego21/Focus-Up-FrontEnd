@@ -13,7 +13,6 @@ import {
   BookOpenIcon,
   CalendarIcon,
   MusicalNoteIcon,
-  ClockIcon,
 } from "@heroicons/react/24/outline";
 
 interface SidebarProps {
@@ -155,17 +154,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
               >
                 <ChartBarIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
                 <span className="font-medium">Reportes</span>
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => navigateTo("/reports/sessions")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white hover:bg-[#2a2a2a] hover:text-[#ffa200] group cursor-pointer ${
-                  currentPage === "sessions" ? "bg-[#2a2a2a] text-[#ffa200]" : ""
-                }`}
-              >
-                <ClockIcon className="w-5 h-5 text-gray-400 group-hover:text-[#ffa200]" />
-                <span className="font-medium">Sesiones</span>
               </button>
             </li>
           </ul>

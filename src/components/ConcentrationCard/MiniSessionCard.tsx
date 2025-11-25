@@ -1,162 +1,246 @@
 /**
- * Componente de card minimizada de sesión de concentración
+ * Componente de tarjeta de sesión minimizada
  *
- * Esta card compacta se muestra en la esquina superior derecha cuando
- * la sesión está minimizada. Contiene información esencial y controles
- * básicos para gestionar la sesión sin ocupar toda la pantalla.
+ * Muestra una versión compacta de la sesión activa en la esquina inferior derecha.
+ * Permite acceso rápido a controles básicos y restaurar la vista completa.
+ * Se oculta automáticamente cuando no hay sesión activa.
  *
- * Diseño: Compacto, con avatar, título, timer y acciones principales.
+ * Diseño: Posicionamiento fijo, glassmorphism, animaciones suaves.
  */
-
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   PlayIcon,
   PauseIcon,
-  ArrowsPointingOutIcon,
+  ClockIcon,
+  ChevronUpIcon,
   XMarkIcon,
+  MusicalNoteIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
-import { useConcentrationSession } from '../../hooks/useConcentrationSession';
-import { getVisibleTime, formatTime } from '../../utils/sessionMappers';
+import { useConcentrationSession } from '../../providers/ConcentrationSessionProvider';
+import { formatTime } from '../../utils/sessionMappers';
 
-/**
- * Card minimizada de sesión
- */
 export const MiniSessionCard: React.FC = () => {
-  const {
-    getState,
-    pauseSession,
-    resumeSession,
-    maximize,
-  } = useConcentrationSession();
+  const { getState, pauseSession, resumeSession, finishLater, maximize } = useConcentrationSession();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const state = getState();
-  const { activeSession } = state;
+  const session = getState().activeSession;
 
-  const [currentTime, setCurrentTime] = useState(0);
-
-  // Actualizar timer cada segundo
-  useEffect(() => {
-    if (!activeSession) return;
-
-    const interval = setInterval(() => {
-      const visibleTime = getVisibleTime(activeSession);
-      setCurrentTime(visibleTime);
-    }, 1000);
-
-    // Actualización inicial
-    setCurrentTime(getVisibleTime(activeSession));
-
-    return () => clearInterval(interval);
-  }, [activeSession]);
-
-  if (!activeSession) return null;
-
-  const formattedTime = formatTime(currentTime);
 
   /**
-   * Maneja play/pause
+   * Calcula el tiempo transcurrido visible
    */
-  const handlePlayPause = async () => {
+  const getVisibleTime = useCallback(() => {
+    if (!session) return 0;
+
+    if (session.isRunning) {
+      const serverElapsed = session.elapsedMs || 0;
+      const startTime = new Date(session.startTime).getTime();
+      const now = Date.now();
+      return serverElapsed + (now - startTime);
+    } else {
+      return session.elapsedMs || 0;
+    }
+  }, [session]);
+
+  /**
+   * Maneja pausa/reanudar de la sesión
+   */
+  const handleTogglePause = async () => {
+    if (!session || isUpdating) return;
+
     try {
-      if (activeSession.isRunning) {
+      setIsUpdating(true);
+      if (session.isRunning) {
         await pauseSession();
       } else {
         await resumeSession();
       }
     } catch (error) {
-      console.error('Error cambiando estado de sesión:', error);
+      console.error('Error toggling pause:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   /**
-   * Maneja maximizar
+   * Maneja terminar más tarde
+   */
+  const handleFinishLater = async () => {
+    if (!session || isUpdating) return;
+
+    try {
+      setIsUpdating(true);
+      await finishLater();
+    } catch (error) {
+      console.error('Error finishing later:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  /**
+   * Maneja maximizar la tarjeta
    */
   const handleMaximize = () => {
     maximize();
   };
 
   /**
-   * Maneja cerrar (placeholder - volver al floating button)
+   * Alterna el estado expandido de la tarjeta
    */
-  const handleClose = () => {
-    // Por ahora, solo maximizar. En una implementación completa,
-    // esto debería ocultar la mini-card y mostrar solo el floating button
-    console.log('Cerrar mini-card - volver a floating button');
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed top-20 right-4 z-40"
-    >
-      <div className="w-64 bg-[#232323]/85 backdrop-blur-sm rounded-xl shadow-lg border border-[#333]/50 p-3">
-        <div className="flex items-center gap-3">
-          {/* Avatar izquierdo */}
-          <div className="flex-shrink-0">
-            {activeSession.methodId ? (
-              <div
-                className="w-10 h-10 rounded-full border-2 border-white/20 flex items-center justify-center text-xs font-bold text-white"
-                style={{ backgroundColor: '#6366f1' }} // Color por defecto
-              >
-                M
-              </div>
-            ) : activeSession.albumId ? (
-              <div className="w-10 h-10 rounded-lg bg-gray-600 flex items-center justify-center">
-                <span className="text-white text-xs">🎵</span>
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-                <span className="text-white text-xs">⏱️</span>
-              </div>
-            )}
-          </div>
+  if (!session) return null;
 
-          {/* Contenido central */}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white font-medium text-sm truncate">
-              {activeSession.title}
-            </h3>
-            <div className="text-gray-400 text-xs font-mono">
-              {formattedTime}
+  const visibleTime = getVisibleTime();
+  const formattedTime = formatTime(visibleTime);
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 100 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="fixed bottom-6 right-6 z-30"
+      >
+        <motion.div
+          animate={{ width: isExpanded ? 320 : 280 }}
+          transition={{ duration: 0.2 }}
+          className="bg-[#232323]/95 backdrop-blur-md rounded-xl shadow-2xl border border-[#333]/50 overflow-hidden"
+        >
+          {/* Header compacto */}
+          <div className="p-4 border-b border-[#333]/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {/* Indicador de estado */}
+                <div className={`w-3 h-3 rounded-full ${
+                  session.isRunning ? 'bg-green-500' : 'bg-yellow-500'
+                }`} />
+
+                {/* Título truncado */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-white truncate">
+                    {session.title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <ClockIcon className="w-3 h-3" />
+                    <span>{formattedTime}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Controles de header */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={toggleExpanded}
+                  className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                  aria-label={isExpanded ? 'Contraer tarjeta' : 'Expandir tarjeta'}
+                  type="button"
+                >
+                  <ChevronUpIcon className={`w-4 h-4 transition-transform ${
+                    isExpanded ? 'rotate-180' : ''
+                  }`} />
+                </button>
+
+                <button
+                  onClick={handleMaximize}
+                  className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                  aria-label="Maximizar sesión"
+                  type="button"
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Acciones derecha */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handlePlayPause}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              aria-label={activeSession.isRunning ? 'Pausar sesión' : 'Reanudar sesión'}
-              aria-pressed={activeSession.isRunning}
-              title={activeSession.isRunning ? 'Pausar' : 'Reanudar'}
-            >
-              {activeSession.isRunning ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
-            </button>
+          {/* Contenido expandible */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="border-t border-[#333]/50"
+              >
+                {/* Información adicional */}
+                <div className="p-4 space-y-3">
+                  {/* Estado de la sesión */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-400">Estado:</span>
+                    <span className={`font-medium ${
+                      session.isRunning ? 'text-green-400' : 'text-yellow-400'
+                    }`}>
+                      {session.isRunning ? 'Activa' : 'Pausada'}
+                    </span>
+                  </div>
 
-            <button
-              onClick={handleMaximize}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              aria-label="Maximizar sesión"
-              title="Maximizar"
-            >
-              <ArrowsPointingOutIcon className="w-4 h-4" />
-            </button>
+                  {/* Método y álbum activos */}
+                  <div className="space-y-2">
+                    {session.methodId && (
+                      <div className="flex items-center gap-2 text-sm text-blue-400">
+                        <BookOpenIcon className="w-4 h-4" />
+                        <span>Método activo</span>
+                      </div>
+                    )}
+                    {session.albumId && (
+                      <div className="flex items-center gap-2 text-sm text-purple-400">
+                        <MusicalNoteIcon className="w-4 h-4" />
+                        <span>Música activa</span>
+                      </div>
+                    )}
+                  </div>
 
-            <button
-              onClick={handleClose}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              aria-label="Cerrar mini card"
-              title="Cerrar"
-            >
-              <XMarkIcon className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+                  {/* Controles */}
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={handleTogglePause}
+                      disabled={isUpdating}
+                      className={`flex-1 px-3 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        session.isRunning
+                          ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                          : 'bg-green-600 hover:bg-green-700 text-white'
+                      }`}
+                      type="button"
+                    >
+                      <div className="flex items-center gap-1">
+                        {session.isRunning ? (
+                          <>
+                            <PauseIcon className="w-4 h-4" />
+                            <span>Pausar</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlayIcon className="w-4 h-4" />
+                            <span>Reanudar</span>
+                          </>
+                        )}
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={handleFinishLater}
+                      disabled={isUpdating}
+                      className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      type="button"
+                    >
+                      Terminar
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

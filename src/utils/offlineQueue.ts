@@ -222,16 +222,22 @@ class OfflineActionQueue {
 
     switch (action.type) {
       case 'pause':
-        await sessionService.pauseSession(action.sessionId);
+        // Se corrige para incluir elapsedMs requerido por el nuevo endpoint
+        const pauseElapsedMs = action.payload?.elapsedMs || 0;
+        await sessionService.pauseSession(action.sessionId, pauseElapsedMs);
         break;
       case 'resume':
         await sessionService.resumeSession(action.sessionId);
         break;
       case 'finish-later':
-        await sessionService.finishLater(action.sessionId);
+        // Se corrige para incluir elapsedMs requerido por el nuevo endpoint
+        const finishLaterElapsedMs = action.payload?.elapsedMs || 0;
+        await sessionService.finishLater(action.sessionId, finishLaterElapsedMs);
         break;
       case 'complete':
-        await sessionService.completeSession(action.sessionId);
+        // Se corrige para incluir elapsedMs requerido por el nuevo endpoint
+        const completeElapsedMs = action.payload?.elapsedMs || 0;
+        await sessionService.completeSession(action.sessionId, completeElapsedMs);
         break;
       default:
         throw new Error(`Tipo de acción desconocido: ${action.type}`);

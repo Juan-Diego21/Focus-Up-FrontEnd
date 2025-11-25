@@ -40,57 +40,88 @@ class SessionService {
   }
 
   /**
-   * Pausa una sesión activa
+   * Pausa una sesión activa usando el nuevo endpoint de reportes
+   *
+   * Actualización crítica: Se reemplaza el endpoint deprecated POST /api/v1/sessions/{id}/pause
+   * por el nuevo PATCH /api/v1/reports/sessions/{sessionId}/progress con status "pending".
    *
    * @param sessionId - ID de la sesión a pausar
+   * @param elapsedMs - Tiempo transcurrido en milisegundos
    */
-  async pauseSession(sessionId: string): Promise<void> {
+  async pauseSession(sessionId: string, elapsedMs: number): Promise<void> {
     try {
-      await apiClient.post(`${API_ENDPOINTS.SESSIONS}/${sessionId}/pause`);
+      // Se corrige el endpoint deprecated por el nuevo sistema de reportes
+      // Anteriormente: POST /api/v1/sessions/{id}/pause
+      // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
+      await apiClient.patch(`/reports/sessions/${sessionId}/progress`, {
+        status: 'pending',
+        elapsedMs: elapsedMs
+      });
     } catch (error) {
-      console.error('Error pausando sesión:', error);
+      console.error('Error pausando sesión con nuevo endpoint:', error);
       throw error;
     }
   }
 
   /**
-   * Reanuda una sesión pausada
+   * Reanuda una sesión pausada - DEPRECATED
    *
-   * @param sessionId - ID de la sesión a reanudar
+   * Esta función ha sido eliminada ya que la reanudación de sesiones
+   * ahora se maneja únicamente del lado del cliente. El backend ya no
+   * expone un endpoint para reanudar sesiones.
+   *
+   * @deprecated Use client-side session resumption instead
    */
-  async resumeSession(sessionId: string): Promise<void> {
-    try {
-      await apiClient.post(`${API_ENDPOINTS.SESSIONS}/${sessionId}/resume`);
-    } catch (error) {
-      console.error('Error reanudando sesión:', error);
-      throw error;
-    }
+  async resumeSession(_sessionId: string): Promise<void> {
+    console.warn('resumeSession is deprecated. Session resumption is now handled client-side only.');
+    // No longer calls any backend endpoint
+    return Promise.resolve();
   }
 
   /**
-   * Marca una sesión como "terminar más tarde"
+   * Marca una sesión como "terminar más tarde" usando el nuevo endpoint de reportes
+   *
+   * Actualización crítica: Se reemplaza el endpoint deprecated POST /api/v1/sessions/{id}/finish-later
+   * por el nuevo PATCH /api/v1/reports/sessions/{sessionId}/progress con status "pending".
    *
    * @param sessionId - ID de la sesión
+   * @param elapsedMs - Tiempo transcurrido en milisegundos
    */
-  async finishLater(sessionId: string): Promise<void> {
+  async finishLater(sessionId: string, elapsedMs: number): Promise<void> {
     try {
-      await apiClient.post(`${API_ENDPOINTS.SESSIONS}/${sessionId}/finish-later`);
+      // Se corrige el endpoint deprecated por el nuevo sistema de reportes
+      // Anteriormente: POST /api/v1/sessions/{id}/finish-later
+      // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
+      await apiClient.patch(`/reports/sessions/${sessionId}/progress`, {
+        status: 'pending',
+        elapsedMs: elapsedMs
+      });
     } catch (error) {
-      console.error('Error marcando finish-later:', error);
+      console.error('Error marcando finish-later con nuevo endpoint:', error);
       throw error;
     }
   }
 
   /**
-   * Completa una sesión
+   * Completa una sesión usando el nuevo endpoint de reportes
+   *
+   * Actualización crítica: Se reemplaza el endpoint deprecated POST /api/v1/sessions/{id}/complete
+   * por el nuevo PATCH /api/v1/reports/sessions/{sessionId}/progress con status "completed".
    *
    * @param sessionId - ID de la sesión a completar
+   * @param elapsedMs - Tiempo transcurrido en milisegundos
    */
-  async completeSession(sessionId: string): Promise<void> {
+  async completeSession(sessionId: string, elapsedMs: number): Promise<void> {
     try {
-      await apiClient.post(`${API_ENDPOINTS.SESSIONS}/${sessionId}/complete`);
+      // Se corrige el endpoint deprecated por el nuevo sistema de reportes
+      // Anteriormente: POST /api/v1/sessions/{id}/complete
+      // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
+      await apiClient.patch(`/reports/sessions/${sessionId}/progress`, {
+        status: 'completed',
+        elapsedMs: elapsedMs
+      });
     } catch (error) {
-      console.error('Error completando sesión:', error);
+      console.error('Error completando sesión con nuevo endpoint:', error);
       throw error;
     }
   }

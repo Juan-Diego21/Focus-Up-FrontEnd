@@ -1,98 +1,67 @@
 /**
- * Componente principal de la card de sesión de concentración
+ * Componente de tarjeta de concentración centrada
  *
- * Esta card se muestra en pantalla completa cuando la sesión está activa
- * y no minimizada. Contiene todos los controles para gestionar la sesión,
- * el timer principal, y la información del método/álbum asociados.
+ * Muestra la sesión activa con timer, controles de pausa/reanudar,
+ * y opciones para terminar más tarde o completar la sesión.
+ * Se minimiza automáticamente cuando se ejecuta un método de estudio.
  *
- * Diseño: Glassmorphism con gradiente oscuro, controles prominentes,
- * timer grande y legible, estados visuales claros.
+ * Diseño: Overlay centrado con glassmorphism, controles intuitivos y accesibilidad completa.
  */
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PlayIcon,
   PauseIcon,
   ClockIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  MinusIcon,
-  EllipsisVerticalIcon,
+  XMarkIcon,
+  MusicalNoteIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
-import { useConcentrationSession } from '../../hooks/useConcentrationSession';
-import { getVisibleTime, formatTime } from '../../utils/sessionMappers';
+import { useConcentrationSession } from '../../providers/ConcentrationSessionProvider';
+import { formatTime } from '../../utils/sessionMappers';
 
-/**
- * Card principal de sesión de concentración
- */
 export const ConcentrationCard: React.FC = () => {
-  const {
-    getState,
-    pauseSession,
-    resumeSession,
-    finishLater,
-    completeSession,
-    minimize,
-  } = useConcentrationSession();
+  const { getState, pauseSession, resumeSession, finishLater, completeSession, minimize } = useConcentrationSession();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const state = getState();
-  const { activeSession, isSyncing } = state;
+  const session = getState().activeSession;
 
-  // Estado local
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [title, setTitle] = useState('');
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
 
-  // Actualizar título cuando cambia la sesión
-  useEffect(() => {
-    if (activeSession) {
-      setTitle(activeSession.title);
+  /**
+   * Calcula el tiempo transcurrido visible
+   */
+  const getVisibleTime = useCallback(() => {
+    if (!session) return 0;
+
+    if (session.isRunning) {
+      // Tiempo corriendo: serverElapsedMs + (ahora - startTimestamp)
+      const serverElapsed = session.elapsedMs || 0;
+      const startTime = new Date(session.startTime).getTime();
+      const now = Date.now();
+      return serverElapsed + (now - startTime);
+    } else {
+      // Tiempo pausado: usar accumulatedMs del servidor
+      return session.elapsedMs || 0;
     }
-  }, [activeSession]);
-
-  // Actualizar timer cada segundo
-  useEffect(() => {
-    if (!activeSession) return;
-
-    const interval = setInterval(() => {
-      const visibleTime = getVisibleTime(activeSession);
-      setCurrentTime(visibleTime);
-    }, 1000);
-
-    // Actualización inicial
-    setCurrentTime(getVisibleTime(activeSession));
-
-    return () => clearInterval(interval);
-  }, [activeSession]);
-
-  if (!activeSession) return null;
-
-  const formattedTime = formatTime(currentTime);
-  const canComplete = !activeSession.methodId || activeSession.status === 'completed';
+  }, [session]);
 
   /**
-   * Guarda el título editado
+   * Maneja pausa/reanudar de la sesión
    */
-  const handleTitleSave = () => {
-    // Aquí iría la lógica para guardar el título
-    // Por ahora, solo local
-    setIsEditingTitle(false);
-  };
+  const handleTogglePause = async () => {
+    if (!session || isUpdating) return;
 
-  /**
-   * Maneja pausa/reanudar
-   */
-  const handlePauseResume = async () => {
     try {
-      if (activeSession.isRunning) {
+      setIsUpdating(true);
+      if (session.isRunning) {
         await pauseSession();
       } else {
         await resumeSession();
       }
     } catch (error) {
-      console.error('Error cambiando estado de sesión:', error);
+      console.error('Error toggling pause:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -100,10 +69,15 @@ export const ConcentrationCard: React.FC = () => {
    * Maneja terminar más tarde
    */
   const handleFinishLater = async () => {
+    if (!session || isUpdating) return;
+
     try {
+      setIsUpdating(true);
       await finishLater();
     } catch (error) {
-      console.error('Error terminando más tarde:', error);
+      console.error('Error finishing later:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -111,214 +85,174 @@ export const ConcentrationCard: React.FC = () => {
    * Maneja completar sesión
    */
   const handleComplete = async () => {
+    if (!session || isUpdating) return;
+
     try {
+      setIsUpdating(true);
       await completeSession();
     } catch (error) {
-      console.error('Error completando sesión:', error);
+      console.error('Error completing session:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   /**
-   * Maneja minimizar
+   * Maneja minimizar la tarjeta
    */
   const handleMinimize = () => {
     minimize();
   };
 
-  /**
-   * Maneja acción extra (placeholder)
-   */
-  const handleExtraAction = () => {
-    // Placeholder para acciones adicionales
-    console.log('Acción extra');
-  };
+  if (!session) return null;
+
+  const visibleTime = getVisibleTime();
+  const formattedTime = formatTime(visibleTime);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.18, ease: [0.22, 0.9, 0.32, 1] }}
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 flex items-center justify-center p-4"
-    >
+    <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="w-full max-w-3xl mx-auto"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="session-title"
+        aria-describedby="session-description"
       >
-        <div className="bg-[#232323]/70 backdrop-blur-md rounded-xl shadow-2xl border border-[#333]/50 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[#333]/50">
-            {/* Izquierda: Método/Álbum */}
-            <div className="flex items-center gap-3">
-              {activeSession.methodId && (
-                <>
-                  <div
-                    className="w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center text-xs font-bold text-white"
-                    style={{ backgroundColor: '#6366f1' }} // Color por defecto
-                  >
-                    M
-                  </div>
-                  <span className="text-white font-medium">Método</span>
-                </>
-              )}
-              {activeSession.albumId && !activeSession.methodId && (
-                <>
-                  <div className="w-8 h-8 rounded-lg bg-gray-600 flex items-center justify-center">
-                    <span className="text-white text-xs">🎵</span>
-                  </div>
-                  <span className="text-white font-medium">Álbum</span>
-                </>
-              )}
-            </div>
-
-            {/* Centro: Título editable */}
-            <div className="flex-1 max-w-md mx-4">
-              {isEditingTitle ? (
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onBlur={handleTitleSave}
-                  onKeyDown={(e) => e.key === 'Enter' && handleTitleSave()}
-                  className="w-full bg-transparent text-white text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
-                  autoFocus
-                />
-              ) : (
+        <motion.div
+          initial={{ y: 20 }}
+          animate={{ y: 0 }}
+          className="w-full max-w-md bg-[#232323]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-[#333]/50 overflow-hidden"
+        >
+          {/* Header con título y botón minimizar */}
+          <div className="p-6 border-b border-[#333]/50">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
                 <h1
-                  className="text-white text-xl font-semibold text-center cursor-pointer hover:bg-white/10 rounded px-2 py-1 transition-colors"
-                  onClick={() => setIsEditingTitle(true)}
-                  title="Click para editar título"
+                  id="session-title"
+                  className="text-xl font-bold text-white mb-1"
                 >
-                  {title}
+                  {session.title}
                 </h1>
-              )}
-            </div>
+                {session.description && (
+                  <p
+                    id="session-description"
+                    className="text-sm text-gray-400"
+                  >
+                    {session.description}
+                  </p>
+                )}
+              </div>
 
-            {/* Derecha: Botones de acción */}
-            <div className="flex items-center gap-2">
               <button
                 onClick={handleMinimize}
-                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10"
                 aria-label="Minimizar sesión"
-                title="Minimizar"
+                type="button"
               >
-                <MinusIcon className="w-5 h-5" />
+                <XMarkIcon className="w-5 h-5" />
               </button>
+            </div>
 
-              <button
-                onClick={handleExtraAction}
-                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                aria-label="Acciones adicionales"
-                title="Más opciones"
-              >
-                <EllipsisVerticalIcon className="w-5 h-5" />
-              </button>
+            {/* Información del método/álbum si existen */}
+            <div className="flex items-center gap-4 mt-4">
+              {session.methodId && (
+                <div className="flex items-center gap-2 text-sm text-blue-400">
+                  <BookOpenIcon className="w-4 h-4" />
+                  <span>Método activo</span>
+                </div>
+              )}
+              {session.albumId && (
+                <div className="flex items-center gap-2 text-sm text-purple-400">
+                  <MusicalNoteIcon className="w-4 h-4" />
+                  <span>Música activa</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Descripción collapsible */}
-          {activeSession.description && (
-            <div className="px-6 py-4 border-b border-[#333]/50">
-              <button
-                onClick={() => setDescriptionExpanded(!descriptionExpanded)}
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors w-full text-left"
-              >
-                <ChevronDownIcon className={`w-4 h-4 transition-transform ${descriptionExpanded ? 'rotate-180' : ''}`} />
-                <span className="text-sm">Descripción</span>
-              </button>
-
-              <AnimatePresence>
-                {descriptionExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: 'easeOut' }}
-                    className="mt-2 text-gray-300 text-sm leading-relaxed"
-                  >
-                    {activeSession.description}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-
-          {/* Cuerpo principal */}
-          <div className="px-6 py-8 text-center">
-            {/* Indicador de syncing */}
-            {isSyncing && (
-              <div className="mb-4 text-blue-400 text-sm font-medium">
-                Sincronizando...
-              </div>
-            )}
-
-            {/* Timer principal */}
-            <div className="mb-4">
+          {/* Timer principal */}
+          <div className="p-8 text-center">
+            <div className="mb-6">
               <div
-                className="text-4xl md:text-6xl font-mono font-bold text-white mb-2"
+                className="text-6xl font-mono font-bold text-white mb-2 select-none"
                 aria-live="polite"
+                aria-atomic="true"
+                role="timer"
                 aria-label={`Tiempo transcurrido: ${formattedTime}`}
               >
                 {formattedTime}
               </div>
-              <div className="text-sm text-gray-400">
-                Tiempo total
-              </div>
+              <p className="text-gray-400 text-sm">
+                {session.isRunning ? 'Sesión activa' : 'Sesión pausada'}
+              </p>
             </div>
 
-            {/* Controles */}
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
+            {/* Controles principales */}
+            <div className="flex items-center justify-center gap-4 mb-6">
               <button
-                onClick={handlePauseResume}
-                disabled={isSyncing}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center gap-2"
-                aria-pressed={activeSession.isRunning}
-                aria-label={activeSession.isRunning ? 'Pausar sesión' : 'Reanudar sesión'}
+                onClick={handleTogglePause}
+                disabled={isUpdating}
+                className={`p-4 rounded-full transition-all duration-200 ${
+                  session.isRunning
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                } disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white/50`}
+                aria-label={session.isRunning ? 'Pausar sesión' : 'Reanudar sesión'}
+                type="button"
               >
-                {activeSession.isRunning ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
-                {activeSession.isRunning ? 'Pausar' : 'Reanudar'}
+                {session.isRunning ? (
+                  <PauseIcon className="w-6 h-6" />
+                ) : (
+                  <PlayIcon className="w-6 h-6" />
+                )}
               </button>
+            </div>
 
+            {/* Estado de pausa */}
+            <AnimatePresence>
+              {!session.isRunning && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-6 p-3 bg-yellow-600/20 border border-yellow-600/30 rounded-lg"
+                >
+                  <div className="flex items-center gap-2 text-yellow-400 text-sm">
+                    <ClockIcon className="w-4 h-4" />
+                    <span>Sesión pausada - El tiempo se mantiene</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Botones de acción */}
+            <div className="flex gap-3">
               <button
                 onClick={handleFinishLater}
-                disabled={isSyncing}
-                className="px-6 py-3 bg-transparent border border-gray-600 hover:border-gray-500 disabled:border-gray-700 disabled:cursor-not-allowed text-gray-300 hover:text-white disabled:text-gray-500 font-semibold rounded-xl transition-all duration-200 flex items-center gap-2"
-                aria-label="Terminar más tarde"
+                disabled={isUpdating}
+                className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500"
+                type="button"
               >
-                <ClockIcon className="w-5 h-5" />
                 Terminar más tarde
               </button>
 
               <button
                 onClick={handleComplete}
-                disabled={!canComplete || isSyncing}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-lg hover:shadow-green-500/25 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center gap-2"
-                aria-disabled={!canComplete}
-                aria-label="Terminar sesión"
+                disabled={isUpdating}
+                className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="button"
               >
-                <CheckIcon className="w-5 h-5" />
-                Terminar sesión
+                {isUpdating ? 'Completando...' : 'Completar sesión'}
               </button>
             </div>
-
-            {/* Enlaces contextuales */}
-            <div className="flex justify-center gap-4 text-sm">
-              {activeSession.methodId && (
-                <button className="text-blue-400 hover:text-blue-300 transition-colors">
-                  Abrir método
-                </button>
-              )}
-              {activeSession.albumId && (
-                <button className="text-purple-400 hover:text-purple-300 transition-colors">
-                  Ver álbum
-                </button>
-              )}
-            </div>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </AnimatePresence>
   );
 };
 
