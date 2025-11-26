@@ -71,23 +71,48 @@ export const getArtistName = (song: Song): string => {
 export const preloadSongDurations = async (songsList: Song[]): Promise<Record<number, number>> => {
   const durations: Record<number, number> = {};
 
-  // Create promises for concurrent loading
+  // Create promises for concurrent loading with reduced timeout for better UX
   const durationPromises = songsList.map(async (song) => {
     try {
+      // Skip invalid URLs
+      if (!song.url_musica || typeof song.url_musica !== 'string') {
+        console.warn(`Invalid URL for song ${song.id_cancion}, using database duration`);
+        durations[song.id_cancion] = song.duracion || 0;
+        return;
+      }
+
+      // Skip placeholder URLs
+      if (song.url_musica.includes('placeholder') ||
+          song.url_musica.includes('example.com') ||
+          song.url_musica.includes('tu-proyecto.supabase.co')) {
+        console.log(`Skipping placeholder URL for song ${song.id_cancion}, using database duration`);
+        durations[song.id_cancion] = song.duracion || 0;
+        return;
+      }
+
       const audio = new Audio();
       audio.preload = 'metadata';
 
       const duration = await new Promise<number>((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
+        // Reduced timeout for better user experience
+        const timeout = setTimeout(() => reject(new Error('Timeout')), 3000);
 
         audio.addEventListener('loadedmetadata', () => {
           clearTimeout(timeout);
-          resolve(audio.duration);
+          // Validate duration is reasonable (not NaN, Infinity, or 0)
+          const validDuration = audio.duration && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+          resolve(validDuration);
         });
 
-        audio.addEventListener('error', () => {
+        audio.addEventListener('error', (e) => {
           clearTimeout(timeout);
-          reject(new Error('Error loading metadata'));
+          reject(new Error(`Audio load error: ${e.message || 'Unknown error'}`));
+        });
+
+        // Handle abort/error cases
+        audio.addEventListener('abort', () => {
+          clearTimeout(timeout);
+          reject(new Error('Audio loading aborted'));
         });
 
         audio.src = song.url_musica;
@@ -95,14 +120,14 @@ export const preloadSongDurations = async (songsList: Song[]): Promise<Record<nu
 
       durations[song.id_cancion] = duration;
     } catch (error) {
-      // Use database duration as fallback
+      // Use database duration as fallback - don't log as error since it's expected for some URLs
       durations[song.id_cancion] = song.duracion || 0;
-      console.warn(`Failed to preload duration for song ${song.id_cancion}:`, error);
+      console.debug(`Uso de la duración de reserva para la canción ${song.id_cancion}:`);
     }
   });
 
-  // Wait for all promises to complete
-  await Promise.all(durationPromises);
+  // Wait for all promises to complete - use Promise.allSettled to ensure all complete even if some fail
+  await Promise.allSettled(durationPromises);
 
   return durations;
 };

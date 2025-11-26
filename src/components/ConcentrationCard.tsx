@@ -7,7 +7,7 @@
  *
  * Diseño: Overlay centrado con glassmorphism, controles intuitivos y accesibilidad completa.
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PlayIcon,
@@ -38,27 +38,34 @@ export const ConcentrationCard: React.FC<ConcentrationCardProps> = ({
 }) => {
   const { getState, pauseSession, resumeSession, finishLater, completeSession } = useConcentrationSession();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
 
   const session = getState().activeSession;
 
+  // Update timer every second when session is running
+  useEffect(() => {
+    if (!session || !session.isRunning) {
+      setCurrentTime(session?.elapsedMs || 0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const serverElapsed = session.elapsedMs || 0;
+      const startTime = new Date(session.startTime).getTime();
+      const now = Date.now();
+      setCurrentTime(serverElapsed + (now - startTime));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [session]);
 
   /**
    * Calcula el tiempo transcurrido visible
    */
   const getVisibleTime = useCallback(() => {
     if (!session) return 0;
-
-    if (session.isRunning) {
-      // Tiempo corriendo: serverElapsedMs + (ahora - startTimestamp)
-      const serverElapsed = session.elapsedMs || 0;
-      const startTime = new Date(session.startTime).getTime();
-      const now = Date.now();
-      return serverElapsed + (now - startTime);
-    } else {
-      // Tiempo pausado: usar accumulatedMs del servidor
-      return session.elapsedMs || 0;
-    }
-  }, [session]);
+    return currentTime;
+  }, [session, currentTime]);
 
   /**
    * Maneja pausa/reanudar de la sesión

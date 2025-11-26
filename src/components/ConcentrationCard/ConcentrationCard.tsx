@@ -30,36 +30,27 @@ export const ConcentrationCard: React.FC = () => {
 
   // Update timer every second when session is running
   useEffect(() => {
-    if (!session || !session.isRunning) return;
+    if (!session || !session.isRunning) {
+      setCurrentTime(session?.elapsedMs || 0);
+      return;
+    }
 
     const interval = setInterval(() => {
-      setCurrentTime(prev => prev + 1000); // Add 1 second in milliseconds
+      const serverElapsed = session.elapsedMs || 0;
+      const startTime = new Date(session.startTime).getTime();
+      const now = Date.now();
+      setCurrentTime(serverElapsed + (now - startTime));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [session?.isRunning]);
-
-  // Reset timer when session changes
-  useEffect(() => {
-    if (session) {
-      setCurrentTime(session.elapsedMs || 0);
-    }
-  }, [session?.sessionId, session?.elapsedMs]);
+  }, [session]);
 
   /**
    * Calcula el tiempo transcurrido visible
    */
   const getVisibleTime = useCallback(() => {
     if (!session) return 0;
-
-    if (session.isRunning) {
-      // Tiempo corriendo: serverElapsedMs + tiempo actual del componente
-      const serverElapsed = session.elapsedMs || 0;
-      return serverElapsed + currentTime;
-    } else {
-      // Tiempo pausado: usar accumulatedMs del servidor
-      return session.elapsedMs || 0;
-    }
+    return currentTime;
   }, [session, currentTime]);
 
   /**
