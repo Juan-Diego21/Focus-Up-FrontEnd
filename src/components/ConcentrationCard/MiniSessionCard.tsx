@@ -10,7 +10,9 @@
  * Diseño: Posicionamiento fijo top-right, glassmorphism, animaciones suaves hacia abajo.
  */
 import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 import {
   PlayIcon,
   PauseIcon,
@@ -24,6 +26,7 @@ import { useConcentrationSession } from '../../providers/ConcentrationSessionPro
 import { formatTime } from '../../utils/sessionMappers';
 
 export const MiniSessionCard: React.FC = () => {
+  const navigate = useNavigate();
   const { getState, pauseSession, resumeSession, finishLater, maximize } = useConcentrationSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -77,7 +80,7 @@ export const MiniSessionCard: React.FC = () => {
   };
 
   /**
-   * Maneja terminar más tarde
+   * Maneja terminar más tarde con alerta y redirección automática
    */
   const handleFinishLater = async () => {
     if (!session || isUpdating) return;
@@ -85,9 +88,25 @@ export const MiniSessionCard: React.FC = () => {
     try {
       setIsUpdating(true);
       await finishLater();
+
+      // Mostrar alerta de sesión aplazada y redirigir después de 3 segundos
+      Swal.fire({
+        title: 'Sesión aplazada',
+        text: 'Tu sesión de concentración ha sido guardada para continuar más tarde.',
+        icon: 'info',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#3B82F6',
+      }).then(() => {
+        // Redirigir a reportes después de que se cierre la alerta
+        navigate('/reports/');
+      });
+
     } catch (error) {
       console.error('Error finishing later:', error);
-    } finally {
       setIsUpdating(false);
     }
   };
@@ -148,6 +167,17 @@ export const MiniSessionCard: React.FC = () => {
 
               {/* Controles de header */}
               <div className="flex items-center gap-1">
+                <button
+                  onClick={handleFinishLater}
+                  disabled={isUpdating}
+                  className="p-1 text-gray-400 hover:text-red-400 transition-colors rounded hover:bg-red-500/20 disabled:opacity-50 cursor-pointer"
+                  aria-label="Terminar más tarde"
+                  title="Terminar más tarde"
+                  type="button"
+                >
+                  <ClockIcon className="w-4 h-4" />
+                </button>
+
                 <button
                   onClick={toggleExpanded}
                   className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"

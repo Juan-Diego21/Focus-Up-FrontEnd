@@ -98,7 +98,7 @@ export const ConcentrationCard: React.FC = () => {
         iconColor: '#3B82F6',
       }).then(() => {
         // Redirigir a reportes después de que se cierre la alerta
-        navigate('/reports');
+        navigate('/reports/sessions');
       });
 
     } catch (error) {
@@ -147,7 +147,7 @@ export const ConcentrationCard: React.FC = () => {
         iconColor: '#10B981',
       }).then(() => {
         // Redirigir a reportes después de que se cierre la alerta
-        navigate('/reports');
+        navigate('/reports/sessions');
       });
 
     } catch (error) {

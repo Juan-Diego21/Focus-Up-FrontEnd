@@ -20,15 +20,26 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [focusToolsMenuOpen, setFocusToolsMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    if (isLoggingOut) return; // Prevent multiple clicks
+
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      // logout() handles the navigation internally
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setIsLoggingOut(false);
+      // Fallback navigation in case logout fails
+      navigate("/login");
+    }
   };
 
   const navigateTo = (path: string) => {
@@ -161,10 +172,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
 
         <button
           onClick={handleLogout}
-          className="mt-8 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all font-medium shadow-lg cursor-pointer"
+          disabled={isLoggingOut || loading}
+          className="mt-8 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 disabled:bg-red-400 disabled:cursor-not-allowed transition-all font-medium shadow-lg cursor-pointer"
         >
-          <ArrowRightOnRectangleIcon className="w-5 h-5" />
-          Cerrar Sesión
+          {isLoggingOut ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+          )}
+          {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
         </button>
       </aside>
 
