@@ -158,24 +158,24 @@ export const MusicPlayer: React.FC = () => {
 
       {/* Sliding Player Bar */}
       <div
-        className={`fixed bottom-0 z-40 transition-transform duration-300 ${
+        className={`fixed bottom-0 z-40 transition-all duration-300 ${
           isExpanded
-            ? 'left-1/2 transform -translate-x-1/2 w-11/12 max-w-4xl h-20 bg-[#232323]/95 backdrop-blur-md border border-[#333] rounded-2xl p-5'
-            : 'right-0 w-20 h-20'
+            ? 'left-1/2 transform -translate-x-1/2 w-11/12 max-w-4xl h-24 bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 backdrop-blur-xl rounded-3xl p-6 shadow-2xl'
+            : 'right-4 bottom-4 w-20 h-20'
         }`}
       >
         {/* Toggle Button - Positioned on left edge when expanded, right edge when collapsed */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`absolute top-1/2 transform -translate-y-1/2 z-50 bg-[#232323] rounded-full p-1 border border-[#333] hover:bg-[#2a2a2a] transition-colors cursor-pointer shadow-lg ${
-            isExpanded ? '-left-3' : 'right-1'
+          className={`absolute top-1/2 transform -translate-y-1/2 z-50 bg-gradient-to-br from-[#232323] to-[#1a1a1a] rounded-full p-2 border border-[#333]/60 hover:border-violet-500/50 backdrop-blur-md transition-all duration-300 cursor-pointer shadow-xl hover:shadow-violet-500/25 ${
+            isExpanded ? '-left-4' : 'right-2'
           }`}
           title={isExpanded ? 'Ocultar reproductor' : 'Mostrar reproductor'}
         >
           {isExpanded ? (
-            <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+            <ChevronRightIcon className="w-4 h-4 text-gray-400 hover:text-violet-400 transition-colors" />
           ) : (
-            <ChevronLeftIcon className="w-4 h-4 text-gray-400" />
+            <ChevronLeftIcon className="w-4 h-4 text-gray-400 hover:text-violet-400 transition-colors" />
           )}
         </button>
 
@@ -183,89 +183,100 @@ export const MusicPlayer: React.FC = () => {
         {isExpanded && (
           <div className="flex items-center justify-between h-full">
           {/* Song Info */}
-          <div className="flex items-center space-x-3 min-w-0 flex-1">
-            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-              <img
-                src={getAlbumImage(currentAlbum?.id_album || currentSong?.id_album)}
-                alt="Portada del álbum"
-                className="w-full h-full object-cover"
-              />
+          <div className="flex items-center space-x-4 min-w-0 flex-1">
+            <div className="relative flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden shadow-lg ring-2 ring-violet-500/20">
+                <img
+                  src={getAlbumImage(currentAlbum?.id_album || currentSong?.id_album)}
+                  alt="Portada del álbum"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Animated playing indicator */}
+              {isPlaying && (
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                </div>
+              )}
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="text-white font-medium truncate text-sm">
+              <h4 className="text-white font-semibold truncate text-base hover:text-violet-300 transition-colors cursor-pointer">
                 {currentSong.nombre_cancion}
               </h4>
-              <p className="text-gray-400 text-xs truncate">
+              <p className="text-gray-400 text-sm truncate hover:text-gray-300 transition-colors cursor-pointer">
                 {getArtistName(currentSong)}
               </p>
             </div>
           </div>
 
           {/* Main Controls */}
-          <div className="flex flex-col items-center space-y-2 flex-1 max-w-md">
+          <div className="flex flex-col items-center space-y-3 flex-1 max-w-md">
             {/* Playback Controls */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <button
                 onClick={previousSong}
-                className="text-gray-400 hover:text-violet-400 hover:scale-110 transition-all duration-200 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-5"
+                className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-violet-400  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:scale-110"
                 disabled={!hasPreviousSong}
               >
-                <BackwardIcon className="w-5 h-5" />
+                <BackwardIcon className="w-6 h-6" />
               </button>
 
               <button
                 onClick={togglePlayPause}
                 disabled={isLoading}
-                className="bg-white text-black rounded-full p-2 hover:scale-105 transition-transform disabled:opacity-50 cursor-pointer mt-5" 
+                className="w-11 h-11 mt-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-full flex items-center justify-center hover:scale-105 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-lg hover:shadow-violet-500/25"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : isPlaying ? (
-                  <PauseIcon className="w-5 h-5" />
+                  <PauseIcon className="w-6 h-6" />
                 ) : (
-                  <PlayIcon className="w-5 h-5" />
+                  <PlayIcon className="w-6 h-6 ml-0.5" />
                 )}
               </button>
 
               <button
                 onClick={nextSong}
-                className="text-gray-400 hover:text-violet-400 hover:scale-110 transition-all duration-200 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-5"
+                className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-violet-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:scale-110"
                 disabled={!hasNextSong}
               >
-                <ForwardIcon className="w-5 h-5" />
+                <ForwardIcon className="w-6 h-6" />
               </button>
             </div>
 
             {/* Progress Bar */}
-            <div className="flex items-center space-x-2 w-full mb-4">
-              <span className="text-xs text-gray-400 w-10 text-right">
+            <div className="flex items-center space-x-3 w-full mb-1">
+              <span className="text-sm text-gray-400 font-medium min-w-[40px] text-right">
                 {formatTime(currentTime)}
               </span>
-              <input
-                type="range"
-                min="0"
-                max={duration || 100}
-                value={currentTime}
-                onChange={handleProgressChange}
-                className="flex-1 h-2 bg-purple-900/50 rounded-full appearance-none cursor-pointer slider-thumb-purple"
-                style={{
-                  background: `linear-gradient(to right, #7c3aed 0%, #7c3aed ${(currentTime / (duration || 100)) * 100}%, #581c87 ${(currentTime / (duration || 100)) * 100}%, #581c87 100%)`
-                }}
-              />
-              <span className="text-xs text-gray-400 w-10">
+              <div className="flex-1 relative">
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 100}
+                  value={currentTime}
+                  onChange={handleProgressChange}
+                  className="w-full h-2 bg-gray-700/50 rounded-full appearance-none cursor-pointer slider-thumb-purple hover:bg-gray-600/50 transition-colors"
+                  style={{
+                    background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${(currentTime / (duration || 100)) * 100}%, #374151 ${(currentTime / (duration || 100)) * 100}%, #374151 100%)`
+                  }}
+                />
+    
+              </div>
+              <span className="text-sm text-gray-400 font-medium min-w-[40px]">
                 {formatTime(duration)}
               </span>
             </div>
           </div>
 
           {/* Right Controls */}
-          <div className="flex items-center space-x-3 flex-1 justify-end">
+          <div className="flex items-center space-x-4 flex-1 justify-end">
             {/* Shuffle */}
             <button
               onClick={() => setShuffle(!isShuffling)}
-              className={`hover:scale-110 transition-all duration-200 p-1 rounded cursor-pointer ${
+              className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer hover:scale-110 ${
                 isShuffling
-                  ? 'text-violet-400 hover:text-violet-300'
+                  ? 'bg-violet-500/20 text-violet-300'
                   : 'text-gray-400 hover:text-violet-400'
               }`}
               title={isShuffling ? 'Desactivar reproducción aleatoria' : 'Activar reproducción aleatoria'}
@@ -276,17 +287,17 @@ export const MusicPlayer: React.FC = () => {
             {/* Playback Mode */}
             <button
               onClick={togglePlaybackMode}
-              className="text-gray-400 hover:text-violet-400 hover:scale-110 transition-all duration-200 p-1 rounded cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-violet-400 transition-all duration-200 cursor-pointer hover:scale-110"
               title={`Modo: ${playbackMode === 'ordered' ? 'Ordenado' : playbackMode === 'loop-all' ? 'Repetir todo' : playbackMode === 'loop-one' ? 'Repetir una' : 'Aleatorio'}`}
             >
               {getPlaybackModeIcon()}
             </button>
 
             {/* Volume */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => setVolume(volume > 0 ? 0 : 0.7)}
-                className="text-gray-400 hover:text-violet-400 hover:scale-110 transition-all duration-200 p-1 rounded cursor-pointer"
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-violet-400 transition-all duration-200 cursor-pointer hover:scale-110"
               >
                 {volume === 0 ? (
                   <SpeakerXMarkIcon className="w-5 h-5" />
@@ -294,24 +305,26 @@ export const MusicPlayer: React.FC = () => {
                   <SpeakerWaveIcon className="w-5 h-5" />
                 )}
               </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={handleVolumeChange}
-                className="w-20 h-2 bg-purple-900/50 rounded-full appearance-none cursor-pointer slider-thumb-purple"
-                style={{
-                  background: `linear-gradient(to right, #7c3aed 0%, #7c3aed ${volume * 100}%, #581c87 ${volume * 100}%, #581c87 100%)`
-                }}
-              />
+              <div className="relative">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="w-24 h-2 bg-gray-700/50 rounded-full appearance-none cursor-pointer slider-thumb-purple hover:bg-gray-600/50 transition-colors"
+                  style={{
+                    background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${volume * 100}%, #374151 ${volume * 100}%, #374151 100%)`
+                  }}
+                />
+              </div>
             </div>
 
             {/* Queue */}
             <button
               onClick={() => setShowQueue(!showQueue)}
-              className="text-gray-400 hover:text-violet-400 hover:scale-110 transition-all duration-200 p-1 rounded cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-violet-400 transition-all duration-200 cursor-pointer hover:scale-110"
               title="Ver cola de reproducción"
             >
               <QueueListIcon className="w-5 h-5" />
@@ -323,22 +336,28 @@ export const MusicPlayer: React.FC = () => {
       </div>
 
      {/* Queue Modal */}
-      {showQueue && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end">
-          <div className="bg-[#232323] w-full max-h-[70vh] rounded-t-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white text-lg font-semibold">
-                Cola de reproducción ({playlist.length})
-              </h3>
-              <button
-                onClick={() => setShowQueue(false)}
-                className="text-gray-400 hover:text-white p-1"
-              >
-                <XMarkIcon className="w-6 h-6 cursor-pointer" />
-              </button>
-            </div>
+     {showQueue && (
+       <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end animate-in fade-in duration-300">
+         <div className="bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 w-full max-h-[75vh] rounded-t-3xl border-t border-[#333]/60 shadow-2xl overflow-hidden">
+           <div className="p-8">
+             <div className="flex items-center justify-between mb-6">
+               <div>
+                 <h3 className="text-white text-2xl font-bold mb-1">
+                   Cola de reproducción
+                 </h3>
+                 <p className="text-gray-400 text-sm">
+                   {playlist.length} {playlist.length === 1 ? 'canción' : 'canciones'}
+                 </p>
+               </div>
+               <button
+                 onClick={() => setShowQueue(false)}
+                 className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all duration-200 cursor-pointer"
+               >
+                 <XMarkIcon className="w-6 h-6" />
+               </button>
+             </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-96 overflow-y-auto">
               {playlist.map((song, index) => (
                 <div
                   key={`${song.id_cancion}-${index}`}
@@ -346,18 +365,18 @@ export const MusicPlayer: React.FC = () => {
                   onDragStart={() => handleDragStart(index)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, index)}
-                  className={`flex items-center space-x-3 p-3 rounded-lg cursor-move hover:bg-[#2a2a2a] transition-colors group ${
-                    song.id_cancion === currentSong.id_cancion ? 'bg-[#2a2a2a] border-l-4 border-cyan-500' : ''
+                  className={`flex items-center space-x-4 p-4 rounded-xl cursor-move hover:bg-gradient-to-r hover:from-violet-500/5 hover:to-purple-500/5 transition-all duration-200 group ${
+                    song.id_cancion === currentSong.id_cancion ? 'bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-l-4 border-violet-500' : ''
                   }`}
                 >
                   {/* Drag Handle */}
-                  <div className="flex flex-col space-y-1 text-gray-500 group-hover:text-gray-300 transition-colors">
-                    <div className="w-1 h-1 bg-current rounded-full"></div>
-                    <div className="w-1 h-1 bg-current rounded-full"></div>
-                    <div className="w-1 h-1 bg-current rounded-full"></div>
+                  <div className="flex flex-col space-y-1 text-gray-500 group-hover:text-violet-400 transition-colors">
+                    <div className="w-1.5 h-1.5 bg-current rounded-full"></div>
+                    <div className="w-1.5 h-1.5 bg-current rounded-full"></div>
+                    <div className="w-1.5 h-1.5 bg-current rounded-full"></div>
                   </div>
 
-                  <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-lg ring-1 ring-white/10">
                     <img
                       src={getAlbumImage(song.id_album)}
                       alt="Portada del álbum"
@@ -366,17 +385,17 @@ export const MusicPlayer: React.FC = () => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">
+                    <p className="text-white text-base font-medium truncate group-hover:text-violet-300 transition-colors">
                       {song.nombre_cancion}
                     </p>
-                    <p className="text-gray-400 text-xs truncate">
-                      {song.artista_cancion}
+                    <p className="text-gray-400 text-sm truncate">
+                      {getArtistName(song)}
                     </p>
                   </div>
 
                   <button
                     onClick={() => removeFromPlaylist(index)}
-                    className="text-gray-400 hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer"
                     title="Eliminar de la cola"
                   >
                     <XMarkIcon className="w-4 h-4" />
@@ -384,9 +403,10 @@ export const MusicPlayer: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      )}
+           </div>
+         </div>
+       </div>
+     )}
 
     </>
   );
