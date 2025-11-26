@@ -132,16 +132,18 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
         // Mapear sesión del servidor al cliente
         const session = mapServerSession(parsed, parsed.persistedAt);
 
+        // Si la sesión estaba corriendo cuando se persistió, actualizar startTime al tiempo actual
+        // para que el timer continue correctamente desde el punto de restauración
+        const sessionWithCorrectedTimer = session.isRunning ? {
+          ...session,
+          startTime: new Date().toISOString(), // Nuevo punto de referencia para continuar el timer
+        } : session;
+
         setState(prev => ({
           ...prev,
-          activeSession: session,
+          activeSession: sessionWithCorrectedTimer,
           showContinueModal: true, // Mostrar modal de continuar
         }));
-
-        // Si la sesión estaba corriendo, corregir timer
-        if (session.isRunning) {
-          // El timer se corregirá automáticamente en getVisibleTime()
-        }
       }
     } catch (error) {
       console.error('Error inicializando provider:', error);
@@ -211,8 +213,15 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
   const persistState = useCallback((session: ActiveSession | null) => {
     try {
       if (session) {
-        const toPersist = {
+        // Si la sesión está corriendo, actualizar elapsedMs con el tiempo actual acumulado
+        // para que al restaurar, el timer muestre el tiempo correcto
+        const sessionToPersist = session.isRunning ? {
           ...session,
+          elapsedMs: (session.elapsedMs || 0) + (session.startTime ? Date.now() - new Date(session.startTime).getTime() : 0),
+        } : session;
+
+        const toPersist = {
+          ...sessionToPersist,
           persistedAt: new Date().toISOString(),
         };
         localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(toPersist));
@@ -269,6 +278,12 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
   /**
    * Pausa la sesión actual usando el nuevo endpoint de reportes
    *
+   * Lógica del timer de pausa/resume:
+   * - Al pausar: calcula tiempo total acumulado y lo guarda en elapsedMs
+   * - Al resumir: establece nuevo startTime para continuar acumulando desde cero
+   * - Timer visible = elapsedMs acumulado + (tiempo actual - startTime) si está corriendo
+   * - Timer visible = elapsedMs acumulado si está pausado
+   *
    * Actualización crítica: Se calcula elapsedMs correctamente y se usa
    * PATCH /api/v1/reports/sessions/{id}/progress con status "pending".
    */
@@ -290,9 +305,11 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
         offlineQueue.enqueue('pause', state.activeSession.sessionId, { elapsedMs: currentElapsedMs });
       }
 
-      // Actualizar estado local
+      // Actualizar estado local con tiempo acumulado correcto
+      // CRÍTICO: Actualizar elapsedMs para que el timer muestre el tiempo correcto cuando está pausado
       const updatedSession = {
         ...state.activeSession,
+        elapsedMs: currentElapsedMs, // Guardar tiempo acumulado para mostrar timer correcto en pausa
         isRunning: false,
         pausedAt: new Date().toISOString(),
         status: 'paused' as const,
@@ -317,6 +334,11 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
   /**
    * Reanuda la sesión pausada
+   *
+   * Lógica del timer de resume:
+   * - Mantiene elapsedMs acumulado de la pausa anterior
+   * - Establece nuevo startTime = Date.now() para que el timer continue acumulando desde cero
+   * - Timer visible continuará sumando: elapsedMs + (Date.now() - nuevo startTime)
    */
   const resumeSession = useCallback(async () => {
     if (!state.activeSession || state.activeSession.isRunning) return;
@@ -331,9 +353,11 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
         offlineQueue.enqueue('resume', state.activeSession.sessionId);
       }
 
-      // Actualizar estado local
+      // Actualizar estado local - mantener elapsedMs acumulado y actualizar startTime para continuar el timer
+      // CRÍTICO: Nuevo startTime permite que el timer continue acumulando correctamente
       const updatedSession = {
         ...state.activeSession,
+        startTime: new Date().toISOString(), // Nuevo punto de referencia para continuar acumulando tiempo
         isRunning: true,
         pausedAt: undefined,
         status: 'active' as const,
@@ -375,10 +399,13 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
         (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
 
       if (navigator.onLine) {
-        // Se corrige la llamada para incluir elapsedMs requerido por el nuevo endpoint
-        await sessionService.finishLater(state.activeSession.sessionId, currentElapsedMs);
+        // Enviar PATCH con status "pending" y notas para marcar como aplazada
+        await sessionService.finishLater(state.activeSession.sessionId, currentElapsedMs, "Aplazada desde UI");
       } else {
-        offlineQueue.enqueue('finish-later', state.activeSession.sessionId, { elapsedMs: currentElapsedMs });
+        offlineQueue.enqueue('finish-later', state.activeSession.sessionId, {
+          elapsedMs: currentElapsedMs,
+          notes: "Aplazada desde UI"
+        });
       }
 
       // Limpiar estado
@@ -418,10 +445,13 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
         (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
 
       if (navigator.onLine) {
-        // Se corrige la llamada para incluir elapsedMs requerido por el nuevo endpoint
-        await sessionService.completeSession(state.activeSession.sessionId, currentElapsedMs);
+        // Enviar PATCH con status "completed", duracion y notas
+        await sessionService.completeSession(state.activeSession.sessionId, currentElapsedMs, "Sesión completada exitosamente");
       } else {
-        offlineQueue.enqueue('complete', state.activeSession.sessionId, { elapsedMs: currentElapsedMs });
+        offlineQueue.enqueue('complete', state.activeSession.sessionId, {
+          elapsedMs: currentElapsedMs,
+          notes: "Sesión completada exitosamente"
+        });
       }
 
       // Limpiar estado

@@ -1,11 +1,13 @@
 /**
  * Componente de tarjeta de sesión minimizada
  *
- * Muestra una versión compacta de la sesión activa en la esquina inferior derecha.
+ * Muestra una versión compacta de la sesión activa en la esquina superior derecha,
+ * posicionada visualmente debajo del botón flotante "Sesión de concentración".
+ * Expande hacia abajo para mantener consistencia visual con el flujo de la UI.
  * Permite acceso rápido a controles básicos y restaurar la vista completa.
  * Se oculta automáticamente cuando no hay sesión activa.
  *
- * Diseño: Posicionamiento fijo, glassmorphism, animaciones suaves.
+ * Diseño: Posicionamiento fijo top-right, glassmorphism, animaciones suaves hacia abajo.
  */
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +15,7 @@ import {
   PlayIcon,
   PauseIcon,
   ClockIcon,
-  ChevronUpIcon,
+  ChevronDownIcon,
   XMarkIcon,
   MusicalNoteIcon,
   BookOpenIcon
@@ -112,11 +114,11 @@ export const MiniSessionCard: React.FC = () => {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 100 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 100 }}
+        exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="fixed bottom-6 right-6 z-30"
+        className="fixed top-16 right-4 z-20"
       >
         <motion.div
           animate={{ width: isExpanded ? 320 : 280 }}
@@ -152,7 +154,7 @@ export const MiniSessionCard: React.FC = () => {
                   aria-label={isExpanded ? 'Contraer tarjeta' : 'Expandir tarjeta'}
                   type="button"
                 >
-                  <ChevronUpIcon className={`w-4 h-4 transition-transform ${
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform ${
                     isExpanded ? 'rotate-180' : ''
                   }`} />
                 </button>
@@ -169,13 +171,13 @@ export const MiniSessionCard: React.FC = () => {
             </div>
           </div>
 
-          {/* Contenido expandible */}
+          {/* Contenido expandible hacia abajo */}
           <AnimatePresence>
             {isExpanded && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
+                initial={{ height: 0, opacity: 0, y: -10 }}
+                animate={{ height: 'auto', opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
                 className="border-t border-[#333]/50"
               >

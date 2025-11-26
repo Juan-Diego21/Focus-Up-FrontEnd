@@ -1,19 +1,23 @@
 /**
  * Componente de tarjeta de sesión minimizada
  *
- * Muestra una versión compacta de la sesión activa en la esquina inferior derecha.
+ * Muestra una versión compacta de la sesión activa en la esquina superior derecha,
+ * posicionada visualmente debajo del botón flotante "Sesión de concentración".
+ * Expande hacia abajo para mantener consistencia visual con el flujo de la UI.
  * Permite acceso rápido a controles básicos y restaurar la vista completa.
  * Se oculta automáticamente cuando no hay sesión activa.
  *
- * Diseño: Posicionamiento fijo, glassmorphism, animaciones suaves.
+ * Diseño: Posicionamiento fijo top-right, glassmorphism, animaciones suaves hacia abajo.
  */
 import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 import {
   PlayIcon,
   PauseIcon,
   ClockIcon,
-  ChevronUpIcon,
+  ChevronDownIcon,
   XMarkIcon,
   MusicalNoteIcon,
   BookOpenIcon
@@ -34,6 +38,7 @@ interface MiniSessionCardProps {
 export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
   onMaximize
 }) => {
+  const navigate = useNavigate();
   const { getState, pauseSession, resumeSession, finishLater } = useConcentrationSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -87,7 +92,7 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
   };
 
   /**
-   * Maneja terminar más tarde
+   * Maneja terminar más tarde con alerta y redirección automática
    */
   const handleFinishLater = async () => {
     if (!session || isUpdating) return;
@@ -95,9 +100,25 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
     try {
       setIsUpdating(true);
       await finishLater();
+
+      // Mostrar alerta de sesión aplazada y redirigir después de 3 segundos
+      Swal.fire({
+        title: 'Sesión aplazada',
+        text: 'Serás redirigido a Reportes en 3 segundos.',
+        icon: 'info',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#3B82F6',
+      }).then(() => {
+        // Redirigir a reportes después de que se cierre la alerta
+        navigate('/reports/sessions');
+      });
+
     } catch (error) {
       console.error('Error finishing later:', error);
-    } finally {
       setIsUpdating(false);
     }
   };
@@ -125,11 +146,11 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
     <AnimatePresence>
       {session && (
         <motion.div
-          initial={{ opacity: 0, y: 100 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 100 }}
+          exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="fixed bottom-6 right-6 z-30"
+          className="fixed top-16 right-4 z-20"
         >
           <motion.div
             animate={{ width: isExpanded ? 320 : 280 }}
@@ -165,7 +186,7 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
                     aria-label={isExpanded ? 'Contraer tarjeta' : 'Expandir tarjeta'}
                     type="button"
                   >
-                    <ChevronUpIcon className={`w-4 h-4 transition-transform ${
+                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${
                       isExpanded ? 'rotate-180' : ''
                     }`} />
                   </button>
@@ -182,13 +203,13 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
               </div>
             </div>
 
-            {/* Contenido expandible */}
+            {/* Contenido expandible hacia abajo */}
             <AnimatePresence>
               {isExpanded && (
                 <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
+                  initial={{ height: 0, opacity: 0, y: -10 }}
+                  animate={{ height: 'auto', opacity: 1, y: 0 }}
+                  exit={{ height: 0, opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                   className="border-t border-[#333]/50"
                 >

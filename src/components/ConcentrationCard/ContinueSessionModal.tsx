@@ -13,12 +13,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlayIcon, XMarkIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useConcentrationSession } from '../../hooks/useConcentrationSession';
 import { getVisibleTime, formatTime } from '../../utils/sessionMappers';
+import { useMusicPlayer } from '../../contexts/MusicPlayerContext';
+import { getSongsByAlbumId } from '../../utils/musicApi';
+import { replaceIfSessionAlbum } from '../../services/audioService';
 
 /**
  * Modal para continuar sesión anterior
  */
 export const ContinueSessionModal: React.FC = () => {
   const { getState, minimize, hideContinueModal, finishLater } = useConcentrationSession();
+  const { playPlaylist, currentAlbum, isPlaying } = useMusicPlayer();
   const state = getState();
 
   const { activeSession } = state;
@@ -41,6 +45,44 @@ export const ContinueSessionModal: React.FC = () => {
 
       // Minimizar inicialmente para no interrumpir el flujo del usuario
       minimize();
+
+      // Restaurar reproducción de música si hay un álbum seleccionado
+      if (activeSession?.albumId) {
+        try {
+          console.log('Restaurando música del álbum seleccionado:', activeSession.albumId);
+
+          // Cargar canciones del álbum específico desde la API
+          const albumSongs = await getSongsByAlbumId(activeSession.albumId);
+
+          if (albumSongs.length === 0) {
+            console.warn(`El álbum ${activeSession.albumId} no tiene canciones disponibles`);
+            return;
+          }
+
+          // Usar función pura para iniciar reproducción del álbum
+          await replaceIfSessionAlbum(
+            {
+              playPlaylist,
+              currentAlbum: currentAlbum, // Álbum actualmente reproduciendo
+              isPlaying: isPlaying,       // Estado de reproducción actual
+              togglePlayPause: () => {}, // No usado en este contexto
+            },
+            activeSession.albumId,
+            albumSongs, // Ahora pasamos directamente las canciones del álbum
+            {
+              id_album: activeSession.albumId,
+              nombre_album: `Álbum ${activeSession.albumId}` // Nombre genérico ya que no tenemos el nombre exacto
+            }
+          );
+
+          console.log(`Música del álbum ${activeSession.albumId} restaurada correctamente`);
+        } catch (musicError) {
+          // Se registra el error pero no se interrumpe la sesión
+          console.error('Error restaurando música del álbum:', musicError);
+        }
+      } else {
+        console.log('Sesión continuada sin álbum - manteniendo reproducción actual si existe');
+      }
     } catch (error) {
       console.error('Error continuando sesión:', error);
     }

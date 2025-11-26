@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ChartBarIcon,
   PlayIcon,
@@ -18,6 +18,7 @@ import {
 import { motion } from 'framer-motion';
 import { sessionService } from '../../services/sessionService';
 import { formatTime } from '../../utils/sessionMappers';
+import { getBroadcastChannel, type BroadcastMessage } from '../../utils/broadcastChannel';
 import type { SessionDto } from '../../types/api';
 
 /**
@@ -25,6 +26,7 @@ import type { SessionDto } from '../../types/api';
  */
 export const SessionsReport: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Estado
   const [sessions, setSessions] = useState<SessionDto[]>([]);
@@ -42,10 +44,35 @@ export const SessionsReport: React.FC = () => {
     thisWeekSessions: 0,
   });
 
+  // Broadcast channel para escuchar actualizaciones de sesiones
+  const broadcastChannel = getBroadcastChannel();
+
   // Cargar sesiones
   useEffect(() => {
     loadSessions();
   }, [statusFilter, dateFrom, dateTo]);
+
+  // Refrescar datos cuando se navega a esta página (ej: después de completar sesión)
+  useEffect(() => {
+    loadSessions();
+  }, [location.pathname]);
+
+  // Configurar listeners para broadcast de actualizaciones de sesiones
+  useEffect(() => {
+    const handleSessionUpdate = (message: BroadcastMessage) => {
+      if (message.type === 'SESSION_COMPLETED' || message.type === 'SESSION_PAUSED') {
+        // Recargar sesiones cuando se complete o pause una sesión
+        loadSessions();
+      }
+    };
+
+    broadcastChannel.addListener('reports-page', handleSessionUpdate);
+
+    // Cleanup
+    return () => {
+      broadcastChannel.removeListener('reports-page');
+    };
+  }, []);
 
   /**
    * Carga sesiones con filtros
@@ -64,10 +91,18 @@ export const SessionsReport: React.FC = () => {
       };
 
       const sessionsData = await sessionService.listUserSessions(filters);
-      setSessions(sessionsData);
 
-      // Calcular estadísticas
-      calculateStats(sessionsData);
+      // Normalizar datos de sesiones del backend para asegurar consistencia
+      // El backend puede devolver 'duracion' en segundos, convertir a 'elapsedMs' en milisegundos
+      const normalizedSessions = sessionsData.map(session => ({
+        ...session,
+        elapsedMs: session.elapsedMs || ((session as any).duracion ? (session as any).duracion * 1000 : 0)
+      }));
+
+      setSessions(normalizedSessions);
+
+      // Calcular estadísticas con datos normalizados
+      calculateStats(normalizedSessions);
     } catch (err) {
       setError('Error cargando sesiones');
       console.error('Error loading sessions:', err);

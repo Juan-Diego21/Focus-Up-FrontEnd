@@ -86,16 +86,21 @@ class SessionService {
    *
    * @param sessionId - ID de la sesión
    * @param elapsedMs - Tiempo transcurrido en milisegundos
+   * @param notes - Notas adicionales para marcar como aplazada
    */
-  async finishLater(sessionId: string, elapsedMs: number): Promise<void> {
+  async finishLater(sessionId: string, elapsedMs: number, notes?: string): Promise<void> {
     try {
       // Se corrige el endpoint deprecated por el nuevo sistema de reportes
       // Anteriormente: POST /api/v1/sessions/{id}/finish-later
       // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
-      await apiClient.patch(`/reports/sessions/${sessionId}/progress`, {
+      const payload: any = {
         status: 'pending',
         elapsedMs: elapsedMs
-      });
+      };
+      if (notes) {
+        payload.notes = notes;
+      }
+      await apiClient.patch(`/reports/sessions/${sessionId}/progress`, payload);
     } catch (error) {
       console.error('Error marcando finish-later con nuevo endpoint:', error);
       throw error;
@@ -110,16 +115,22 @@ class SessionService {
    *
    * @param sessionId - ID de la sesión a completar
    * @param elapsedMs - Tiempo transcurrido en milisegundos
+   * @param notes - Notas adicionales para la sesión completada
    */
-  async completeSession(sessionId: string, elapsedMs: number): Promise<void> {
+  async completeSession(sessionId: string, elapsedMs: number, notes?: string): Promise<void> {
     try {
       // Se corrige el endpoint deprecated por el nuevo sistema de reportes
       // Anteriormente: POST /api/v1/sessions/{id}/complete
       // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
-      await apiClient.patch(`/reports/sessions/${sessionId}/progress`, {
+      const payload: any = {
         status: 'completed',
-        elapsedMs: elapsedMs
-      });
+        elapsedMs: elapsedMs,
+        duracion: Math.round(elapsedMs / 1000) // Convertir a segundos como requiere el backend
+      };
+      if (notes) {
+        payload.notes = notes;
+      }
+      await apiClient.patch(`/reports/sessions/${sessionId}/progress`, payload);
     } catch (error) {
       console.error('Error completando sesión con nuevo endpoint:', error);
       throw error;

@@ -8,6 +8,7 @@
  * Diseño: Overlay centrado con glassmorphism, controles intuitivos y accesibilidad completa.
  */
 import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PlayIcon,
@@ -22,6 +23,7 @@ import { formatTime } from '../../utils/sessionMappers';
 import Swal from 'sweetalert2';
 
 export const ConcentrationCard: React.FC = () => {
+  const navigate = useNavigate();
   const { getState, pauseSession, resumeSession, finishLater, completeSession, minimize } = useConcentrationSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -74,7 +76,7 @@ export const ConcentrationCard: React.FC = () => {
   };
 
   /**
-   * Maneja terminar más tarde
+   * Maneja terminar más tarde con alerta y redirección automática
    */
   const handleFinishLater = async () => {
     if (!session || isUpdating) return;
@@ -82,9 +84,25 @@ export const ConcentrationCard: React.FC = () => {
     try {
       setIsUpdating(true);
       await finishLater();
+
+      // Mostrar alerta de sesión aplazada y redirigir después de 3 segundos
+      Swal.fire({
+        title: 'Sesión aplazada',
+        text: 'Serás redirigido a Reportes en 3 segundos.',
+        icon: 'info',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#3B82F6',
+      }).then(() => {
+        // Redirigir a reportes después de que se cierre la alerta
+        navigate('/reports');
+      });
+
     } catch (error) {
       console.error('Error finishing later:', error);
-    } finally {
       setIsUpdating(false);
     }
   };
@@ -115,6 +133,23 @@ export const ConcentrationCard: React.FC = () => {
     try {
       setIsUpdating(true);
       await completeSession();
+
+      // Mostrar alerta de sesión completada y redirigir después de 3 segundos
+      Swal.fire({
+        title: 'Sesión completada',
+        text: 'Serás redirigido a Reportes en 3 segundos.',
+        icon: 'success',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#10B981',
+      }).then(() => {
+        // Redirigir a reportes después de que se cierre la alerta
+        navigate('/reports');
+      });
+
     } catch (error) {
       console.error('Error completing session:', error);
       Swal.fire({
@@ -126,7 +161,6 @@ export const ConcentrationCard: React.FC = () => {
         color: '#ffffff',
         iconColor: '#EF4444',
       });
-    } finally {
       setIsUpdating(false);
     }
   };
