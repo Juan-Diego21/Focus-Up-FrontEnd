@@ -34,18 +34,21 @@ export const MusicAlbumsPage: React.FC = () => {
     navigate(`/music/albums/${album.id_album}`);
   };
 
-  const getAlbumImage = (albumName: string) => {
-    const name = albumName.toLowerCase();
-    if (name.includes('lofi') || name.includes('lorem')) {
-      return '/img/Album_Lofi.png';
+  const getAlbumImage = (albumGenre: string | undefined) => {
+    if (!albumGenre) return '/img/fondo-album.png'; // fallback for undefined/null
+
+    // Map album genres to specific images as requested
+    switch (albumGenre.toLowerCase().trim()) {
+      case 'lofi':
+        return '/img/Album_Lofi.png';
+      case 'naturaleza':
+        return '/img/Album_Naturaleza.png';
+      case 'relajante':
+        return '/img/Album_Instrumental.png';
+      default:
+        console.warn(`Unknown album genre: ${albumGenre}`);
+        return '/img/fondo-album.png'; // fallback
     }
-    if (name.includes('relaxing') || name.includes('instrumental') || name.includes('relajante')) {
-      return '/img/Album_Instrumental.png';
-    }
-    if (name.includes('nature') || name.includes('naturaleza')) {
-      return '/img/Album_Naturaleza.png';
-    }
-    return '/img/fondo-album.png'; // fallback
   };
 
   if (loading) {
@@ -115,13 +118,9 @@ export const MusicAlbumsPage: React.FC = () => {
                 {/* Album Cover */}
                 <div className="w-full aspect-square rounded-lg mb-4 overflow-hidden">
                   <img
-                    src={getAlbumImage(album.nombre_album)}
+                    src={getAlbumImage(album.genero)}
                     alt={`${album.nombre_album} cover`}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback to placeholder if image fails to load
-                      e.currentTarget.src = '/img/fondo-album.png';
-                    }}
                   />
                 </div>
 

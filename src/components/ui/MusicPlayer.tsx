@@ -17,18 +17,20 @@ import { useMusicPlayer, type PlaybackMode } from '../../contexts/MusicPlayerCon
 import { useAuth } from '../../contexts/AuthContext';
 
 // Función auxiliar para obtener imagen del álbum
-const getAlbumImage = (albumName: string) => {
-  const name = albumName.toLowerCase();
-  if (name.includes('lofi') || name.includes('lorem')) {
-    return '/img/Album_Lofi.png';
+const getAlbumImage = (albumId: number | undefined) => {
+  if (!albumId) return '/img/fondo-album.png'; // fallback for undefined/null
+
+  // Map album IDs to specific images as requested
+  switch (albumId) {
+    case 1:
+      return '/img/Album_Lofi.png';
+    case 2:
+      return '/img/Album_Naturaleza.png';
+    case 3:
+      return '/img/Album_Instrumental.png';
+    default:
+      return '/img/fondo-album.png'; // fallback
   }
-  if (name.includes('relaxing') || name.includes('instrumental') || name.includes('relajante')) {
-    return '/img/Album_Instrumental.png';
-  }
-  if (name.includes('nature') || name.includes('naturaleza')) {
-    return '/img/Album_Naturaleza.png';
-  }
-  return '/img/fondo-album.png'; // imagen de respaldo
 };
 
 // Función auxiliar para obtener el nombre del artista
@@ -205,12 +207,9 @@ export const MusicPlayer: React.FC = () => {
           <div className="flex items-center space-x-3 min-w-0 flex-1">
             <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
               <img
-                src={currentAlbum ? getAlbumImage(currentAlbum.nombre_album) : '/img/fondo-album.png'}
+                src={currentAlbum ? getAlbumImage(currentAlbum.id_album) : '/img/fondo-album.png'}
                 alt="Portada del álbum"
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = '/img/fondo-album.png';
-                }}
               />
             </div>
             <div className="min-w-0 flex-1">
@@ -382,13 +381,10 @@ export const MusicPlayer: React.FC = () => {
                   <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0">
                     <img
                       src={currentAlbum && song.id_album === currentAlbum.id_album
-                        ? getAlbumImage(currentAlbum.nombre_album)
+                        ? getAlbumImage(currentAlbum.id_album)
                         : '/img/fondo-album.png'}
                       alt="Portada del álbum"
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = '/img/fondo-album.png';
-                      }}
                     />
                   </div>
 

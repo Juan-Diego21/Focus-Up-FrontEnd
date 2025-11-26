@@ -36,14 +36,11 @@ export interface MusicPlayerApi {
 export async function replaceIfSessionAlbum(
   musicPlayerApi: MusicPlayerApi,
   albumId: number | undefined,
-  allSongs: Song[],
+  albumSongs: Song[],
   albumInfo?: { id_album: number; nombre_album: string }
 ): Promise<void> {
   try {
-    // Se filtran las canciones por id_album para reproducir únicamente las del álbum seleccionado
-    const albumTracks = allSongs.filter(song => song.id_album === albumId);
-
-    if (albumTracks.length === 0) {
+    if (albumSongs.length === 0) {
       console.warn(`No se encontraron canciones para el álbum ${albumId}`);
       return;
     }
@@ -54,12 +51,12 @@ export async function replaceIfSessionAlbum(
       return;
     }
 
-    // Reemplazar reproducción con el álbum de sesión
-    console.log(`Reproduciendo ${albumTracks.length} canciones del álbum ${albumInfo?.nombre_album || albumId}`);
-    musicPlayerApi.playPlaylist(albumTracks, 0, albumInfo);
+    // Iniciar reproducción con las canciones del álbum
+    console.log(`Reproduciendo ${albumSongs.length} canciones del álbum ${albumInfo?.nombre_album || albumId}`);
+    musicPlayerApi.playPlaylist(albumSongs, 0, albumInfo);
 
   } catch (error) {
-    console.error('Error reemplazando álbum de sesión:', error);
+    console.error('Error iniciando reproducción del álbum de sesión:', error);
     throw error;
   }
 }

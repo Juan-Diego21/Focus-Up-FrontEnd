@@ -24,27 +24,27 @@ interface AlbumSelectionModalProps {
 /**
  * Datos fijos de álbumes disponibles
  * Usa imágenes locales de public/img como especificado en los requerimientos
- * Facilita extensión futura para más álbumes manteniendo estructura consistente
+ * Los IDs de álbum deben coincidir con los de la API de canciones
  */
 const getAvailableAlbums = (): AlbumData[] => {
   return [
     {
       id_album: 1,
-      nombre_album: 'Instrumental',
-      descripcion: 'Música instrumental relajante para concentración profunda',
-      image: '/img/Album_Instrumental.png'
-    },
-    {
-      id_album: 2,
       nombre_album: 'Lofi',
       descripcion: 'Beats suaves y melódicos para mantener el foco',
       image: '/img/Album_Lofi.png'
     },
     {
-      id_album: 3,
+      id_album: 2,
       nombre_album: 'Naturaleza',
       descripcion: 'Sonidos de la naturaleza para un ambiente tranquilo',
       image: '/img/Album_Naturaleza.png'
+    },
+    {
+      id_album: 3,
+      nombre_album: 'Instrumental',
+      descripcion: 'Música instrumental relajante para concentración profunda',
+      image: '/img/Album_Instrumental.png'
     }
   ];
 };

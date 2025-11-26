@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Sidebar } from '../components/ui/Sidebar';
 import { MusicPlayer } from '../components/ui/MusicPlayer';
-import { getSongs, getSongsByAlbumId, getAlbumById, getAlbums } from '../utils/musicApi';
+import { getSongsByAlbumId, getAlbumById, getAlbums } from '../utils/musicApi';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
 import type { Song, Album } from '../types/api';
 import { PlayIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
@@ -54,9 +54,8 @@ export const MusicSongsPage: React.FC = () => {
         const albumData = await getAlbumById(albumIdNum);
         setAlbum(albumData);
 
-        // Fetch all songs and filter by album
-        const allSongs = await getSongs();
-        const albumSongs = getSongsByAlbumId(allSongs, albumIdNum);
+        // Fetch songs directly for this album
+        const albumSongs = await getSongsByAlbumId(albumIdNum);
 
         // Ordenar canciones por ID ascendente
         const sortedSongs = albumSongs.sort((a, b) => a.id_cancion - b.id_cancion);
@@ -113,18 +112,21 @@ export const MusicSongsPage: React.FC = () => {
     return '--:--';
   };
 
-  const getAlbumImage = (albumName: string) => {
-    const name = albumName.toLowerCase();
-    if (name.includes('lofi') || name.includes('lorem')) {
-      return '/img/Album_Lofi.png';
+  const getAlbumImage = (albumGenre: string | undefined) => {
+    if (!albumGenre) return '/img/fondo-album.png'; // fallback for undefined/null
+
+    // Map album genres to specific images as requested
+    switch (albumGenre.toLowerCase().trim()) {
+      case 'lofi':
+        return '/img/Album_Lofi.png';
+      case 'naturaleza':
+        return '/img/Album_Naturaleza.png';
+      case 'relajante':
+        return '/img/Album_Instrumental.png';
+      default:
+        console.warn(`Unknown album genre: ${albumGenre}`);
+        return '/img/fondo-album.png'; // fallback
     }
-    if (name.includes('relaxing') || name.includes('instrumental') || name.includes('relajante')) {
-      return '/img/Album_Instrumental.png';
-    }
-    if (name.includes('nature') || name.includes('naturaleza')) {
-      return '/img/Album_Naturaleza.png';
-    }
-    return '/img/fondo-album.png'; // fallback
   };
 
   // Función auxiliar para obtener el nombre del artista
@@ -230,13 +232,9 @@ export const MusicSongsPage: React.FC = () => {
             {/* Album Cover */}
             <div className="w-48 h-48 rounded-xl overflow-hidden flex-shrink-0">
               <img
-                src={getAlbumImage(album.nombre_album)}
+                src={getAlbumImage(album.genero)}
                 alt={`${album.nombre_album} cover`}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Fallback to placeholder if image fails to load
-                  e.currentTarget.src = '/img/fondo-album.png';
-                }}
               />
             </div>
 
@@ -293,12 +291,9 @@ export const MusicSongsPage: React.FC = () => {
                   {/* Album Image */}
                   <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                     <img
-                      src={getAlbumImage(album.nombre_album)}
+                      src={getAlbumImage(album.genero)}
                       alt={`${album.nombre_album} cover`}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = '/img/fondo-album.png';
-                      }}
                     />
                   </div>
 

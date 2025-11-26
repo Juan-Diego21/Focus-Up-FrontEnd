@@ -7,7 +7,7 @@
  *
  * Diseño: Overlay centrado con glassmorphism, controles intuitivos y accesibilidad completa.
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PlayIcon,
@@ -19,13 +19,32 @@ import {
 } from '@heroicons/react/24/outline';
 import { useConcentrationSession } from '../../providers/ConcentrationSessionProvider';
 import { formatTime } from '../../utils/sessionMappers';
+import Swal from 'sweetalert2';
 
 export const ConcentrationCard: React.FC = () => {
   const { getState, pauseSession, resumeSession, finishLater, completeSession, minimize } = useConcentrationSession();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
 
   const session = getState().activeSession;
 
+  // Update timer every second when session is running
+  useEffect(() => {
+    if (!session || !session.isRunning) return;
+
+    const interval = setInterval(() => {
+      setCurrentTime(prev => prev + 1000); // Add 1 second in milliseconds
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [session?.isRunning]);
+
+  // Reset timer when session changes
+  useEffect(() => {
+    if (session) {
+      setCurrentTime(session.elapsedMs || 0);
+    }
+  }, [session?.sessionId, session?.elapsedMs]);
 
   /**
    * Calcula el tiempo transcurrido visible
@@ -34,16 +53,14 @@ export const ConcentrationCard: React.FC = () => {
     if (!session) return 0;
 
     if (session.isRunning) {
-      // Tiempo corriendo: serverElapsedMs + (ahora - startTimestamp)
+      // Tiempo corriendo: serverElapsedMs + tiempo actual del componente
       const serverElapsed = session.elapsedMs || 0;
-      const startTime = new Date(session.startTime).getTime();
-      const now = Date.now();
-      return serverElapsed + (now - startTime);
+      return serverElapsed + currentTime;
     } else {
       // Tiempo pausado: usar accumulatedMs del servidor
       return session.elapsedMs || 0;
     }
-  }, [session]);
+  }, [session, currentTime]);
 
   /**
    * Maneja pausa/reanudar de la sesión
@@ -87,11 +104,37 @@ export const ConcentrationCard: React.FC = () => {
   const handleComplete = async () => {
     if (!session || isUpdating) return;
 
+    // Mostrar diálogo de confirmación
+    const result = await Swal.fire({
+      title: '¿Completar sesión?',
+      text: 'Esta acción finalizará la sesión de concentración y guardará el progreso. ¿Estás seguro?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#22C55E',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Completar',
+      cancelButtonText: 'Cancelar',
+      background: '#232323',
+      color: '#ffffff',
+      iconColor: '#22C55E',
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       setIsUpdating(true);
       await completeSession();
     } catch (error) {
       console.error('Error completing session:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo completar la sesión. Inténtalo de nuevo.',
+        icon: 'error',
+        confirmButtonColor: '#EF4444',
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#EF4444',
+      });
     } finally {
       setIsUpdating(false);
     }

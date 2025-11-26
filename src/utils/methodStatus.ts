@@ -291,7 +291,7 @@ export const isCornellMethod = (methodName: string): boolean => {
  */
 export const getMethodType = (method: any): 'pomodoro' | 'mindmaps' | 'spacedrepetition' | 'activerecall' | 'feynman' | 'cornell' | 'unknown' => {
   if (!method) return 'unknown';
-  const name = method.nombre || method.titulo || '';
+  const name = method.nombre || method.nombre_metodo || method.titulo || '';
   if (isPomodoroMethod(name)) return 'pomodoro';
   if (isMindMapsMethod(name)) return 'mindmaps';
   if (isSpacedRepetitionMethod(name)) return 'spacedrepetition';

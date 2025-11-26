@@ -19,13 +19,13 @@ import { mapServerSession } from '../../utils/sessionMappers';
 import { useMusicPlayer } from '../../contexts/MusicPlayerContext';
 import { replaceIfSessionAlbum } from '../../services/audioService';
 import { getMethodType } from '../../utils/methodStatus';
+import { getSongsByAlbumId } from '../../utils/musicApi';
 import { MethodSelectionModal } from '../../components/MethodSelectionModal';
 import { AlbumSelectionModal } from '../../components/AlbumSelectionModal';
 import { CountdownOverlay } from '../../components/ui/CountdownOverlay';
 import { BackButton } from '../../components/ui/BackButton';
 import { PageLayout } from '../../components/ui/PageLayout';
 import { Sidebar } from '../../components/ui/Sidebar';
-import { apiClient } from '../../utils/apiClient';
 import type { SessionCreateDto, SessionDto, Song } from '../../types/api';
 
 /**
@@ -35,7 +35,7 @@ export const StartSession: React.FC = () => {
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { startSession, startSessionWithCountdown, getState, minimize } = useConcentrationSession();
-  const { playPlaylist } = useMusicPlayer();
+  const { playPlaylist, currentAlbum, isPlaying } = useMusicPlayer();
 
   // Estado del formulario
   const [title, setTitle] = useState('');
@@ -209,27 +209,43 @@ export const StartSession: React.FC = () => {
         try {
           console.log('Iniciando reproducción del álbum seleccionado:', selectedAlbum.nombre_album);
 
-          // Cargar todas las canciones desde la API
-          const response = await apiClient.get('/musica');
-          const allSongs: Song[] = response.data?.data || response.data || [];
+          // Cargar canciones del álbum específico desde la API
+          const albumSongs: Song[] = await getSongsByAlbumId(selectedAlbum.id_album);
 
-          // Usar función pura para reemplazar música
+          if (albumSongs.length === 0) {
+            console.warn(`El álbum ${selectedAlbum.nombre_album} no tiene canciones disponibles`);
+
+            // Mostrar notificación no intrusiva al usuario
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'warning',
+              title: 'El álbum seleccionado no tiene canciones disponibles',
+              showConfirmButton: false,
+              timer: 3000,
+              background: '#232323',
+              color: '#ffffff',
+            });
+            return;
+          }
+
+          // Usar función pura para iniciar reproducción del álbum
           await replaceIfSessionAlbum(
             {
               playPlaylist,
-              currentAlbum: null, // No hay álbum actual en este contexto
-              isPlaying: false,   // No importa el estado actual
+              currentAlbum: currentAlbum, // Álbum actualmente reproduciendo
+              isPlaying: isPlaying,       // Estado de reproducción actual
               togglePlayPause: () => {}, // No usado en este contexto
             },
             selectedAlbum.id_album,
-            allSongs,
+            albumSongs, // Ahora pasamos directamente las canciones del álbum
             {
               id_album: selectedAlbum.id_album,
               nombre_album: selectedAlbum.nombre_album
             }
           );
 
-          console.log(`Reproducción del álbum ${selectedAlbum.nombre_album} iniciada correctamente`);
+          console.log(`Reproducción del álbum ${selectedAlbum.nombre_album} iniciada correctamente con ${albumSongs.length} canciones`);
         } catch (musicError) {
           // Se registra el error pero no se interrumpe la sesión
           console.error('Error reproduciendo música del álbum:', musicError);
