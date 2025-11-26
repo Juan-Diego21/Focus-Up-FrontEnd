@@ -304,7 +304,7 @@ export const ConcentrationCard: React.FC<ConcentrationCardProps> = ({
                   className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="button"
                 >
-                  {isUpdating ? 'Completando...' : 'Completar sesión'}
+                  {isUpdating ? 'Finalizando...' : 'Finalizar sesión'}
                 </button>
               </div>
             </div>

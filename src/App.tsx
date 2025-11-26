@@ -28,7 +28,6 @@ import { FeynmanStepsView } from "./pages/FeynmanStepsView";
 import { CornellIntroView } from "./pages/CornellIntroView";
 import { CornellStepsView } from "./pages/CornellStepsView";
 import { ReportsPage } from "./pages/ReportsPage";
-import { SessionsReport } from "./pages/reports/SessionsReport";
 import { StartSession } from "./pages/sessions/StartSession";
 import { MusicAlbumsPage } from "./pages/MusicAlbumsPage";
 import { MusicSongsPage } from "./pages/MusicSongsPage";
@@ -54,7 +53,6 @@ function App() {
         <Route path="/study-methods" element={<RequireAuth><StudyMethodsLibraryPage /></RequireAuth>} />
         <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
         <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
-        <Route path="/reports/sessions" element={<RequireAuth><SessionsReport /></RequireAuth>} />
         <Route path="/start-session" element={<RequireAuth><StartSession /></RequireAuth>} />
         <Route path="/start-session/:sessionId" element={<RequireAuth><StartSession /></RequireAuth>} />
         <Route path="/events" element={<RequireAuth><EventsPage /></RequireAuth>} />

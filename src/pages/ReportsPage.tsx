@@ -17,7 +17,9 @@ import {
   CheckIcon,
   ClockIcon,
   TrashIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  ChartBarIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import {
   getMindMapsColorByProgress,
@@ -74,6 +76,10 @@ export const ReportsPage: React.FC = () => {
   const [sessionFilter, setSessionFilter] = useState<'todos' | 'pendiente' | 'completado'>('todos');
   // Estado para controlar la carga de imágenes de métodos
   const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Estado para el modal de estadísticas
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [statsModalType, setStatsModalType] = useState<'methods' | 'sessions' | null>(null);
 
   /**
    * Carga los reportes de sesiones y métodos desde los nuevos endpoints
@@ -151,6 +157,30 @@ export const ReportsPage: React.FC = () => {
         });
       }
     }
+  };
+
+  /**
+   * Muestra estadísticas agregadas de métodos
+   */
+  const showMethodsStats = () => {
+    setStatsModalType('methods');
+    setShowStatsModal(true);
+  };
+
+  /**
+   * Muestra estadísticas agregadas de sesiones
+   */
+  const showSessionsStats = () => {
+    setStatsModalType('sessions');
+    setShowStatsModal(true);
+  };
+
+  /**
+   * Cierra el modal de estadísticas
+   */
+  const closeStatsModal = () => {
+    setShowStatsModal(false);
+    setStatsModalType(null);
   };
 
   // Cargar reportes al montar el componente
@@ -245,9 +275,9 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Filtro de estado */}
+          {/* Filtro de estado y botón de estadísticas */}
           {activeTab === 'methods' && (
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center items-center mb-8 gap-14">
               <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
                 <button
                   onClick={() => setStatusFilter('todos')}
@@ -280,12 +310,19 @@ export const ReportsPage: React.FC = () => {
                   Terminado
                 </button>
               </div>
+              <button
+                onClick={showMethodsStats}
+                className="p-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-200 cursor-pointer"
+                title="Ver Estadísticas"
+              >
+                <ChartBarIcon className="w-5 h-5" />
+              </button>
             </div>
           )}
 
           {/* Filtro de sesiones */}
           {activeTab === 'sessions' && (
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center items-center mb-8 gap-11">
               <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
                 <button
                   onClick={() => setSessionFilter('todos')}
@@ -318,6 +355,13 @@ export const ReportsPage: React.FC = () => {
                   Completado
                 </button>
               </div>
+              <button
+                onClick={showSessionsStats}
+                className="p-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-200 cursor-pointer"
+                title="Ver Estadísticas"
+              >
+                <ChartBarIcon className="w-5 h-5" />
+              </button>
             </div>
           )}
         </div>
@@ -683,6 +727,223 @@ export const ReportsPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de estadísticas */}
+      {showStatsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-4xl bg-[#232323]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-[#333]/50 overflow-hidden max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="p-6 border-b border-[#333]/50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">
+                  {statsModalType === 'methods' ? 'Estadísticas de Métodos de Estudio' : 'Estadísticas de Sesiones de Concentración'}
+                </h2>
+                <button
+                  onClick={closeStatsModal}
+                  className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10 cursor-pointer"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {statsModalType === 'methods' && (
+                <div className="space-y-6">
+                  {/* Method Statistics */}
+                  {(() => {
+                    const totalMethods = methodReports.length;
+                    const completedMethods = methodReports.filter(m => m.estado === 'completed' || m.progreso === 100).length;
+                    const inProgressMethods = methodReports.filter(m => m.estado !== 'completed' && m.progreso < 100).length;
+                    const averageProgress = totalMethods > 0 ? Math.round(methodReports.reduce((sum, m) => sum + m.progreso, 0) / totalMethods) : 0;
+                    const methodTypes = [...new Set(methodReports.map(m => m.nombreMetodo))];
+
+                    return (
+                      <>
+                        {/* Overview Stats */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-white">{totalMethods}</div>
+                            <div className="text-sm text-gray-400">Total de Métodos</div>
+                          </div>
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-green-400">{completedMethods}</div>
+                            <div className="text-sm text-gray-400">Completados</div>
+                          </div>
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-yellow-400">{inProgressMethods}</div>
+                            <div className="text-sm text-gray-400">En Progreso</div>
+                          </div>
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-blue-400">{averageProgress}%</div>
+                            <div className="text-sm text-gray-400">Progreso Promedio</div>
+                          </div>
+                        </div>
+
+                        {/* Method Types Breakdown */}
+                        <div>
+                          <h3 className="text-xl font-semibold text-white mb-4">Tipos de Métodos</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {methodTypes.map(methodType => {
+                              const count = methodReports.filter(m => m.nombreMetodo === methodType).length;
+                              const completed = methodReports.filter(m => m.nombreMetodo === methodType && (m.estado === 'completed' || m.progreso === 100)).length;
+                              return (
+                                <div key={methodType} className="bg-[#1a1a1a]/50 rounded-lg p-4">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-white font-medium">{methodType}</span>
+                                    <span className="text-gray-400 text-sm">{count} total</span>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-sm">
+                                    <span className="text-green-400">✓ {completed} completados</span>
+                                    <span className="text-yellow-400">⏳ {count - completed} pendientes</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Progress Distribution */}
+                        <div>
+                          <h3 className="text-xl font-semibold text-white mb-4">Distribución de Progreso</h3>
+                          <div className="space-y-3">
+                            {[
+                              { range: '0-25%', methods: methodReports.filter(m => m.progreso >= 0 && m.progreso <= 25).length },
+                              { range: '26-50%', methods: methodReports.filter(m => m.progreso >= 26 && m.progreso <= 50).length },
+                              { range: '51-75%', methods: methodReports.filter(m => m.progreso >= 51 && m.progreso <= 75).length },
+                              { range: '76-99%', methods: methodReports.filter(m => m.progreso >= 76 && m.progreso <= 99).length },
+                              { range: '100%', methods: methodReports.filter(m => m.progreso === 100).length },
+                            ].map(({ range, methods }) => (
+                              <div key={range} className="flex items-center gap-4">
+                                <span className="text-gray-400 w-16">{range}</span>
+                                <div className="flex-1 bg-gray-700 rounded-full h-2">
+                                  <div
+                                    className="bg-blue-500 h-2 rounded-full"
+                                    style={{ width: `${totalMethods > 0 ? (methods / totalMethods) * 100 : 0}%` }}
+                                  />
+                                </div>
+                                <span className="text-white w-8 text-right">{methods}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {statsModalType === 'sessions' && (
+                <div className="space-y-6">
+                  {/* Session Statistics */}
+                  {(() => {
+                    const totalSessions = sessionReports.length;
+                    const completedSessions = sessionReports.filter(s => s.estado === 'completado').length;
+                    const pendingSessions = sessionReports.filter(s => s.estado === 'pendiente').length;
+                    const totalHours = sessionReports.reduce((sum, s) => sum + (s.tiempoTotal || 0), 0) / 3600; // Convert to hours
+                    const averageSessionTime = totalSessions > 0 ? sessionReports.reduce((sum, s) => sum + (s.tiempoTotal || 0), 0) / totalSessions : 0;
+                    const sessionsWithMethods = sessionReports.filter(s => s.metodoAsociado).length;
+                    const sessionsWithMusic = sessionReports.filter(s => s.albumAsociado).length;
+
+                    return (
+                      <>
+                        {/* Overview Stats */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-white">{totalSessions}</div>
+                            <div className="text-sm text-gray-400">Total de Sesiones</div>
+                          </div>
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-green-400">{completedSessions}</div>
+                            <div className="text-sm text-gray-400">Completadas</div>
+                          </div>
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-yellow-400">{pendingSessions}</div>
+                            <div className="text-sm text-gray-400">Pendientes</div>
+                          </div>
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4 text-center">
+                            <div className="text-3xl font-bold text-blue-400">{totalHours.toFixed(1)}h</div>
+                            <div className="text-sm text-gray-400">Horas Totales</div>
+                          </div>
+                        </div>
+
+                        {/* Time Statistics */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h3 className="text-xl font-semibold text-white mb-4">Estadísticas de Tiempo</h3>
+                            <div className="space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Tiempo Promedio por Sesión:</span>
+                                <span className="text-white">{averageSessionTime > 0 ? formatTime(averageSessionTime * 1000) : '0:00:00'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Sesión Más Larga:</span>
+                                <span className="text-white">
+                                  {sessionReports.length > 0 ? formatTime(Math.max(...sessionReports.map(s => s.tiempoTotal || 0)) * 1000) : '0:00:00'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Sesión Más Corta:</span>
+                                <span className="text-white">
+                                  {sessionReports.length > 0 ? formatTime(Math.min(...sessionReports.filter(s => s.tiempoTotal && s.tiempoTotal > 0).map(s => s.tiempoTotal || 0)) * 1000) : '0:00:00'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h3 className="text-xl font-semibold text-white mb-4">Elementos Asociados</h3>
+                            <div className="space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Sesiones con Método:</span>
+                                <span className="text-blue-400">{sessionsWithMethods} ({totalSessions > 0 ? Math.round((sessionsWithMethods / totalSessions) * 100) : 0}%)</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Sesiones con Música:</span>
+                                <span className="text-purple-400">{sessionsWithMusic} ({totalSessions > 0 ? Math.round((sessionsWithMusic / totalSessions) * 100) : 0}%)</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Sesiones Sin Elementos:</span>
+                                <span className="text-gray-400">{totalSessions - sessionsWithMethods - sessionsWithMusic}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Completion Rate Over Time */}
+                        <div>
+                          <h3 className="text-xl font-semibold text-white mb-4">Tasa de Finalización</h3>
+                          <div className="bg-[#1a1a1a]/50 rounded-lg p-4">
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-4xl font-bold text-green-400 mb-2">
+                                  {totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0}%
+                                </div>
+                                <div className="text-gray-400">de sesiones completadas</div>
+                              </div>
+                            </div>
+                            <div className="mt-4 flex justify-center gap-8">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-green-400">{completedSessions}</div>
+                                <div className="text-sm text-gray-400">Completadas</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-yellow-400">{pendingSessions}</div>
+                                <div className="text-sm text-gray-400">Pendientes</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 };
