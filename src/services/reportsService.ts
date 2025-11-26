@@ -47,7 +47,9 @@ class ReportsService {
         idUsuario: report.id_usuario,
         nombreSesion: report.nombre_sesion,
         descripcion: report.descripcion,
-        estado: report.estado,
+        // FIX: Standardize status from backend's 'completada' to frontend's expected 'completado'.
+        // CORRECCIÓN: Estandarizar el estado 'completada' del backend a 'completado' para consistencia con la UI.
+        estado: report.estado === 'completada' ? 'completado' : report.estado,
         tiempoTotal: report.tiempo_total,
         metodoAsociado: report.metodo_asociado ? {
           idMetodo: report.metodo_asociado.id_metodo,

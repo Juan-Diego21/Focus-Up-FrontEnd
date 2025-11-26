@@ -71,7 +71,7 @@ export const ReportsPage: React.FC = () => {
   // Estado para el filtro de estado de los métodos (todos, pendiente, terminado)
   const [statusFilter, setStatusFilter] = useState<'todos' | 'pendiente' | 'terminado'>('todos');
   // Estado para el filtro de estado de las sesiones (todos, pendiente, completado, programado)
-  const [sessionFilter, setSessionFilter] = useState<'todos' | 'pendiente' | 'completado' | 'programado'>('todos');
+  const [sessionFilter, setSessionFilter] = useState<'todos' | 'pendiente' | 'completado'>('todos');
   // Estado para controlar la carga de imágenes de métodos
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -205,7 +205,8 @@ export const ReportsPage: React.FC = () => {
     if (sessionFilter === 'todos') return true;
     if (sessionFilter === 'pendiente') return session.estado === 'pendiente';
     if (sessionFilter === 'completado') return session.estado === 'completado';
-    if (sessionFilter === 'programado') return session.estado === 'pendiente'; // For now, treat pending as scheduled
+    // REMOVED REDUNDANCY: The 'programado' filter was redundant, mapping to 'pendiente'.
+    // if (sessionFilter === 'programado') return session.estado === 'pendiente'; // <--- Line removed
     return true;
   });
 
@@ -315,16 +316,6 @@ export const ReportsPage: React.FC = () => {
                   }`}
                 >
                   Completado
-                </button>
-                <button
-                  onClick={() => setSessionFilter('programado')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
-                    sessionFilter === 'programado'
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
-                  }`}
-                >
-                  Programado
                 </button>
               </div>
             </div>
