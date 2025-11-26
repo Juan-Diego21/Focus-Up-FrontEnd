@@ -16,10 +16,11 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import { reportsService } from '../../services/reportsService';
 import { sessionService } from '../../services/sessionService';
 import { formatTime } from '../../utils/sessionMappers';
 import { getBroadcastChannel, type BroadcastMessage } from '../../utils/broadcastChannel';
-import type { SessionDto } from '../../types/api';
+import type { SessionReport } from '../../types/api';
 
 /**
  * Página de reportes de sesiones
@@ -29,7 +30,7 @@ export const SessionsReport: React.FC = () => {
   const location = useLocation();
 
   // Estado
-  const [sessions, setSessions] = useState<SessionDto[]>([]);
+  const [sessions, setSessions] = useState<SessionReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed'>('all');
@@ -60,8 +61,13 @@ export const SessionsReport: React.FC = () => {
   // Configurar listeners para broadcast de actualizaciones de sesiones
   useEffect(() => {
     const handleSessionUpdate = (message: BroadcastMessage) => {
-      if (message.type === 'SESSION_COMPLETED' || message.type === 'SESSION_PAUSED') {
-        // Recargar sesiones cuando se complete o pause una sesión
+      // Escuchar todos los eventos de actualización de sesiones
+      if (message.type === 'SESSION_COMPLETED' ||
+          message.type === 'SESSION_PAUSED' ||
+          message.type === 'SESSION_RESUMED' ||
+          message.type === 'SESSION_UPDATE') {
+        // Recargar sesiones cuando ocurra cualquier actualización de sesión
+        console.log('Recibiendo actualización de sesión:', message.type);
         loadSessions();
       }
     };
@@ -75,34 +81,43 @@ export const SessionsReport: React.FC = () => {
   }, []);
 
   /**
-   * Carga sesiones con filtros
+   * Carga reportes de sesiones con filtros
    */
   const loadSessions = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const filters = {
-        ...(statusFilter !== 'all' && {
-          status: statusFilter === 'pending' ? 'active' as const : 'completed' as const
-        }),
-        ...(dateFrom && { dateFrom }),
-        ...(dateTo && { dateTo }),
-      };
+      // Los reportes de sesiones no soportan filtros avanzados por ahora
+      // Solo obtenemos todos los reportes del usuario
+      const sessionsData = await reportsService.getSessionReports();
 
-      const sessionsData = await sessionService.listUserSessions(filters);
+      // Filtrar localmente según el filtro de estado
+      let filteredSessions = sessionsData;
+      if (statusFilter !== 'all') {
+        const targetEstado = statusFilter === 'pending' ? 'pendiente' : 'completado';
+        filteredSessions = sessionsData.filter(session => session.estado === targetEstado);
+      }
 
-      // Normalizar datos de sesiones del backend para asegurar consistencia
-      // El backend puede devolver 'duracion' en segundos, convertir a 'elapsedMs' en milisegundos
-      const normalizedSessions = sessionsData.map(session => ({
-        ...session,
-        elapsedMs: session.elapsedMs || ((session as any).duracion ? (session as any).duracion * 1000 : 0)
-      }));
+      // Filtrar por fechas si se especifican
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        filteredSessions = filteredSessions.filter(session =>
+          new Date(session.fechaCreacion) >= fromDate
+        );
+      }
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        toDate.setHours(23, 59, 59, 999); // Fin del día
+        filteredSessions = filteredSessions.filter(session =>
+          new Date(session.fechaCreacion) <= toDate
+        );
+      }
 
-      setSessions(normalizedSessions);
+      setSessions(filteredSessions);
 
-      // Calcular estadísticas con datos normalizados
-      calculateStats(normalizedSessions);
+      // Calcular estadísticas con datos filtrados
+      calculateStats(filteredSessions);
     } catch (err) {
       setError('Error cargando sesiones');
       console.error('Error loading sessions:', err);
@@ -114,7 +129,7 @@ export const SessionsReport: React.FC = () => {
   /**
    * Calcula estadísticas de las sesiones
    */
-  const calculateStats = (sessionsData: SessionDto[]) => {
+  const calculateStats = (sessionsData: SessionReport[]) => {
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
@@ -123,13 +138,13 @@ export const SessionsReport: React.FC = () => {
     let thisWeekCount = 0;
 
     sessionsData.forEach(session => {
-      totalTime += session.elapsedMs;
+      totalTime += session.tiempoTotal * 1000; // Convertir segundos a milisegundos
 
-      if (session.estado === 'completed') {
+      if (session.estado === 'completado') {
         completedCount++;
       }
 
-      const sessionDate = new Date(session.createdAt);
+      const sessionDate = new Date(session.fechaCreacion);
       if (sessionDate >= weekAgo) {
         thisWeekCount++;
       }
@@ -157,23 +172,23 @@ export const SessionsReport: React.FC = () => {
   };
 
   /**
-   * Maneja reanudar sesión
+   * Maneja reanudar sesión (desde reportes)
    */
-  const handleResumeSession = (session: SessionDto) => {
-    // Aquí iría la lógica para reanudar una sesión específica
-    console.log('Reanudar sesión:', session.sessionId);
-    // Por ahora, navegar a start session con el ID
-    navigate(`/start-session/${session.sessionId}`);
+  const handleResumeSession = (session: SessionReport) => {
+    // Para reportes, "reanudar" significa iniciar una nueva sesión basada en esta
+    console.log('Reanudar sesión desde reporte:', session.idSesion);
+    // Navegar a start session con el ID de la sesión original
+    navigate(`/start-session/${session.idSesion}`);
   };
 
   /**
-   * Maneja completar sesión
+   * Maneja completar sesión (desde reportes)
    */
-  const handleCompleteSession = async (session: SessionDto) => {
+  const handleCompleteSession = async (session: SessionReport) => {
     try {
-      // Calcular tiempo transcurrido para el nuevo endpoint
-      const elapsedMs = session.elapsedMs || 0;
-      await sessionService.completeSession(session.sessionId, elapsedMs);
+      // Para completar desde reportes, usar el tiempo total ya registrado
+      const elapsedMs = session.tiempoTotal * 1000; // Convertir segundos a ms
+      await sessionService.completeSession(session.idSesion.toString(), elapsedMs);
       // Recargar sesiones
       loadSessions();
     } catch (error) {
@@ -184,9 +199,9 @@ export const SessionsReport: React.FC = () => {
   /**
    * Maneja eliminar sesión
    */
-  const handleDeleteSession = (session: SessionDto) => {
+  const handleDeleteSession = (session: SessionReport) => {
     // Aquí iría la lógica para eliminar una sesión
-    console.log('Eliminar sesión:', session.sessionId);
+    console.log('Eliminar sesión:', session.idSesion);
     // Por ahora, solo mostrar confirmación
     if (window.confirm('¿Estás seguro de que quieres eliminar esta sesión?')) {
       // Implementar eliminación
@@ -301,30 +316,23 @@ export const SessionsReport: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {sessions.map((session) => (
                   <motion.div
-                    key={session.sessionId}
+                    key={session.idSesion}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-[#232323]/70 backdrop-blur-md rounded-xl shadow-lg border border-[#333]/50 overflow-hidden hover:shadow-xl transition-shadow duration-200"
                   >
-                    {/* Header con título y estado */}
+                    {/* Header con título */}
                     <div className="p-6 border-b border-[#333]/50">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-xl font-semibold text-white flex-1 pr-4">
-                          {session.title}
+                      <div className="mb-2">
+                        <h3 className="text-xl font-semibold text-white">
+                          {session.nombreSesion}
                         </h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          session.estado === 'completed'
-                            ? 'bg-green-600 text-white'
-                            : 'bg-yellow-600 text-white'
-                        }`}>
-                          {session.estado === 'completed' ? 'Completada' : 'Pendiente'}
-                        </span>
                       </div>
 
                       {/* Descripción si existe */}
-                      {session.description && (
+                      {session.descripcion && (
                         <p className="text-gray-300 text-sm mt-2 line-clamp-2">
-                          {session.description}
+                          {session.descripcion}
                         </p>
                       )}
                     </div>
@@ -334,32 +342,54 @@ export const SessionsReport: React.FC = () => {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                           <div className="text-xs text-gray-400 mb-1">Tiempo total</div>
-                          <div className="text-white font-medium">{formatTime(session.elapsedMs)}</div>
+                          <div className="text-white font-medium">
+                            {session.tiempoTotal > 0 ? formatTime(session.tiempoTotal * 1000) : '0:00:00'}
+                          </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-400 mb-1">Fecha</div>
+                          <div className="text-xs text-gray-400 mb-1">
+                            {session.estado === 'completado' ? 'Fecha de cierre' : 'Fecha de creación'}
+                          </div>
                           <div className="text-white font-medium">
-                            {new Date(session.createdAt).toLocaleDateString()}
+                            {new Date(session.fechaCreacion).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {new Date(session.fechaCreacion).toLocaleTimeString()}
                           </div>
                         </div>
                       </div>
 
+                      {/* Status indicator */}
+                      <div className="mb-4">
+                        <div className="text-xs text-gray-400 mb-2">Estado</div>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            session.estado === 'completado' ? 'bg-green-500' : 'bg-yellow-500'
+                          }`} />
+                          <span className={`text-sm font-medium ${
+                            session.estado === 'completado' ? 'text-green-400' : 'text-yellow-400'
+                          }`}>
+                            {session.estado === 'completado' ? 'Sesión completada' : 'Sesión pendiente'}
+                          </span>
+                        </div>
+                      </div>
+
                       {/* Método y álbum */}
-                      {(session.methodId || session.albumId) && (
+                      {(session.metodoAsociado || session.albumAsociado) && (
                         <div className="flex gap-4 mb-4">
-                          {session.methodId && (
+                          {session.metodoAsociado && (
                             <div className="flex items-center gap-2">
                               <div className="w-4 h-4 rounded-full bg-blue-500" />
-                              <span className="text-sm text-gray-300">Método</span>
+                              <span className="text-sm text-gray-300">{session.metodoAsociado.nombreMetodo}</span>
                             </div>
                           )}
 
-                          {session.albumId && (
+                          {session.albumAsociado && (
                             <div className="flex items-center gap-2">
                               <div className="w-4 h-4 rounded bg-gray-600 flex items-center justify-center">
                                 <span className="text-xs">🎵</span>
                               </div>
-                              <span className="text-sm text-gray-300">Álbum</span>
+                              <span className="text-sm text-gray-300">{session.albumAsociado.nombreAlbum}</span>
                             </div>
                           )}
                         </div>
@@ -367,7 +397,7 @@ export const SessionsReport: React.FC = () => {
 
                       {/* Acciones */}
                       <div className="flex gap-2">
-                        {session.estado === 'pending' && (
+                        {session.estado === 'pendiente' && (
                           <button
                             onClick={() => handleResumeSession(session)}
                             className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -377,7 +407,7 @@ export const SessionsReport: React.FC = () => {
                           </button>
                         )}
 
-                        {session.estado === 'pending' && (
+                        {session.estado === 'pendiente' && (
                           <button
                             onClick={() => handleCompleteSession(session)}
                             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"

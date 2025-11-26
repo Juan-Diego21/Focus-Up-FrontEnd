@@ -50,13 +50,16 @@ class SessionService {
    */
   async pauseSession(sessionId: string, elapsedMs: number): Promise<void> {
     try {
-      // Se corrige el endpoint deprecated por el nuevo sistema de reportes
-      // Anteriormente: POST /api/v1/sessions/{id}/pause
-      // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
+      // Nuevo contrato API: PATCH /reports/sessions/{id}/progress
+      // Contract: {"status": "completed"|"pending", "elapsedMs": number, "notes": string}
       await apiClient.patch(`/reports/sessions/${sessionId}/progress`, {
         status: 'pending',
         elapsedMs: elapsedMs
       });
+
+      // Emitir broadcast para notificar a otras páginas sobre la actualización
+      const { getBroadcastChannel } = await import('../utils/broadcastChannel');
+      getBroadcastChannel().broadcastSessionPaused();
     } catch (error) {
       console.error('Error pausando sesión con nuevo endpoint:', error);
       throw error;
@@ -90,9 +93,8 @@ class SessionService {
    */
   async finishLater(sessionId: string, elapsedMs: number, notes?: string): Promise<void> {
     try {
-      // Se corrige el endpoint deprecated por el nuevo sistema de reportes
-      // Anteriormente: POST /api/v1/sessions/{id}/finish-later
-      // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
+      // Nuevo contrato API: PATCH /reports/sessions/{id}/progress
+      // Contract: {"status": "completed"|"pending", "elapsedMs": number, "notes": string}
       const payload: any = {
         status: 'pending',
         elapsedMs: elapsedMs
@@ -101,6 +103,10 @@ class SessionService {
         payload.notes = notes;
       }
       await apiClient.patch(`/reports/sessions/${sessionId}/progress`, payload);
+
+      // Emitir broadcast para notificar a otras páginas sobre la actualización
+      const { getBroadcastChannel } = await import('../utils/broadcastChannel');
+      getBroadcastChannel().broadcastSessionPaused(); // Usar paused ya que es "pending"
     } catch (error) {
       console.error('Error marcando finish-later con nuevo endpoint:', error);
       throw error;
@@ -119,18 +125,20 @@ class SessionService {
    */
   async completeSession(sessionId: string, elapsedMs: number, notes?: string): Promise<void> {
     try {
-      // Se corrige el endpoint deprecated por el nuevo sistema de reportes
-      // Anteriormente: POST /api/v1/sessions/{id}/complete
-      // Ahora: PATCH /api/v1/reports/sessions/{id}/progress
+      // Nuevo contrato API: PATCH /reports/sessions/{id}/progress
+      // Contract: {"status": "completed"|"pending", "elapsedMs": number, "notes": string}
       const payload: any = {
         status: 'completed',
-        elapsedMs: elapsedMs,
-        duracion: Math.round(elapsedMs / 1000) // Convertir a segundos como requiere el backend
+        elapsedMs: elapsedMs
       };
       if (notes) {
         payload.notes = notes;
       }
       await apiClient.patch(`/reports/sessions/${sessionId}/progress`, payload);
+
+      // Emitir broadcast para notificar a otras páginas sobre la actualización
+      const { getBroadcastChannel } = await import('../utils/broadcastChannel');
+      getBroadcastChannel().broadcastSessionCompleted();
     } catch (error) {
       console.error('Error completando sesión con nuevo endpoint:', error);
       throw error;
