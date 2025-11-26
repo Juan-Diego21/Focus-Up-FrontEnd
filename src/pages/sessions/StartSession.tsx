@@ -23,7 +23,6 @@ import { getSongsByAlbumId } from '../../utils/musicApi';
 import { MethodSelectionModal } from '../../components/MethodSelectionModal';
 import { AlbumSelectionModal } from '../../components/AlbumSelectionModal';
 import { CountdownOverlay } from '../../components/ui/CountdownOverlay';
-import { BackButton } from '../../components/ui/BackButton';
 import { PageLayout } from '../../components/ui/PageLayout';
 import { Sidebar } from '../../components/ui/Sidebar';
 import type { SessionCreateDto, SessionDto, Song } from '../../types/api';
@@ -321,36 +320,77 @@ export const StartSession: React.FC = () => {
 
 
   return (
-    <PageLayout
-      showSidebar={true}
-      sidebar={<Sidebar currentPage="sessions" />}
-    >
-      <div className="w-full max-w-6xl mx-auto">
-        {/* Botón atrás en la parte superior */}
-        <div className="mb-6">
-          <BackButton />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/6 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl"></div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <PageLayout
+        showSidebar={true}
+        sidebar={<Sidebar currentPage="sessions" />}
+      >
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
+
+          {/* Hero Section */}
+          <div className="relative mb-12">
+            {/* Hero glow effect */}
+            <div className="absolute -inset-6 bg-gradient-to-r from-blue-600/20 via-cyan-600/20 to-indigo-600/20 rounded-3xl blur-2xl opacity-50"></div>
+
+            <div className="relative text-center">
+              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent mb-6 leading-tight">
+                {sessionId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
+              </h2>
+
+              <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
+                Configura tu sesión de concentración con las herramientas perfectas para maximizar tu productividad
+              </p>
+
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-300 rounded-full border border-blue-500/20">
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                  Temporizador Inteligente
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 text-cyan-300 rounded-full border border-cyan-500/20">
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                  Métodos de Estudio
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20">
+                  <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
+                  Música Ambiental
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Columna izquierda: Formulario */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-[#232323]/70 backdrop-blur-md rounded-xl p-6 shadow-lg">
-              <h1 className="text-2xl font-bold text-white mb-6">
-                {sessionId ? 'Continuar sesión programada' : 'Iniciar sesión de concentración'}
-              </h1>
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-blue-500/20">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
+                  {sessionId ? 'Continuar Sesión' : 'Configurar Sesión'}
+                </h1>
+                <p className="text-gray-400 text-sm">
+                  Personaliza tu experiencia de concentración
+                </p>
+              </div>
 
               {/* Badge de llegada tarde */}
               {isLate && (
-                <div className="mb-4 inline-flex items-center gap-2 px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400">
-                  <span>⚠️</span>
-                  <span className="text-sm">Llegaste tarde {minutesLate} minutos</span>
+                <div className="mb-6 inline-flex items-center gap-2 px-4 py-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 w-full justify-center">
+                  <span className="text-lg">⚠️</span>
+                  <span className="font-medium">Llegaste tarde {minutesLate} minutos</span>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Título */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-white">
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-white flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
                     Título de la sesión
                   </label>
                   <input
@@ -358,19 +398,19 @@ export const StartSession: React.FC = () => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Sesión de concentración #1"
-                    className="w-full px-4 py-3 bg-[#1a1a1a]/50 border border-[#333]/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-4 bg-[#1a1a1a]/70 border border-[#333]/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 text-lg"
                   />
                 </div>
 
                 {/* Descripción expandable */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <button
                     type="button"
                     onClick={() => setDescriptionExpanded(!descriptionExpanded)}
-                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors cursor-pointer group"
                   >
-                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${descriptionExpanded ? 'rotate-180' : ''}`} />
-                    Descripción avanzada
+                    <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${descriptionExpanded ? 'rotate-180' : ''} group-hover:text-blue-400`} />
+                    <span className="font-medium">Descripción avanzada</span>
                   </button>
 
                   <AnimatePresence>
@@ -382,141 +422,153 @@ export const StartSession: React.FC = () => {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Describe el propósito de esta sesión..."
-                        className="w-full px-4 py-3 bg-[#1a1a1a]/50 border border-[#333]/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        className="w-full px-4 py-4 bg-[#1a1a1a]/70 border border-[#333]/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none transition-all duration-200 text-lg"
                         rows={3}
                       />
                     )}
                   </AnimatePresence>
                 </div>
 
-                {/* Botones de selección de método y álbum */}
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-white">
-                    Configuración de la sesión
-                  </label>
+                {/* Configuración de la sesión */}
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-white mb-2">Configuración de la sesión</h3>
+                    <p className="text-gray-400 text-sm">Elige las herramientas que potenciarán tu concentración</p>
+                  </div>
 
                   {/* Botón de selección de método */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <button
                       type="button"
                       onClick={() => setIsMethodModalOpen(true)}
-                      className="w-full flex items-center justify-between p-4 bg-[#1a1a1a]/50 border-2 border-dashed border-[#333]/50 rounded-xl text-left hover:border-blue-500/50 hover:bg-blue-500/10 transition-all duration-200 cursor-pointer group"
+                      className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-[#1a1a1a]/70 to-[#232323]/70 border-2 border-dashed border-[#333]/50 rounded-2xl text-left hover:border-blue-500/60 hover:bg-blue-500/5 transition-all duration-300 cursor-pointer group shadow-lg hover:shadow-blue-500/10"
                       aria-haspopup="dialog"
                       aria-expanded={isMethodModalOpen}
                       aria-label="Seleccionar método de estudio"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center group-hover:bg-blue-600/30 transition-colors">
-                          <BookOpenIcon className="w-5 h-5 text-blue-400" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-700/20 flex items-center justify-center group-hover:from-blue-600/30 group-hover:to-blue-700/30 transition-all duration-200 border border-blue-500/20">
+                          <BookOpenIcon className="w-6 h-6 text-blue-400 group-hover:text-blue-300" />
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-white">
+                        <div className="flex-1">
+                          <div className="text-base font-semibold text-white mb-1">
                             {selectedMethod ? selectedMethod.nombre_metodo : 'Seleccionar método'}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-sm text-gray-400">
                             {selectedMethod ? 'Método de estudio seleccionado' : 'Método de estudio (opcional)'}
                           </div>
                         </div>
                       </div>
                       <div className="text-gray-400 group-hover:text-blue-400 transition-colors">
-                        <ChevronDownIcon className="w-5 h-5" />
+                        <ChevronDownIcon className="w-6 h-6" />
                       </div>
                     </button>
                   </div>
 
                   {/* Botón de selección de álbum */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <button
                       type="button"
                       onClick={() => setIsAlbumModalOpen(true)}
-                      className="w-full flex items-center justify-between p-4 bg-[#1a1a1a]/50 border-2 border-dashed border-[#333]/50 rounded-xl text-left hover:border-purple-500/50 hover:bg-purple-500/10 transition-all duration-200 cursor-pointer group"
+                      className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-[#1a1a1a]/70 to-[#232323]/70 border-2 border-dashed border-[#333]/50 rounded-2xl text-left hover:border-cyan-500/60 hover:bg-cyan-500/5 transition-all duration-300 cursor-pointer group shadow-lg hover:shadow-cyan-500/10"
                       aria-haspopup="dialog"
                       aria-expanded={isAlbumModalOpen}
                       aria-label="Seleccionar álbum de música"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center group-hover:bg-purple-600/30 transition-colors">
-                          <MusicalNoteIcon className="w-5 h-5 text-purple-400" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-600/20 to-cyan-700/20 flex items-center justify-center group-hover:from-cyan-600/30 group-hover:to-cyan-700/30 transition-all duration-200 border border-cyan-500/20">
+                          <MusicalNoteIcon className="w-6 h-6 text-cyan-400 group-hover:text-cyan-300" />
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-white">
+                        <div className="flex-1">
+                          <div className="text-base font-semibold text-white mb-1">
                             {selectedAlbum ? selectedAlbum.nombre_album : 'Seleccionar álbum'}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-sm text-gray-400">
                             {selectedAlbum ? 'Álbum de música seleccionado' : 'Música de fondo (opcional)'}
                           </div>
                         </div>
                       </div>
-                      <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
-                        <ChevronDownIcon className="w-5 h-5" />
+                      <div className="text-gray-400 group-hover:text-cyan-400 transition-colors">
+                        <ChevronDownIcon className="w-6 h-6" />
                       </div>
                     </button>
                   </div>
                 </div>
 
                 {/* Chips de selección */}
-                <div className="flex flex-wrap gap-2">
-                  {selectedMethod && (
-                    <div className="inline-flex items-center gap-2 px-3 py-2 bg-[#1a1a1a]/70 rounded-lg border border-[#333]/50">
-                      <div className="w-4 h-4 rounded-full bg-blue-500" />
-                      <span className="text-sm text-white">{selectedMethod.nombre_metodo}</span>
-                      <button
-                        type="button"
-                        onClick={removeMethod}
-                        className="text-gray-400 hover:text-white cursor-pointer"
-                      >
-                        <XMarkIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-3">
+                    {selectedMethod && (
+                      <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-xl border border-blue-500/30 backdrop-blur-sm">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 flex items-center justify-center">
+                          <BookOpenIcon className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm font-medium text-white">{selectedMethod.nombre_metodo}</span>
+                        <button
+                          type="button"
+                          onClick={removeMethod}
+                          className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer p-1 hover:bg-red-500/20 rounded-lg"
+                        >
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
 
-                  {selectedAlbum && (
-                    <div className="inline-flex items-center gap-2 px-3 py-2 bg-[#1a1a1a]/70 rounded-lg border border-[#333]/50">
-                      <div className="w-4 h-4 rounded bg-gray-600" />
-                      <span className="text-sm text-white">{selectedAlbum.nombre_album}</span>
-                      <button
-                        type="button"
-                        onClick={removeAlbum}
-                        className="text-gray-400 hover:text-white cursor-pointer"
-                      >
-                        <XMarkIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+                    {selectedAlbum && (
+                      <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-cyan-500/20 to-cyan-600/20 rounded-xl border border-cyan-500/30 backdrop-blur-sm">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-500 flex items-center justify-center">
+                          <MusicalNoteIcon className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm font-medium text-white">{selectedAlbum.nombre_album}</span>
+                        <button
+                          type="button"
+                          onClick={removeAlbum}
+                          className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer p-1 hover:bg-red-500/20 rounded-lg"
+                        >
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Botón de envío */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <PlayIcon className="w-5 h-5" />
-                  )}
-                  {isLoading ? 'Iniciando...' : 'Iniciar sesión de concentración'}
-                </button>
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full px-8 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-lg hover:transform hover:-translate-y-1"
+                  >
+                    {isLoading ? (
+                      <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <PlayIcon className="w-6 h-6" />
+                    )}
+                    {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión de concentración'}
+                  </button>
+                </div>
               </form>
             </div>
           </div>
 
-          {/* Columna derecha: Preview/Instrucciones */}
-          <div className="lg:col-span-3">
-            <div className="bg-[#232323]/70 backdrop-blur-md rounded-xl p-6 shadow-lg">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Vista previa
-              </h2>
+          {/* Columna derecha: Preview y características */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Vista previa de la sesión */}
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-blue-500/20">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
+                  Vista Previa
+                </h2>
+                <p className="text-gray-400 text-sm">Así se verá tu sesión</p>
+              </div>
 
-              {/* Preview de la sesión */}
-              <div className="bg-[#1a1a1a]/50 rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
-                    <span className="text-white">⏱️</span>
+              <div className="bg-gradient-to-br from-[#1a1a1a]/80 to-[#232323]/80 rounded-2xl p-6 border border-[#333]/50">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center border border-blue-500/30">
+                    <span className="text-3xl">⏱️</span>
                   </div>
-                  <div>
-                    <h3 className="text-white font-medium">
+                  <div className="flex-1">
+                    <h3 className="text-white font-bold text-lg mb-1">
                       {title || 'Sesión de concentración'}
                     </h3>
                     <p className="text-gray-400 text-sm">
@@ -527,74 +579,102 @@ export const StartSession: React.FC = () => {
                 </div>
 
                 {description && (
-                  <p className="text-gray-300 text-sm mb-4">
-                    {description}
-                  </p>
+                  <div className="mb-6 p-4 bg-[#1a1a1a]/50 rounded-xl border border-[#333]/30">
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {description}
+                    </p>
+                  </div>
                 )}
 
                 <div className="text-center">
-                  <div className="text-2xl font-mono font-bold text-white mb-2">
+                  <div className="text-4xl font-mono font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3">
                     00:00:00
                   </div>
                   <p className="text-gray-400 text-sm">
-                    El timer comenzará cuando inicies la sesión
+                    El temporizador comenzará cuando inicies la sesión
                   </p>
                 </div>
               </div>
+            </div>
 
-              {/* Instrucciones */}
-              <div className="mt-6 space-y-4">
-                <h3 className="text-lg font-medium text-white">Cómo funciona</h3>
+            {/* Características y beneficios */}
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-3   shadow-2xl border border-cyan-500/20">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent">
+                  ¿Cómo Funciona?
+                </h3>
+                <p className="text-gray-400 text-sm">Descubre las ventajas de nuestras sesiones</p>
+              </div>
 
-                <div className="space-y-3 text-gray-300 text-sm">
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">1</div>
-                    <p>Configura tu sesión con título, método y música opcionales</p>
+              <div className="space-y-2">
+                <div className="flex gap-4 p-4 bg-gradient-to-r from-blue-500/10 to-blue-600/10 rounded-2xl border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                    1
                   </div>
-
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">2</div>
-                    <p>La sesión se minimizará automáticamente si seleccionas un método</p>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Configuración Personalizada</h4>
+                    <p className="text-gray-300 text-sm leading-relaxed">Configura tu sesión con título, método de estudio y música opcionales según tus necesidades</p>
                   </div>
+                </div>
 
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">3</div>
-                    <p>El audio continúa reproduciendo sin interrupciones</p>
+                <div className="flex gap-4 p-4 bg-gradient-to-r from-cyan-500/10 to-cyan-600/10 rounded-2xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                    2
                   </div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Ejecución Automática</h4>
+                    <p className="text-gray-300 text-sm leading-relaxed">La sesión se minimiza automáticamente si seleccionas un método, permitiendo enfoque total</p>
+                  </div>
+                </div>
 
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">4</div>
-                    <p>La sesión se guarda automáticamente y puede reanudarse</p>
+                <div className="flex gap-4 p-4 bg-gradient-to-r from-indigo-500/10 to-indigo-600/10 rounded-2xl border border-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Audio Continuo</h4>
+                    <p className="text-gray-300 text-sm leading-relaxed">La música continúa reproduciendo sin interrupciones durante toda tu sesión</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 p-4 bg-gradient-to-r from-violet-500/10 to-violet-600/10 rounded-2xl border border-violet-500/20 hover:border-violet-500/40 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                    4
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Persistencia Automática</h4>
+                    <p className="text-gray-300 text-sm leading-relaxed">Tu sesión se guarda automáticamente y puede reanudarse en cualquier momento</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          </div>
         </div>
-      </div>
 
-      {/* Modales de selección */}
-      <MethodSelectionModal
-        isOpen={isMethodModalOpen}
-        onClose={() => setIsMethodModalOpen(false)}
-        onSelect={handleMethodSelect}
-        selectedMethod={selectedMethod}
-      />
+        {/* Modales de selección */}
+        <MethodSelectionModal
+          isOpen={isMethodModalOpen}
+          onClose={() => setIsMethodModalOpen(false)}
+          onSelect={handleMethodSelect}
+          selectedMethod={selectedMethod}
+        />
 
-      <AlbumSelectionModal
-        isOpen={isAlbumModalOpen}
-        onClose={() => setIsAlbumModalOpen(false)}
-        onSelect={handleAlbumSelect}
-        selectedAlbum={selectedAlbum}
-      />
+        <AlbumSelectionModal
+          isOpen={isAlbumModalOpen}
+          onClose={() => setIsAlbumModalOpen(false)}
+          onSelect={handleAlbumSelect}
+          selectedAlbum={selectedAlbum}
+        />
 
-      {/* Overlay de cuenta regresiva */}
-      <CountdownOverlay
-        isVisible={getState().showCountdown}
-        onCountdownComplete={handleCountdownComplete}
-        onCancel={handleCountdownCancel}
-      />
-    </PageLayout>
+        {/* Overlay de cuenta regresiva */}
+        <CountdownOverlay
+          isVisible={getState().showCountdown}
+          onCountdownComplete={handleCountdownComplete}
+          onCancel={handleCountdownCancel}
+        />
+      </PageLayout>
+    </div>
   );
 };
 

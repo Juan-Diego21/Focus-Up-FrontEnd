@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from "../components/ui/Sidebar";
-import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
 import { BookOpen, Calendar, Music, Zap } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
-  // Get the number of available study methods
-  const studyMethodsCount = Object.keys(LOCAL_METHOD_ASSETS).length;
   const navigate = useNavigate();
 
   // Estado para controlar la visibilidad del indicador de scroll
@@ -64,17 +61,17 @@ export const DashboardPage: React.FC = () => {
               <div className="relative inline-block">
 
 
-                {/* Logo with enhanced glow effect */}
+                {/* Logo with subtle glow effect */}
                 <div className="relative mb-8">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-cyan-600/20 rounded-3xl blur-2xl opacity-50"></div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10 rounded-3xl blur-xl opacity-30"></div>
                   <div className="relative">
                     <img
                       src="/img/Logo.png"
                       alt="Focus-Up Logo"
                       className="h-24 md:h-28 mx-auto drop-shadow-2xl relative z-10"
                     />
-                    {/* Enhanced glow effect */}
-                    <div className="absolute inset-0 w-24 h-24 md:w-28 md:h-28 mx-auto bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-full blur-xl -z-10"></div>
+                    {/* Subtle glow effect */}
+                    <div className="absolute inset-0 w-24 h-24 md:w-28 md:h-28 mx-auto bg-gradient-to-r from-blue-500/15 to-purple-500/15 rounded-full blur-lg -z-10"></div>
                   </div>
                 </div>
 
@@ -92,7 +89,7 @@ export const DashboardPage: React.FC = () => {
                   </h1>
                   <p className="text-gray-300 text-lg leading-relaxed">
                     Descubre métodos científicos, playlists especializadas y herramientas para maximizar
-                    tu concentración y rendimiento académico.
+                    tu concentración y productividad.
                   </p>
                 </div>
               </div>
@@ -102,7 +99,7 @@ export const DashboardPage: React.FC = () => {
             <div className={`fixed bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#171717] to-transparent pointer-events-none z-20 transition-opacity duration-500 ${showScrollIndicator ? 'opacity-100' : 'opacity-0'}`}></div>
 
             {/* Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Music Card */}
               <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col h-full border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 relative overflow-hidden hover:transform hover:-translate-y-2 ring-1 ring-white/5 hover:ring-purple-500/20">
                 {/* Enhanced decorative background */}
@@ -120,12 +117,12 @@ export const DashboardPage: React.FC = () => {
                   </svg>
                 </div>
 
-                {/* Icon with glow */}
-                <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-purple-500/30">
+                {/* Icon with diffused glow */}
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-purple-500/15">
                     <Music className="w-8 h-8 text-purple-400" />
                   </div>
-                  <div className="absolute -inset-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-lg -z-10"></div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-2xl blur-xl -z-10"></div>
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-center">
@@ -134,7 +131,7 @@ export const DashboardPage: React.FC = () => {
 
                 <div className="flex-1 flex items-center justify-center mb-6">
                   <p className="text-gray-400 text-sm md:text-base text-center leading-relaxed">
-                    Explora playlists especializadas para potenciar tu concentración y rendimiento académico
+                    Explora playlists especializadas para potenciar tu concentración y productividad
                   </p>
                 </div>
 
@@ -167,12 +164,12 @@ export const DashboardPage: React.FC = () => {
                   </svg>
                 </div>
 
-                {/* Icon with glow */}
-                <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
+                {/* Icon with diffused glow */}
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/15">
                     <BookOpen className="w-8 h-8 text-blue-400" />
                   </div>
-                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl blur-lg -z-10"></div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/5 to-cyan-500/5 rounded-2xl blur-xl -z-10"></div>
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-center">
@@ -216,12 +213,12 @@ export const DashboardPage: React.FC = () => {
                   </svg>
                 </div>
 
-                {/* Icon with glow */}
-                <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-green-500/30">
+                {/* Icon with diffused glow */}
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-green-500/15">
                     <Calendar className="w-8 h-8 text-green-400" />
                   </div>
-                  <div className="absolute -inset-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl blur-lg -z-10"></div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl blur-xl -z-10"></div>
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-4 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-center">
@@ -272,12 +269,12 @@ export const DashboardPage: React.FC = () => {
                 </svg>
               </div>
 
-              {/* Icon with enhanced glow */}
-              <div className="relative mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-cyan-500/30">
+              {/* Icon with diffused glow */}
+              <div className="relative">
+                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-cyan-500/15">
                   <Zap className="w-10 h-10 text-cyan-400" />
                 </div>
-                <div className="absolute -inset-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-xl -z-10"></div>
+                <div className="absolute -inset-6 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-3xl blur-2xl -z-10"></div>
               </div>
 
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-center">
