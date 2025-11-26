@@ -288,9 +288,6 @@ export const EventsPage: React.FC = () => {
               <div className="text-center">
                 <div className="relative mb-8">
                   <div className="w-16 h-16 border-4 border-green-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
-                    <CalendarIcon className="w-3 h-3 text-white" />
-                  </div>
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">Cargando eventos...</h2>
                 <p className="text-gray-400">Organizando tu calendario de estudio</p>

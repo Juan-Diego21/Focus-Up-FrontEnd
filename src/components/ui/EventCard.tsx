@@ -125,7 +125,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
     }
   };
 
-  const { color, borderColor } = getEventStatus();
+  const { borderColor } = getEventStatus();
 
   // Generate random accent border color
   const getRandomAccentBorder = () => {
