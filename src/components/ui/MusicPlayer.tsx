@@ -15,28 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useMusicPlayer, type PlaybackMode } from '../../contexts/MusicPlayerContext';
 import { useAuth } from '../../contexts/AuthContext';
-
-// Función auxiliar para obtener imagen del álbum
-const getAlbumImage = (albumId: number | undefined) => {
-  if (!albumId) return '/img/fondo-album.png'; // fallback for undefined/null
-
-  // Map album IDs to specific images as requested
-  switch (albumId) {
-    case 1:
-      return '/img/Album_Lofi.png';
-    case 2:
-      return '/img/Album_Naturaleza.png';
-    case 3:
-      return '/img/Album_Instrumental.png';
-    default:
-      return '/img/fondo-album.png'; // fallback
-  }
-};
-
-// Función auxiliar para obtener el nombre del artista
-const getArtistName = (song: any): string => {
-  return song.artista_cancion || 'Artista desconocido';
-};
+import { getAlbumImage, getArtistName } from '../../utils/musicUtils';
 
 export const MusicPlayer: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -207,7 +186,7 @@ export const MusicPlayer: React.FC = () => {
           <div className="flex items-center space-x-3 min-w-0 flex-1">
             <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
               <img
-                src={currentAlbum ? getAlbumImage(currentAlbum.id_album) : '/img/fondo-album.png'}
+                src={getAlbumImage(currentAlbum?.id_album || currentSong?.id_album)}
                 alt="Portada del álbum"
                 className="w-full h-full object-cover"
               />
@@ -380,9 +359,7 @@ export const MusicPlayer: React.FC = () => {
 
                   <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0">
                     <img
-                      src={currentAlbum && song.id_album === currentAlbum.id_album
-                        ? getAlbumImage(currentAlbum.id_album)
-                        : '/img/fondo-album.png'}
+                      src={getAlbumImage(song.id_album)}
                       alt="Portada del álbum"
                       className="w-full h-full object-cover"
                     />
