@@ -22,11 +22,10 @@ interface StudyMethod {
 interface CardProps {
   method: StudyMethod;
   onViewStepByStep: (method: StudyMethod) => void;
-  onAddToSession: (method: StudyMethod) => void;
 }
 
 // Componente Card para mostrar métodos de estudio
-export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSession }) => {
+export const Card: React.FC<CardProps> = ({ method, onViewStepByStep }) => {
   // Usar únicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || '#0690cf';
@@ -109,11 +108,11 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
         </ul>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-3 mt-auto">
+      {/* Action button */}
+      <div className="mt-auto">
         <button
           onClick={() => onViewStepByStep(method)}
-          className="flex-1 px-4 py-2.5 text-white rounded-lg font-semibold focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="w-full px-6 py-3 text-white rounded-xl font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-1"
           style={{
             backgroundColor: methodColor,
             boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
@@ -133,13 +132,12 @@ export const Card: React.FC<CardProps> = ({ method, onViewStepByStep, onAddToSes
             e.currentTarget.style.boxShadow = `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`;
           }}
         >
-          Ver paso a paso
-        </button>
-        <button
-          onClick={() => onAddToSession(method)}
-          className="flex-1 px-4 py-2.5 bg-gray-700 text-gray-100 rounded-lg font-semibold hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-        >
-          Añadir a sesión
+          <span className="flex items-center justify-center gap-2">
+            Ver guía paso a paso
+            <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
         </button>
       </div>
     </div>
