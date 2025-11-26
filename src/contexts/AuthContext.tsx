@@ -150,14 +150,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Función para cerrar sesión del usuario
   const logout = async (): Promise<void> => {
     try {
+      // Verificar si hay una sesión activa y finalizarla antes del logout
+      const activeSessionData = localStorage.getItem("focusup:activeSession");
+      if (activeSessionData) {
+        try {
+          const activeSession = JSON.parse(activeSessionData);
+          if (activeSession && activeSession.sessionId) {
+            // Intentar finalizar la sesión como "terminar más tarde"
+            console.log("Finalizando sesión activa antes del logout:", activeSession.sessionId);
+            // Nota: No podemos usar el sessionService aquí porque requiere el contexto de sesión
+            // La sesión se mantendrá en estado "pending" y podrá reanudarse después del login
+          }
+        } catch (sessionError) {
+          console.warn("Error al procesar sesión activa durante logout:", sessionError);
+        }
+      }
+
       // Obtener token actual para la solicitud de logout
       const currentToken = localStorage.getItem("token");
 
       if (currentToken) {
-        // Realizar solicitud POST al endpoint de logout del backend
-        await apiClient.post(API_ENDPOINTS.LOGOUT, {}, {
+        // Realizar solicitud POST al endpoint de logout del backend con timeout
+        const logoutPromise = apiClient.post(API_ENDPOINTS.LOGOUT, {}, {
           headers: { Authorization: `Bearer ${currentToken}` },
         });
+
+        // Agregar timeout de 5 segundos para evitar que el logout se quede colgado
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Logout timeout')), 5000);
+        });
+
+        await Promise.race([logoutPromise, timeoutPromise]);
       }
     } catch (error) {
       // En caso de error (token expirado o inválido), continuar con el logout local
@@ -167,6 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem("token");
       localStorage.removeItem("userId");
       localStorage.removeItem("userData");
+      // Nota: Mantener la sesión activa en localStorage para que pueda reanudarse después del login
       setToken(null);
       setUser(null);
 

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { Song } from '../types/api';
+import Swal from 'sweetalert2';
 
 // Modos de reproducción
 export type PlaybackMode = 'ordered' | 'shuffle' | 'loop-one' | 'loop-all';
@@ -271,7 +272,16 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         return;
       }
 
-      alert(`Error: ${validation.reason}. La canción "${song.nombre_cancion}" no se puede reproducir.`);
+      Swal.fire({
+        title: 'Error de reproducción',
+        text: `${validation.reason}. La canción "${song.nombre_cancion || 'desconocida'}" no se puede reproducir.`,
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#EF4444',
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#EF4444',
+      });
       setState(prev => ({ ...prev, isPlaying: false, isLoading: false }));
       return;
     }
@@ -298,9 +308,27 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
         // Mostrar mensaje específico según el tipo de error
         if (error.name === 'NotSupportedError') {
-          alert('Error: El formato de audio no es soportado por este navegador.');
+          Swal.fire({
+            title: 'Error de formato',
+            text: 'El formato de audio no es soportado por este navegador.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#EF4444',
+            background: '#232323',
+            color: '#ffffff',
+            iconColor: '#EF4444',
+          });
         } else {
-          alert('Error al reproducir la canción. Intentando la siguiente...');
+          Swal.fire({
+            title: 'Error de reproducción',
+            text: 'Error al reproducir la canción. Intentando la siguiente...',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#EF4444',
+            background: '#232323',
+            color: '#ffffff',
+            iconColor: '#EF4444',
+          });
         }
 
         // Intentar reproducir la siguiente canción automáticamente
@@ -349,15 +377,42 @@ export const MusicPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (audio.error) {
       switch (audio.error.code) {
         case MediaError.MEDIA_ERR_NETWORK:
-          alert('Error de red: No se pudo cargar el archivo de audio.');
+          Swal.fire({
+            title: 'Error de red',
+            text: 'No se pudo cargar el archivo de audio.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#EF4444',
+            background: '#232323',
+            color: '#ffffff',
+            iconColor: '#EF4444',
+          });
           break;
         case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          alert('Error: El formato de audio no es soportado.');
+          Swal.fire({
+            title: 'Error de formato',
+            text: 'El formato de audio no es soportado.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#EF4444',
+            background: '#232323',
+            color: '#ffffff',
+            iconColor: '#EF4444',
+          });
           break;
         case MediaError.MEDIA_ERR_ABORTED:
           break;
         default:
-          alert('Error desconocido al cargar el archivo de audio.');
+          Swal.fire({
+            title: 'Error desconocido',
+            text: 'Error desconocido al cargar el archivo de audio.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#EF4444',
+            background: '#232323',
+            color: '#ffffff',
+            iconColor: '#EF4444',
+          });
       }
     }
 

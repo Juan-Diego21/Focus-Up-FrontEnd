@@ -96,10 +96,23 @@ export const PomodoroIntroView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Cargando método...</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-red-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-500/6 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-yellow-500/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="relative mb-8">
+              <div className="w-12 h-12 border-4 border-red-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando método...</h2>
+            <p className="text-gray-400">Preparando tu técnica Pomodoro</p>
+          </div>
         </div>
       </div>
     );
@@ -107,17 +120,35 @@ export const PomodoroIntroView: React.FC = () => {
 
   if (error || !method) {
     return (
-      <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
-          <p className="text-gray-400 mb-6">{error}</p>
-          <button
-            onClick={() => navigate("/study-methods")}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
-          >
-            Volver a métodos
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-red-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-500/6 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md mx-auto">
+            <div className="relative mb-8">
+              <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
+                <span className="text-4xl">⚠️</span>
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-white text-xs">!</span>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Error al cargar datos</h2>
+            <p className="text-gray-400 mb-8 leading-relaxed">{error}</p>
+            <button
+              onClick={() => navigate("/study-methods")}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-500/25 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a métodos
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -151,16 +182,23 @@ export const PomodoroIntroView: React.FC = () => {
 
 
   return (
-    <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-80 h-80 bg-red-500/8 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-500/6 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-yellow-500/5 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Header */}
-      <header className="w-full max-w-4xl flex items-center justify-between mb-8">
+      <header className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between p-6 mb-8">
         <button
           onClick={() => navigate("/study-methods")}
-          className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
+          className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-red-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-red-500/25"
           aria-label="Volver atrás"
         >
           <svg
-            className="w-7 h-7 text-white"
+            className="w-6 h-6 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -173,170 +211,210 @@ export const PomodoroIntroView: React.FC = () => {
             />
           </svg>
         </button>
-        <h1 className="text-2xl font-semibold" style={{ color: methodColor }}>
-          {method.nombre_metodo}
-        </h1>
-        <div className="w-8"></div>
+        <div className="flex-1 text-center">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-red-100 to-orange-100 bg-clip-text text-transparent">
+            Técnica Pomodoro
+          </h1>
+        </div>
+        <div className="w-12"></div>
       </header>
 
-      {/* Contenido principal */}
-      <div className="w-full max-w-4xl space-y-8">
-        {/* Imagen y descripción principal */}
-        <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            {methodImage ? (
-              <>
-                {!imageLoaded && (
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-700 animate-pulse"></div>
-                )}
-                <img
-                  src={methodImage}
-                  alt={`Imagen de ${method.nombre_metodo}`}
-                  className={`w-12 h-12 md:w-16 md:h-16 object-contain rounded-full shadow-md shadow-black/40 ${imageLoaded ? 'block' : 'hidden'}`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector(".fallback-emoji")) {
-                      const emoji = document.createElement("span");
-                      emoji.className = "fallback-emoji text-6xl md:text-8xl";
-                      emoji.textContent = "🍅";
-                      parent.appendChild(emoji);
-                    }
-                  }}
-                />
-              </>
-            ) : (
-              <span className="text-6xl md:text-8xl">🍅</span>
-            )}
-          </div>
-          <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mx-auto">
-            {method.descripcion}
-          </p>
-        </div>
+      {/* Main content */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 space-y-12">
+        {/* Hero Section */}
+        <div className="relative mb-16">
+          {/* Hero glow effect */}
+          <div className="absolute -inset-8 bg-gradient-to-r from-red-600/20 via-orange-600/20 to-yellow-600/20 rounded-3xl blur-2xl opacity-50"></div>
 
-        {/* Explicación paso a paso */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-white text-center mb-8">
-            ¿Cómo funciona la Técnica Pomodoro?
-          </h2>
-
-          <div className="grid gap-6">
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <CheckCircle className="w-6 h-6" style={{ color: '#FFFFFF' }} />
-                <span style={{ color: methodColor }}>
-                  1. Elige una tarea específica
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Selecciona una actividad concreta que quieras completar. Es importante que sea específica
-                y alcanzable dentro del tiempo establecido.
-              </p>
+          <div className="relative text-center">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-600/20 to-orange-600/20 backdrop-blur-md rounded-full border border-red-500/30 mb-8">
+              <Clock className="w-6 h-6 text-red-400" />
+              <span className="text-red-300 text-sm font-medium">Técnica Pomodoro</span>
             </div>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Clock className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  2. Trabaja durante 25 minutos
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Configura un temporizador por 25 minutos y concéntrate completamente en tu tarea.
-                Evita todas las distracciones posibles durante este período.
-              </p>
+            <div className="mb-8 flex justify-center">
+              {methodImage ? (
+                <>
+                  {!imageLoaded && (
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gray-700 animate-pulse"></div>
+                  )}
+                  <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-red-500/20 ${imageLoaded ? 'block' : 'hidden'}`}>
+                    <img
+                      src={methodImage}
+                      alt={`Imagen de ${method.nombre_metodo}`}
+                      className="w-full h-full object-cover"
+                      onLoad={() => setImageLoaded(true)}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent && !parent.querySelector(".fallback-emoji")) {
+                          const emoji = document.createElement("span");
+                          emoji.className = "fallback-emoji text-6xl md:text-8xl";
+                          emoji.textContent = "🍅";
+                          parent.appendChild(emoji);
+                        }
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 backdrop-blur-md flex items-center justify-center border border-red-500/30 shadow-2xl">
+                  <span className="text-6xl md:text-8xl">🍅</span>
+                </div>
+              )}
             </div>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Coffee className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  3. Toma un descanso corto
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Cuando suene el temporizador, toma un descanso de 5 minutos. Levántate, estírate,
-                toma agua o haz algo que te relaje. Después de 4 pomodoros, toma un descanso más largo.
-              </p>
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-red-100 to-orange-100 bg-clip-text text-transparent mb-6 leading-tight">
+              Domina tu Tiempo de Estudio
+            </h2>
+
+            <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
+              {method.descripcion}
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-300 rounded-full border border-red-500/20">
+                <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+                Técnica Probada
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-300 rounded-full border border-orange-500/20">
+                <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+                Mejor Productividad
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 text-yellow-300 rounded-full border border-yellow-500/20">
+                <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                Menos Fatiga
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Beneficios */}
+        {/* How it works section */}
+        <div className="space-y-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              ¿Cómo Funciona la Técnica?
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Un método simple pero efectivo para mejorar tu concentración y productividad
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:gap-8">
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">
+                      1. Elige una tarea específica
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Selecciona una actividad concreta que quieras completar. Es importante que sea específica
+                    y alcanzable dentro del tiempo establecido para mantener la motivación.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
+                      2. Trabaja durante 25 minutos
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Configura un temporizador por 25 minutos y concéntrate completamente en tu tarea.
+                    Evita todas las distracciones posibles durante este período sagrado.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Coffee className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+                      3. Toma un descanso corto
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Cuando suene el temporizador, toma un descanso de 5 minutos. Levántate, estírate,
+                    toma agua o haz algo que te relaje. Después de 4 pomodoros, toma un descanso más largo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits section */}
         {method.beneficios && method.beneficios.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold text-white text-center mb-6">
-              Beneficios de la Técnica Pomodoro
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {method.beneficios.map((beneficio) => (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h3 className="text-3xl font-bold text-white mb-4">
+                Beneficios de la Técnica
+              </h3>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                Descubre por qué millones de estudiantes confían en este método
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {method.beneficios.map((beneficio, index) => (
                 <div
                   key={beneficio.id_beneficio}
-                  className="bg-[#232323]/90 p-4 rounded-xl border"
-                  style={{ borderColor: `${methodColor}20` }}
+                  className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-6 rounded-2xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:transform hover:-translate-y-1 shadow-xl"
+                  style={{animationDelay: `${index * 100}ms`}}
                 >
-                  <p className="text-gray-300 text-sm leading-relaxed">
-                    {beneficio.descripcion_beneficio}
-                  </p>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-white font-bold text-sm">{index + 1}</span>
+                    </div>
+                    <p className="text-gray-300 leading-relaxed">
+                      {beneficio.descripcion_beneficio}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Botones para configurar e iniciar */}
-        <div className="text-center mt-10 space-y-4">
+        {/* Action buttons */}
+        <div className="text-center space-y-6 mb-6">
           <div className="flex justify-center gap-4 flex-wrap">
             <button
               onClick={handleOpenConfig}
-              className="px-6 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl border-2 flex items-center gap-2"
-              style={{
-                borderColor: methodColor,
-                color: methodColor,
-                backgroundColor: 'transparent',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = `${methodColor}20`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-gray-500/25 cursor-pointer hover:transform hover:-translate-y-1 border border-gray-600/50"
             >
-              <Settings className="w-5 h-5" style={{ color: '#9CA3AF' }} />
-              Configurar
+              <Settings className="w-5 h-5" />
+              Configurar Técnica
             </button>
             <button
               onClick={handleStartMethod}
-              className="px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-red-500/25 cursor-pointer hover:transform hover:-translate-y-1"
               style={{
-                backgroundColor: methodColor,
-                color: 'white',
                 boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
               }}
-              onMouseEnter={(e) => {
-                const darkerColor = methodColor.replace('#', '');
-                const r = parseInt(darkerColor.substr(0, 2), 16);
-                const g = parseInt(darkerColor.substr(2, 2), 16);
-                const b = parseInt(darkerColor.substr(4, 2), 16);
-                const darker = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
-                e.currentTarget.style.backgroundColor = darker;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = methodColor;
-              }}
             >
-              Hacer {method.nombre_metodo}
+              <span>Comenzar Técnica Pomodoro</span>
+              <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>
@@ -344,21 +422,25 @@ export const PomodoroIntroView: React.FC = () => {
 
       {/* Configuration Modal */}
       {showConfigModal && (
-        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#232323] rounded-2xl p-6 w-full max-w-md shadow-2xl border" style={{ borderColor: `${methodColor}33` }}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-white">Configurar Pomodoro</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md shadow-2xl border border-red-500/30">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-red-100 to-orange-100 bg-clip-text text-transparent">
+                Configurar Técnica
+              </h2>
               <button
                 onClick={handleCloseConfig}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="w-10 h-10 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl flex items-center justify-center text-gray-400 hover:text-white transition-all duration-200 cursor-pointer"
               >
-                ✕
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+              <div className="space-y-3">
+                <label className="block text-sm font-semibold text-gray-300">
                   Tiempo de trabajo (minutos)
                 </label>
                 <input
@@ -367,12 +449,12 @@ export const PomodoroIntroView: React.FC = () => {
                   max="60"
                   value={config.workTime}
                   onChange={(e) => handleConfigChange('workTime', parseInt(e.target.value) || 1)}
-                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-600 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+              <div className="space-y-3">
+                <label className="block text-sm font-semibold text-gray-300">
                   Tiempo de descanso (minutos)
                 </label>
                 <input
@@ -381,27 +463,23 @@ export const PomodoroIntroView: React.FC = () => {
                   max="30"
                   value={config.breakTime}
                   onChange={(e) => handleConfigChange('breakTime', parseInt(e.target.value) || 1)}
-                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-600 rounded-xl text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-4 mt-8">
               <button
                 onClick={handleCloseConfig}
-                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="flex-1 px-6 py-3 bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-xl font-medium transition-all duration-200 cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveConfig}
-                className="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:transform hover:scale-105"
-                style={{
-                  backgroundColor: methodColor,
-                  color: 'white',
-                }}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold transition-all duration-200 cursor-pointer hover:transform hover:scale-105 shadow-lg hover:shadow-red-500/25"
               >
-                Guardar
+                Guardar Configuración
               </button>
             </div>
           </div>

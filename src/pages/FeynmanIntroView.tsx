@@ -71,10 +71,23 @@ export const FeynmanIntroView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Cargando método...</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-yellow-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-amber-500/6 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-orange-500/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="relative mb-8">
+              <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando método...</h2>
+            <p className="text-gray-400">Preparando el método Feynman</p>
+          </div>
         </div>
       </div>
     );
@@ -82,17 +95,35 @@ export const FeynmanIntroView: React.FC = () => {
 
   if (error || !method) {
     return (
-      <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
-          <p className="text-gray-400 mb-6">{error}</p>
-          <button
-            onClick={() => navigate("/study-methods")}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
-          >
-            Volver a métodos
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-yellow-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-amber-500/6 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md mx-auto">
+            <div className="relative mb-8">
+              <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
+                <span className="text-4xl">⚠️</span>
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-white text-xs">!</span>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Error al cargar datos</h2>
+            <p className="text-gray-400 mb-8 leading-relaxed">{error}</p>
+            <button
+              onClick={() => navigate("/study-methods")}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-500/25 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a métodos
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -109,16 +140,23 @@ export const FeynmanIntroView: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-80 h-80 bg-yellow-500/8 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-amber-500/6 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-orange-500/5 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Header */}
-      <header className="w-full max-w-4xl flex items-center justify-between mb-8">
+      <header className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between p-6 mb-8">
         <button
           onClick={() => navigate("/study-methods")}
-          className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
+          className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-yellow-500/25"
           aria-label="Volver atrás"
         >
           <svg
-            className="w-7 h-7 text-white"
+            className="w-6 h-6 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -131,163 +169,222 @@ export const FeynmanIntroView: React.FC = () => {
             />
           </svg>
         </button>
-        <h1 className="text-2xl font-semibold" style={{ color: methodColor }}>
-          {method.nombre_metodo}
-        </h1>
-        <div className="w-8"></div>
+        <div className="flex-1 text-center">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-yellow-100 to-amber-100 bg-clip-text text-transparent">
+            Método Feynman
+          </h1>
+        </div>
+        <div className="w-12"></div>
       </header>
 
-      {/* Contenido principal */}
-      <div className="w-full max-w-4xl space-y-8">
-        {/* Imagen y descripción principal */}
-        <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            {methodImage ? (
-              <>
-                {!imageLoaded && (
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-700 animate-pulse"></div>
-                )}
-                <img
-                  src={methodImage}
-                  alt={`Imagen de ${method.nombre_metodo}`}
-                  className={`w-12 h-12 md:w-16 md:h-16 object-contain rounded-full shadow-md shadow-black/40 ${imageLoaded ? 'block' : 'hidden'}`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector(".fallback-emoji")) {
-                      const emoji = document.createElement("span");
-                      emoji.className = "fallback-emoji text-6xl md:text-8xl";
-                      emoji.textContent = "🎓";
-                      parent.appendChild(emoji);
-                    }
-                  }}
-                />
-              </>
-            ) : (
-              <span className="text-6xl md:text-8xl">🎓</span>
-            )}
-          </div>
-          <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mx-auto">
-            Aprende enseñando. Explica conceptos complejos en términos simples para identificar lagunas en tu comprensión y fortalecer tu conocimiento.
-          </p>
-        </div>
+      {/* Main content */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 space-y-12">
+        {/* Hero Section */}
+        <div className="relative mb-16">
+          {/* Hero glow effect */}
+          <div className="absolute -inset-8 bg-gradient-to-r from-yellow-600/20 via-amber-600/20 to-orange-600/20 rounded-3xl blur-2xl opacity-50"></div>
 
-        {/* Timeline del método Feynman */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-white text-center mb-8">
-            ¿Cómo funciona el Método Feynman?
-          </h2>
-
-          <div className="grid gap-6">
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <BookOpen className="w-6 h-6" style={{ color: '#FFFFFF' }} />
-                <span style={{ color: methodColor }}>
-                  1. Elegir y estudiar el tema
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Selecciona un concepto que quieres aprender y estúdialo a fondo desde fuentes confiables.
-              </p>
+          <div className="relative text-center">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 backdrop-blur-md rounded-full border border-yellow-500/30 mb-8">
+              <Lightbulb className="w-6 h-6 text-yellow-400" />
+              <span className="text-yellow-300 text-sm font-medium">Método Feynman</span>
             </div>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <MessageSquare className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  2. Enseñarlo en palabras simples
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Explica el concepto como si lo enseñaras a alguien que no sabe nada sobre el tema. Usa lenguaje simple y analogías.
-              </p>
+            <div className="mb-8 flex justify-center">
+              {methodImage ? (
+                <>
+                  {!imageLoaded && (
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gray-700 animate-pulse"></div>
+                  )}
+                  <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-yellow-500/20 ${imageLoaded ? 'block' : 'hidden'}`}>
+                    <img
+                      src={methodImage}
+                      alt={`Imagen de ${method.nombre_metodo}`}
+                      className="w-full h-full object-cover"
+                      onLoad={() => setImageLoaded(true)}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent && !parent.querySelector(".fallback-emoji")) {
+                          const emoji = document.createElement("span");
+                          emoji.className = "fallback-emoji text-6xl md:text-8xl";
+                          emoji.textContent = "🎓";
+                          parent.appendChild(emoji);
+                        }
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20 backdrop-blur-md flex items-center justify-center border border-yellow-500/30 shadow-2xl">
+                  <span className="text-6xl md:text-8xl">🎓</span>
+                </div>
+              )}
             </div>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Search className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  3. Identificar lagunas y aclarar
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Revisa tu explicación e identifica áreas donde tuviste dificultades o usaste términos complejos. Regresa y aclara estas lagunas.
-              </p>
-            </div>
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-yellow-100 to-amber-100 bg-clip-text text-transparent mb-6 leading-tight">
+              Aprende Enseñando
+            </h2>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Lightbulb className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  4. Simplificar y crear analogías
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Simplifica aún más tu explicación y crea analogías poderosas que hagan cristalino el concepto.
-              </p>
+            <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
+              Explica conceptos complejos en términos simples para identificar lagunas
+              en tu comprensión y fortalecer tu conocimiento de manera profunda.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 text-yellow-300 rounded-full border border-yellow-500/20">
+                <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                Comprensión Profunda
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-300 rounded-full border border-amber-500/20">
+                <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+                Identifica Lagunas
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-300 rounded-full border border-orange-500/20">
+                <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+                Conocimiento Sólido
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Beneficios */}
+        {/* How it works section */}
+        <div className="space-y-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              ¿Cómo Funciona el Método?
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Una técnica revolucionaria que transforma cómo aprendes y comprendes
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:gap-8">
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+                      1. Elegir y estudiar el tema
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Selecciona un concepto que quieres aprender y estúdialo a fondo
+                    desde fuentes confiables para tener una base sólida.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <MessageSquare className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-amber-400 to-amber-500 bg-clip-text text-transparent">
+                      2. Enseñarlo en palabras simples
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Explica el concepto como si lo enseñaras a alguien que no sabe nada
+                    sobre el tema. Usa lenguaje simple y analogías poderosas.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Search className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
+                      3. Identificar lagunas y aclarar
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Revisa tu explicación e identifica áreas donde tuviste dificultades
+                    o usaste términos complejos. Regresa y aclara estas lagunas.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Lightbulb className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">
+                      4. Simplificar y crear analogías
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Simplifica aún más tu explicación y crea analogías poderosas
+                    que hagan cristalino el concepto para ti y otros.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits section */}
         {method.beneficios && method.beneficios.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold text-white text-center mb-6">
-              Beneficios del Método Feynman
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {method.beneficios.map((beneficio) => (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h3 className="text-3xl font-bold text-white mb-4">
+                Beneficios del Método
+              </h3>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                Descubre cómo esta técnica revolucionaria transforma tu aprendizaje
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {method.beneficios.map((beneficio, index) => (
                 <div
                   key={beneficio.id_beneficio}
-                  className="bg-[#232323]/90 p-4 rounded-xl border"
-                  style={{ borderColor: `${methodColor}20` }}
+                  className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-6 rounded-2xl border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 hover:transform hover:-translate-y-1 shadow-xl"
+                  style={{animationDelay: `${index * 100}ms`}}
                 >
-                  <p className="text-gray-300 text-sm leading-relaxed">
-                    {beneficio.descripcion_beneficio}
-                  </p>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-white font-bold text-sm">{index + 1}</span>
+                    </div>
+                    <p className="text-gray-300 leading-relaxed">
+                      {beneficio.descripcion_beneficio}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Botón para iniciar */}
-        <div className="text-center mt-10">
+        {/* Action button */}
+        <div className="text-center space-y-6 mb-6">
           <button
             onClick={handleStartMethod}
-            className="px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-yellow-500/25 cursor-pointer hover:transform hover:-translate-y-1"
             style={{
-              backgroundColor: methodColor,
-              color: 'white',
               boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
             }}
-            onMouseEnter={(e) => {
-              const darkerColor = methodColor.replace('#', '');
-              const r = parseInt(darkerColor.substr(0, 2), 16);
-              const g = parseInt(darkerColor.substr(2, 2), 16);
-              const b = parseInt(darkerColor.substr(4, 2), 16);
-              const darker = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
-              e.currentTarget.style.backgroundColor = darker;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = methodColor;
-            }}
           >
-            Comenzar {method.nombre_metodo}
+            <span>Comenzar Método Feynman</span>
+            <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       </div>

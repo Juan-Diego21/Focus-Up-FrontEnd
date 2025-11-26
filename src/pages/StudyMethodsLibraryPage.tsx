@@ -101,19 +101,25 @@ export const StudyMethodsLibraryPage: React.FC = () => {
     // TODO: Implementar navegación a vista paso a paso para otros métodos
   };
 
-  // Manejar agregar método a sesión de concentración
-  const handleAddToSession = () => {
-    // TODO: Implementar funcionalidad de agregar a sesión
-  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/6 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl"></div>
+        </div>
+
         <Sidebar currentPage="study-methods" />
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-white text-lg">Cargando métodos de estudio...</p>
+            <div className="relative mb-8">
+              <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando métodos de estudio...</h2>
+            <p className="text-gray-400">Preparando tu biblioteca de aprendizaje</p>
           </div>
         </div>
       </div>
@@ -122,17 +128,33 @@ export const StudyMethodsLibraryPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/6 rounded-full blur-3xl"></div>
+        </div>
+
         <Sidebar currentPage="study-methods" />
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="text-center max-w-md mx-auto p-6">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
-            <p className="text-gray-400 mb-6">{error}</p>
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md mx-auto">
+            <div className="relative mb-8">
+              <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
+                <span className="text-4xl">⚠️</span>
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-white text-xs">!</span>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Error al cargar datos</h2>
+            <p className="text-gray-400 mb-8 leading-relaxed">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-500/25 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] cursor-pointer"
             >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
               Intentar de nuevo
             </button>
           </div>
@@ -142,37 +164,89 @@ export const StudyMethodsLibraryPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/6 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl"></div>
+      </div>
+
       <Sidebar currentPage="study-methods" />
 
-      <div className="flex justify-center items-center min-h-screen">
-        <main className="w-full max-w-7xl p-6 md:p-10 transition-all">
-          <div className="mb-10">
-            <h1 className="flex justify-center text-4xl font-bold text-white mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
-              Biblioteca de Métodos de Estudio
-              <BookOpen className="w-8 h-8 md:w-10 md:h-10 ml-5" />
-            </h1>
-            
-            <p className="text-gray-400 text-center text-lg max-w-2xl mx-auto">
-              Descubre técnicas probadas para mejorar tu concentración y eficiencia en el estudio
-            </p>
+      {/* Main content */}
+      <div className="relative z-10 flex justify-center items-center min-h-screen py-8">
+        <main className="w-full max-w-7xl px-6 transition-all">
+
+          {/* Header */}
+          <div className="relative mb-16">
+            {/* Header glow effect */}
+            <div className="absolute -inset-6 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 rounded-3xl blur-2xl opacity-50"></div>
+
+            <div className="relative text-center">
+
+              <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
+                Biblioteca de Métodos
+                <br />
+                <span className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
+                  de Estudio
+                </span>
+              </h1>
+
+              <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
+                Descubre técnicas probadas científicamente para potenciar tu concentración,
+                mejorar la retención de información y optimizar tu tiempo de estudio
+              </p>
+
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-300 rounded-full border border-blue-500/20">
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                  Técnicas Probadas
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-300 rounded-full border border-purple-500/20">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                  Mejor Concentración
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20">
+                  <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
+                  Resultados Garantizados
+                </div>
+              </div>
+            </div>
           </div>
 
+          {/* Methods Grid */}
           {studyMethods.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-gray-500 text-6xl mb-4">📚</div>
-              <h3 className="text-white text-xl font-semibold mb-2">No hay métodos disponibles</h3>
-              <p className="text-gray-400">Los métodos de estudio estarán disponibles pronto.</p>
+            <div className="text-center py-20">
+              <div className="relative mb-8">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center mx-auto shadow-2xl">
+                  <BookOpen className="w-12 h-12 text-gray-500" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">📚</span>
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-300 mb-3">No hay métodos disponibles</h3>
+              <p className="text-gray-500 text-lg mb-8">Estamos preparando nuevos métodos de estudio para ti</p>
+              <div className="flex justify-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {studyMethods.map((method) => (
-                <Card
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {studyMethods.map((method, index) => (
+                <div
                   key={method.id_metodo}
-                  method={method}
-                  onViewStepByStep={handleViewStepByStep}
-                  onAddToSession={handleAddToSession}
-                />
+                  className="transform transition-all duration-500 hover:scale-105"
+                  style={{animationDelay: `${index * 100}ms`}}
+                >
+                  <Card
+                    method={method}
+                    onViewStepByStep={handleViewStepByStep}
+                  />
+                </div>
               ))}
             </div>
           )}

@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from "../components/ui/Sidebar";
-import { LOCAL_METHOD_ASSETS } from "../utils/methodAssets";
 import { BookOpen, Calendar, Music, Zap } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
-  // Get the number of available study methods
-  const studyMethodsCount = Object.keys(LOCAL_METHOD_ASSETS).length;
   const navigate = useNavigate();
 
   // Estado para controlar la visibilidad del indicador de scroll
@@ -40,33 +37,60 @@ export const DashboardPage: React.FC = () => {
     navigate("/events");
   };
 
+  const navigateToStartSession = () => {
+    navigate("/start-session");
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/6 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-cyan-500/5 rounded-full blur-3xl"></div>
+      </div>
+
       <Sidebar currentPage="dashboard" />
 
       {/* Main content */}
-      <div className="flex justify-center items-center min-h-screen py-4">
+      <div className="relative z-10 flex justify-center items-center min-h-screen py-4">
         <main className="w-full max-w-6xl px-4 transition-all">
-          <div className="mb-6">
-            {/* Logo Section */}
-            <div className="text-center mb-8">
+          <div className="mb-12">
+            {/* Hero Section */}
+            <div className="text-center mb-12">
               <div className="relative inline-block">
-                {/* Logo with glow effect */}
-                <div className="relative">
-                  <img
-                    src="/img/Logo.png"
-                    alt="Focus-Up Logo"
-                    className="h-20 md:w-100% md:h-24 mx-auto mb-4 drop-shadow-2xl"
-                  />
-                  {/* Subtle glow effect */}
-                  <div className="absolute inset-0 w-20 h-20 md:w-24 md:h-24 mx-auto bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl -z-10"></div>
+
+
+                {/* Logo with subtle glow effect */}
+                <div className="relative mb-8">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10 rounded-3xl blur-xl opacity-30"></div>
+                  <div className="relative">
+                    <img
+                      src="/img/Logo.png"
+                      alt="Focus-Up Logo"
+                      className="h-24 md:h-28 mx-auto drop-shadow-2xl relative z-10"
+                    />
+                    {/* Subtle glow effect */}
+                    <div className="absolute inset-0 w-24 h-24 md:w-28 md:h-28 mx-auto bg-gradient-to-r from-blue-500/15 to-purple-500/15 rounded-full blur-lg -z-10"></div>
+                  </div>
                 </div>
 
-                {/* Decorative elements */}
-                <div className="flex justify-center items-center gap-3 mb-6">
-                  <div className="w-24 h-px bg-gradient-to-r from-transparent via-blue-400/80 to-transparent opacity-60"></div>
-                  <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"></div>
-                  <div className="w-24 h-px bg-gradient-to-l from-transparent via-purple-400/80 to-transparent opacity-60"></div>
+                {/* Enhanced decorative elements */}
+                <div className="flex justify-center items-center gap-4 mb-8">
+                  <div className="w-32 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent"></div>
+                  <div className="w-3 h-3 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 rounded-full shadow-lg shadow-purple-500/30"></div>
+                  <div className="w-32 h-px bg-gradient-to-l from-transparent via-purple-400/60 to-transparent"></div>
+                </div>
+
+                {/* Welcome message */}
+                <div className="max-w-2xl mx-auto">
+                  <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-4">
+                    Potencia tu Aprendizaje
+                  </h1>
+                  <p className="text-gray-300 text-lg leading-relaxed">
+                    Descubre métodos científicos, playlists especializadas y herramientas para maximizar
+                    tu concentración y productividad.
+                  </p>
                 </div>
               </div>
             </div>
@@ -74,121 +98,219 @@ export const DashboardPage: React.FC = () => {
             {/* Overlay difuminado inferior (se desvanece al hacer scroll) */}
             <div className={`fixed bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#171717] to-transparent pointer-events-none z-20 transition-opacity duration-500 ${showScrollIndicator ? 'opacity-100' : 'opacity-0'}`}></div>
 
-            {/* Cards grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {/* Card: Música */}
-              <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl p-4 md:p-6 flex flex-col h-full border border-[#333]/50 items-center hover:shadow-purple-500/10 hover:border-purple-500/30 transition-all duration-300 relative overflow-hidden">
-                {/* Decorative background pattern */}
-                <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 opacity-5">
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Music Card */}
+              <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col h-full border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 relative overflow-hidden hover:transform hover:-translate-y-2 ring-1 ring-white/5 hover:ring-purple-500/20">
+                {/* Enhanced decorative background */}
+                <div className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 opacity-10">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="1"/>
-                    <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="1"/>
-                    <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="1"/>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#purpleGradient)" strokeWidth="1"/>
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="url(#purpleGradient)" strokeWidth="1"/>
+                    <circle cx="50" cy="50" r="25" fill="none" stroke="url(#purpleGradient)" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#a855f7"/>
+                        <stop offset="100%" stopColor="#ec4899"/>
+                      </linearGradient>
+                    </defs>
                   </svg>
                 </div>
 
-               <div className="text-3xl md:text-4xl mb-3 text-purple-400">
-                 <Music className="w-8 h-8 md:w-10 md:h-10" />
-               </div>
-               <h2 className="text-lg md:text-xl font-semibold text-white mb-3 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
+                {/* Icon with diffused glow */}
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-purple-500/15">
+                    <Music className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-2xl blur-xl -z-10"></div>
+                </div>
+
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-center">
                   Música
-                </h2>
-                <div className="flex-1 flex items-center justify-center mb-3">
-                  <span className="text-gray-400 text-sm md:text-base text-center leading-relaxed px-2">
-                    Explora playlists destinadas a mejorar tus sesiones de estudio
-                  </span>
+                </h3>
+
+                <div className="flex-1 flex items-center justify-center mb-6">
+                  <p className="text-gray-400 text-sm md:text-base text-center leading-relaxed">
+                    Explora playlists especializadas para potenciar tu concentración y productividad
+                  </p>
                 </div>
-                <button onClick={navigateToMusic} className="w-full mt-auto px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm md:text-base font-semibold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-purple-500/25 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-center cursor-pointer flex items-center justify-center gap-2">
-                  <Music className="w-4 h-4" />
-                  Explorar música
+
+                <button
+                  onClick={navigateToMusic}
+                  className="w-full mt-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-purple-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
+                >
+                  <Music className="w-5 h-5" />
+                  <span>Explorar Música</span>
+                  <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
 
-              {/* Card: Métodos de Estudio */}
-              <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl p-4 md:p-6 flex flex-col h-full border border-[#333]/50 items-center hover:shadow-blue-500/10 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden">
-                {/* Decorative background pattern */}
-                <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 opacity-5">
+              {/* Study Methods Card */}
+              <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col h-full border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 relative overflow-hidden hover:transform hover:-translate-y-2 ring-1 ring-white/5 hover:ring-blue-500/20">
+                {/* Enhanced decorative background */}
+                <div className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 opacity-10">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <polygon points="50,10 90,90 10,90" fill="none" stroke="currentColor" strokeWidth="1"/>
-                    <polygon points="50,20 80,80 20,80" fill="none" stroke="currentColor" strokeWidth="1"/>
+                    <polygon points="50,10 90,90 10,90" fill="none" stroke="url(#blueGradient)" strokeWidth="1"/>
+                    <polygon points="50,20 80,80 20,80" fill="none" stroke="url(#blueGradient)" strokeWidth="1"/>
+                    <polygon points="50,30 70,70 30,70" fill="none" stroke="url(#blueGradient)" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#3b82f6"/>
+                        <stop offset="100%" stopColor="#06b6d4"/>
+                      </linearGradient>
+                    </defs>
                   </svg>
                 </div>
 
-                <div className="text-3xl md:text-4xl mb-3 text-blue-400">
-                  <BookOpen className="w-8 h-8 md:w-10 md:h-10" />
+                {/* Icon with diffused glow */}
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/15">
+                    <BookOpen className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/5 to-cyan-500/5 rounded-2xl blur-xl -z-10"></div>
                 </div>
-                <h2 className="text-lg md:text-xl font-semibold text-white mb-3 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">
+
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-center">
                   Métodos de Estudio
-                </h2>
-                <div className="flex-1 flex items-center justify-center mb-3">
-                  <span className="text-gray-400 text-sm md:text-base text-center leading-relaxed px-2">
-                    {studyMethodsCount} métodos científicos disponibles para potenciar tu aprendizaje
-                  </span>
+                </h3>
+
+                <div className="flex-1 flex items-center justify-center mb-6">
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm md:text-base leading-relaxed">
+                      Técnicas científicas probadas para potenciar tu aprendizaje y retención
+                    </p>
+                  </div>
                 </div>
-                <button onClick={navigateToStudyMethods} className="w-full mt-auto px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm md:text-base font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-center cursor-pointer flex items-center justify-center gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  Explorar métodos
+
+                <button
+                  onClick={navigateToStudyMethods}
+                  className="w-full mt-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span>Explorar Métodos</span>
+                  <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
 
-              {/* Card: Eventos */}
-              <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-xl shadow-2xl p-4 md:p-6 flex flex-col h-full border border-[#333]/50 items-center hover:shadow-green-500/10 hover:border-green-500/30 transition-all duration-300 relative overflow-hidden">
-                {/* Decorative background pattern */}
-                <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 opacity-5">
+              {/* Events Card */}
+              <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col h-full border border-green-500/20 hover:border-green-500/40 transition-all duration-300 relative overflow-hidden hover:transform hover:-translate-y-2 ring-1 ring-white/5 hover:ring-green-500/20">
+                {/* Enhanced decorative background */}
+                <div className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 opacity-10">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <rect x="20" y="20" width="60" height="60" rx="8" fill="none" stroke="currentColor" strokeWidth="1"/>
-                    <rect x="30" y="30" width="40" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1"/>
+                    <rect x="20" y="20" width="60" height="60" rx="8" fill="none" stroke="url(#greenGradient)" strokeWidth="1"/>
+                    <rect x="30" y="30" width="40" height="40" rx="4" fill="none" stroke="url(#greenGradient)" strokeWidth="1"/>
+                    <rect x="40" y="40" width="20" height="20" rx="2" fill="none" stroke="url(#greenGradient)" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981"/>
+                        <stop offset="100%" stopColor="#059669"/>
+                      </linearGradient>
+                    </defs>
                   </svg>
                 </div>
 
-                <div className="text-3xl md:text-4xl mb-3 text-green-400">
-                  <Calendar className="w-8 h-8 md:w-10 md:h-10" />
+                {/* Icon with diffused glow */}
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-green-500/15">
+                    <Calendar className="w-8 h-8 text-green-400" />
+                  </div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl blur-xl -z-10"></div>
                 </div>
-                <h2 className="text-lg md:text-xl font-semibold text-white mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text">
+
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-center">
                   Eventos
-                </h2>
-                <div className="flex-1 flex items-center justify-center mb-3">
-                  <span className="text-gray-400 text-sm md:text-base text-center leading-relaxed px-2">
-                    Programa sesiones de concentración y mantén tu rutina de estudio
-                  </span>
+                </h3>
+
+                <div className="flex-1 flex items-center justify-center mb-6">
+                  <p className="text-gray-400 text-sm md:text-base text-center leading-relaxed">
+                    Programa sesiones de concentración y mantén organizada tu rutina de estudio
+                  </p>
                 </div>
-                <button onClick={navigateToEvents} className="w-full mt-auto px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm md:text-base font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-green-500/25 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-center cursor-pointer flex items-center justify-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Programar evento
+
+                <button
+                  onClick={navigateToEvents}
+                  className="w-full mt-auto px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-green-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
+                >
+                  <Calendar className="w-5 h-5" />
+                  <span>Programar Evento</span>
+                  <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Card: Sesión de concentración rápida */}
-          <div className="quick-session-section bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-xl shadow-2xl p-4 md:p-6 flex flex-col items-center border border-[#333]/50 hover:shadow-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300 relative overflow-hidden">
-            {/* Decorative background elements */}
-            <div className="absolute top-2 right-4 md:top-4 md:right-6 opacity-10">
-              <svg width="40" height="40" viewBox="0 0 100 100" className="md:w-[60px] md:h-[60px]">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="2"/>
-                <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" strokeWidth="1"/>
-                <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" strokeWidth="1"/>
-              </svg>
-            </div>
-            <div className="absolute bottom-2 left-4 md:bottom-4 md:left-6 opacity-10">
-              <svg width="30" height="30" viewBox="0 0 100 100" className="md:w-[40px] md:h-[40px]">
-                <polygon points="50,10 85,85 15,85" fill="none" stroke="currentColor" strokeWidth="1"/>
-              </svg>
-            </div>
+          {/* Quick Session Section */}
+          <div className="relative">
+            <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-3xl blur-xl"></div>
+            <div className="relative bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-10 flex flex-col items-center border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 overflow-hidden ring-1 ring-white/5">
+              {/* Enhanced decorative background */}
+              <div className="absolute top-4 right-6 opacity-10">
+                <svg width="60" height="60" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="url(#cyanGradient)" strokeWidth="2"/>
+                  <circle cx="50" cy="50" r="35" fill="none" stroke="url(#cyanGradient)" strokeWidth="1"/>
+                  <circle cx="50" cy="50" r="25" fill="none" stroke="url(#cyanGradient)" strokeWidth="1"/>
+                  <defs>
+                    <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#06b6d4"/>
+                      <stop offset="100%" stopColor="#3b82f6"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <div className="absolute bottom-4 left-6 opacity-10">
+                <svg width="40" height="40" viewBox="0 0 100 100">
+                  <polygon points="50,10 85,85 15,85" fill="none" stroke="url(#cyanGradient)" strokeWidth="1"/>
+                </svg>
+              </div>
 
-            <div className="text-3xl md:text-4xl mb-3 text-cyan-400">
-              <Zap className="w-8 h-8 md:w-10 md:h-10" />
-            </div>
-            <h2 className="text-lg md:text-xl font-semibold text-white mb-3 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-center">
-              Sesión de Concentración Rápida
-            </h2>
-            <p className="text-gray-400 text-center mb-4 md:mb-6 max-w-md leading-relaxed text-sm md:text-base px-2">
-              Inicia una sesión de estudio con música y métodos de estudio para maximizar tu productividad
-            </p>
-            <div className="flex flex-col items-center gap-3 md:gap-4 w-full">
-              <button className="w-full md:w-auto px-6 md:px-8 py-2.5 md:py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm md:text-base font-semibold rounded-xl shadow-lg hover:from-cyan-700 hover:to-blue-700 hover:shadow-cyan-500/25 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 cursor-pointer transform hover:scale-105 transition-transform flex items-center justify-center gap-2">
-                <Zap className="w-4 h-4" />
-                Empezar sesión de concentración
+              {/* Icon with diffused glow */}
+              <div className="relative">
+                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-cyan-500/15">
+                  <Zap className="w-10 h-10 text-cyan-400" />
+                </div>
+                <div className="absolute -inset-6 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-3xl blur-2xl -z-10"></div>
+              </div>
+
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-center">
+                Sesión de Concentración Rápida
+              </h2>
+
+              <p className="text-gray-400 text-center mb-8 max-w-lg leading-relaxed text-base px-4">
+                Inicia una sesión completa de estudio con música especializada y métodos científicos
+                para maximizar tu productividad y concentración
+              </p>
+
+              {/* Feature highlights */}
+              <div className="flex flex-wrap justify-center gap-4 mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 text-cyan-300 rounded-full border border-cyan-500/20">
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm">Música</span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-300 rounded-full border border-blue-500/20">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm">Métodos</span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 text-purple-300 rounded-full border border-purple-500/20">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm">Enfoque</span>
+                </div>
+              </div>
+
+              <button
+                onClick={navigateToStartSession}
+                className="px-8 py-4 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-700 hover:via-blue-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-cyan-500/25 cursor-pointer hover:transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 text-lg"
+              >
+                <Zap className="w-6 h-6" />
+                <span>Empezar Sesión de Concentración</span>
+                <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </button>
             </div>
           </div>

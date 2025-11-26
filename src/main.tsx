@@ -4,7 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import { MusicPlayerProvider } from './contexts/MusicPlayerContext'
 import { AuthProvider } from './contexts/AuthContext'
+import { ConcentrationSessionProvider } from './providers/ConcentrationSessionProvider'
 import { MusicPlayer } from './components/ui/MusicPlayer'
+import { SessionsUI } from './components/SessionsUI'
 import App from './App'
 
 createRoot(document.getElementById('root')!).render(
@@ -12,8 +14,11 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <StrictMode>
         <AuthProvider>
-          <App />
-          <MusicPlayer />
+          <ConcentrationSessionProvider>
+            <App />
+            <MusicPlayer />
+            <SessionsUI />
+          </ConcentrationSessionProvider>
         </AuthProvider>
       </StrictMode>
     </BrowserRouter>

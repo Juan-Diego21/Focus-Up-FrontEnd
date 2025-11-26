@@ -2,7 +2,6 @@ import React from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { Sidebar } from '../components/ui/Sidebar';
 import { NotificationToggle } from '../components/ui/NotificationToggle';
-import { UpcomingNotificationCard } from '../components/ui/UpcomingNotificationCard';
 import { useNotifications } from '../hooks/useNotifications';
 
 /**
@@ -12,7 +11,6 @@ import { useNotifications } from '../hooks/useNotifications';
 export const NotificationPage: React.FC = () => {
   const {
     settings,
-    upcomingNotifications,
     loading,
     error,
     updateSetting,
