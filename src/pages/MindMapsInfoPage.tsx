@@ -70,10 +70,22 @@ export const MindMapsInfoPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Cargando método...</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-green-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/6 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-teal-500/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="relative mb-8">
+              <div className="w-12 h-12 border-4 border-green-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando método...</h2>
+            <p className="text-gray-400">Preparando mapas mentales</p>
+          </div>
         </div>
       </div>
     );
@@ -81,17 +93,35 @@ export const MindMapsInfoPage: React.FC = () => {
 
   if (error || !method) {
     return (
-      <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
-          <p className="text-gray-400 mb-6">{error}</p>
-          <button
-            onClick={() => navigate("/study-methods")}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          >
-            Volver a métodos
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-80 h-80 bg-green-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/6 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md mx-auto">
+            <div className="relative mb-8">
+              <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
+                <span className="text-4xl">⚠️</span>
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-white text-xs">!</span>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Error al cargar datos</h2>
+            <p className="text-gray-400 mb-8 leading-relaxed">{error}</p>
+            <button
+              onClick={() => navigate("/study-methods")}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-500/25 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a métodos
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -103,16 +133,23 @@ export const MindMapsInfoPage: React.FC = () => {
   const methodImage = localAssets?.image;
 
   return (
-    <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-80 h-80 bg-green-500/8 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/6 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-teal-500/5 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Header */}
-      <header className="w-full max-w-4xl flex items-center justify-between mb-8">
+      <header className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between p-6 mb-8">
         <button
           onClick={() => navigate("/study-methods")}
-          className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform focus:outline-none"
+          className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-green-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-green-500/25"
           aria-label="Volver atrás"
         >
           <svg
-            className="w-7 h-7 text-white"
+            className="w-6 h-6 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -125,187 +162,246 @@ export const MindMapsInfoPage: React.FC = () => {
             />
           </svg>
         </button>
-        <h1 className="text-2xl font-semibold" style={{ color: methodColor }}>
-          {method.nombre_metodo}
-        </h1>
-        <div className="w-8"></div>
+        <div className="flex-1 text-center">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-green-100 to-emerald-100 bg-clip-text text-transparent">
+            Mapas Mentales
+          </h1>
+        </div>
+        <div className="w-12"></div>
       </header>
 
-      {/* Contenido principal */}
-      <div className="w-full max-w-4xl space-y-8">
-        {/* Imagen y descripción principal */}
-        <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            {methodImage ? (
-              <>
-                {!imageLoaded && (
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-700 animate-pulse"></div>
-                )}
-                <img
-                  src={methodImage}
-                  alt={`Imagen de ${method.nombre_metodo}`}
-                  className={`w-12 h-12 md:w-16 md:h-16 object-contain rounded-full shadow-md shadow-black/40 ${imageLoaded ? 'block' : 'hidden'}`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector(".fallback-emoji")) {
-                      const emoji = document.createElement("span");
-                      emoji.className = "fallback-emoji text-6xl md:text-8xl";
-                      emoji.textContent = "🗺️";
-                      parent.appendChild(emoji);
-                    }
-                  }}
-                />
-              </>
-            ) : (
-              <span className="text-6xl md:text-8xl">🗺️</span>
-            )}
-          </div>
-          <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mx-auto mb-6">
-            {method.descripcion}
-          </p>
-          <p className="text-gray-400 text-base leading-relaxed max-w-2xl mx-auto flex items-center gap-2">
-            <span><strong>Objetivo:</strong> organizar visualmente la información para fortalecer la comprensión y retención del conocimiento.</span>
-          </p>
-        </div>
+      {/* Main content */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 space-y-12">
+        {/* Hero Section */}
+        <div className="relative mb-16">
+          {/* Hero glow effect */}
+          <div className="absolute -inset-8 bg-gradient-to-r from-green-600/20 via-emerald-600/20 to-teal-600/20 rounded-3xl blur-2xl opacity-50"></div>
 
-        {/* Explicación paso a paso */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-white text-center mb-8">
-            ¿Cómo crear un Mapa Mental?
-          </h2>
-
-          <div className="grid gap-6">
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Target className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  1. Elige un tema central
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Selecciona el tema principal que quieres estudiar y escríbelo en el centro de tu hoja o lienzo digital.
-                Este será el punto de partida de tu mapa mental.
-              </p>
+          <div className="relative text-center">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 backdrop-blur-md rounded-full border border-green-500/30 mb-8">
+              <Map className="w-6 h-6 text-green-400" />
+              <span className="text-green-300 text-sm font-medium">Mapas Mentales</span>
             </div>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Sprout className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  2. Crea ramas principales
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Dibuja líneas desde el centro hacia afuera para las ideas principales relacionadas con el tema.
-                Cada rama representa una categoría o subtema importante.
-              </p>
+            <div className="mb-8 flex justify-center">
+              {methodImage ? (
+                <>
+                  {!imageLoaded && (
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gray-700 animate-pulse"></div>
+                  )}
+                  <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-green-500/20 ${imageLoaded ? 'block' : 'hidden'}`}>
+                    <img
+                      src={methodImage}
+                      alt={`Imagen de ${method.nombre_metodo}`}
+                      className="w-full h-full object-cover"
+                      onLoad={() => setImageLoaded(true)}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent && !parent.querySelector(".fallback-emoji")) {
+                          const emoji = document.createElement("span");
+                          emoji.className = "fallback-emoji text-6xl md:text-8xl";
+                          emoji.textContent = "🗺️";
+                          parent.appendChild(emoji);
+                        }
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md flex items-center justify-center border border-green-500/30 shadow-2xl">
+                  <span className="text-6xl md:text-8xl">🗺️</span>
+                </div>
+              )}
             </div>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Palette className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  3. Añade colores y símbolos
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Utiliza colores, símbolos, dibujos e imágenes para conectar conceptos y hacer el mapa más memorable.
-                Los colores ayudan a diferenciar categorías y mejoran la retención visual.
-              </p>
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-green-100 to-emerald-100 bg-clip-text text-transparent mb-6 leading-tight">
+              Organiza tu Conocimiento
+            </h2>
+
+            <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-6">
+              {method.descripcion}
+            </p>
+
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-green-500/10 text-green-300 rounded-full border border-green-500/20 mb-8">
+              <Target className="w-5 h-5" />
+              <span className="font-medium">Objetivo: organizar visualmente la información para fortalecer la comprensión y retención del conocimiento</span>
             </div>
 
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Monitor className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  4. Herramientas digitales recomendadas
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Si prefieres trabajar digitalmente, prueba herramientas como MindMeister, Coggle, Miro o XMind.
-                Estas aplicaciones ofrecen plantillas y funciones avanzadas para crear mapas mentales profesionales.
-              </p>
-            </div>
-
-            <div
-              className="bg-[#232323]/90 p-6 rounded-2xl shadow-lg border"
-              style={{ borderColor: `${methodColor}33` }}
-            >
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <PenTool className="w-6 h-6" style={{ color: 'white' }} />
-                <span style={{ color: methodColor }}>
-                  5. Recuerda: ¡hazlo tú mismo!
-                </span>
-              </h3>
-              <p className="text-gray-300 leading-relaxed">
-                Crear el mapa mental manualmente mejora significativamente la retención de información.
-                El proceso de dibujar y organizar ideas fortalece las conexiones neuronales.
-              </p>
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-300 rounded-full border border-green-500/20">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                Organización Visual
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-300 rounded-full border border-emerald-500/20">
+                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                Creatividad Activada
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 text-teal-300 rounded-full border border-teal-500/20">
+                <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></span>
+                Memoria Mejorada
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Beneficios */}
+        {/* How it works section */}
+        <div className="space-y-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              ¿Cómo Crear un Mapa Mental?
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Una guía paso a paso para organizar tus ideas de manera visual y efectiva
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:gap-8">
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-green-400 to-green-500 bg-clip-text text-transparent">
+                      1. Elige un tema central
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Selecciona el tema principal que quieres estudiar y escríbelo en el centro
+                    de tu hoja o lienzo digital. Este será el punto de partida de tu mapa mental.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Sprout className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+                      2. Crea ramas principales
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Dibuja líneas desde el centro hacia afuera para las ideas principales
+                    relacionadas con el tema. Cada rama representa una categoría importante.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-teal-500/20 hover:border-teal-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Palette className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-teal-400 to-teal-500 bg-clip-text text-transparent">
+                      3. Añade colores y símbolos
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Utiliza colores, símbolos, dibujos e imágenes para conectar conceptos
+                    y hacer el mapa más memorable. Los colores mejoran la retención visual.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Monitor className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-cyan-400 to-cyan-500 bg-clip-text text-transparent">
+                      4. Herramientas digitales recomendadas
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Si prefieres trabajar digitalmente, prueba herramientas como MindMeister,
+                    Coggle, Miro o XMind. Estas aplicaciones ofrecen plantillas avanzadas.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-lime-500/20 hover:border-lime-500/40 transition-all duration-300 hover:transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-lime-500 to-lime-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <PenTool className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    <span className="bg-gradient-to-r from-lime-400 to-lime-500 bg-clip-text text-transparent">
+                      5. ¡Hazlo tú mismo!
+                    </span>
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    Crear el mapa mental manualmente mejora significativamente la retención.
+                    El proceso de dibujar y organizar ideas fortalece las conexiones neuronales.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits section */}
         {method.beneficios && method.beneficios.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold text-white text-center mb-6">
-              Beneficios de los Mapas Mentales
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {method.beneficios.map((beneficio) => (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h3 className="text-3xl font-bold text-white mb-4">
+                Beneficios de los Mapas Mentales
+              </h3>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                Descubre cómo esta técnica visual revoluciona tu forma de aprender
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {method.beneficios.map((beneficio, index) => (
                 <div
                   key={beneficio.id_beneficio}
-                  className="bg-[#232323]/90 p-4 rounded-xl border"
-                  style={{ borderColor: `${methodColor}20` }}
+                  className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md p-6 rounded-2xl border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:transform hover:-translate-y-1 shadow-xl"
+                  style={{animationDelay: `${index * 100}ms`}}
                 >
-                  <p className="text-gray-300 text-sm leading-relaxed">
-                    {beneficio.descripcion_beneficio}
-                  </p>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-white font-bold text-sm">{index + 1}</span>
+                    </div>
+                    <p className="text-gray-300 leading-relaxed">
+                      {beneficio.descripcion_beneficio}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Botón para iniciar */}
-        <div className="text-center mt-10">
+        {/* Action button */}
+        <div className="text-center space-y-6 mb-6">
           <button
             onClick={() => navigate(`/mind-maps/steps/${methodId}`)}
-            className="px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-green-500/25 cursor-pointer hover:transform hover:-translate-y-1"
             style={{
-              backgroundColor: methodColor,
-              color: 'white',
               boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
-            }}
-            onMouseEnter={(e) => {
-              const darkerColor = methodColor.replace('#', '');
-              const r = parseInt(darkerColor.substr(0, 2), 16);
-              const g = parseInt(darkerColor.substr(2, 2), 16);
-              const b = parseInt(darkerColor.substr(4, 2), 16);
-              const darker = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
-              e.currentTarget.style.backgroundColor = darker;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = methodColor;
             }}
           >
             <Map className="w-6 h-6" />
-            Crear Mapa Mental
+            <span>Crear Mapa Mental</span>
+            <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       </div>

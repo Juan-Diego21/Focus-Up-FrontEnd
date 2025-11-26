@@ -117,9 +117,6 @@ export const StudyMethodsLibraryPage: React.FC = () => {
           <div className="text-center">
             <div className="relative mb-8">
               <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
-                <BookOpen className="w-3 h-3 text-white" />
-              </div>
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Cargando métodos de estudio...</h2>
             <p className="text-gray-400">Preparando tu biblioteca de aprendizaje</p>
