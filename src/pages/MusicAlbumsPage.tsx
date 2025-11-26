@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/ui/Sidebar';
 import { MusicPlayer } from '../components/ui/MusicPlayer';
 import { getAlbums } from '../utils/musicApi';
+import { getAlbumImage } from '../utils/musicUtils';
 import type { Album } from '../types/api';
 import { MusicalNoteIcon } from '@heroicons/react/24/outline';
 
@@ -34,22 +35,6 @@ export const MusicAlbumsPage: React.FC = () => {
     navigate(`/music/albums/${album.id_album}`);
   };
 
-  const getAlbumImage = (albumGenre: string | undefined) => {
-    if (!albumGenre) return '/img/fondo-album.png'; // fallback for undefined/null
-
-    // Map album genres to specific images as requested
-    switch (albumGenre.toLowerCase().trim()) {
-      case 'lofi':
-        return '/img/Album_Lofi.png';
-      case 'naturaleza':
-        return '/img/Album_Naturaleza.png';
-      case 'relajante':
-        return '/img/Album_Instrumental.png';
-      default:
-        console.warn(`Unknown album genre: ${albumGenre}`);
-        return '/img/fondo-album.png'; // fallback
-    }
-  };
 
   if (loading) {
     return (
@@ -118,7 +103,7 @@ export const MusicAlbumsPage: React.FC = () => {
                 {/* Album Cover */}
                 <div className="w-full aspect-square rounded-lg mb-4 overflow-hidden">
                   <img
-                    src={getAlbumImage(album.genero)}
+                    src={getAlbumImage(album.id_album)}
                     alt={`${album.nombre_album} cover`}
                     className="w-full h-full object-cover"
                   />

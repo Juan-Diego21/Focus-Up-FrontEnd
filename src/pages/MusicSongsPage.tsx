@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Sidebar } from '../components/ui/Sidebar';
 import { MusicPlayer } from '../components/ui/MusicPlayer';
-import { getSongsByAlbumId, getAlbumById, getAlbums } from '../utils/musicApi';
+import { getSongsByAlbumId, getAlbumById } from '../utils/musicApi';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import { getAlbumImage, formatDuration, getArtistName, preloadSongDurations } from '../utils/musicUtils';
 import type { Song, Album } from '../types/api';
 import { PlayIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 
@@ -47,22 +48,21 @@ export const MusicSongsPage: React.FC = () => {
         setLoading(true);
         setError('');
 
-        // Fetch albums first for proper association
-        await getAlbums();
+        // Fetch album details and songs concurrently
+        const [albumData, albumSongs] = await Promise.all([
+          getAlbumById(albumIdNum),
+          getSongsByAlbumId(albumIdNum)
+        ]);
 
-        // Fetch album details
-        const albumData = await getAlbumById(albumIdNum);
         setAlbum(albumData);
 
-        // Fetch songs directly for this album
-        const albumSongs = await getSongsByAlbumId(albumIdNum);
-
-        // Ordenar canciones por ID ascendente
+        // Sort songs by ID ascending (consider moving to backend)
         const sortedSongs = albumSongs.sort((a, b) => a.id_cancion - b.id_cancion);
         setSongs(sortedSongs);
 
-        // Preload song durations
-        preloadSongDurations(albumSongs);
+        // Preload song durations concurrently
+        const durations = await preloadSongDurations(albumSongs);
+        setSongDurations(durations);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Error al cargar las canciones');
@@ -92,82 +92,6 @@ export const MusicSongsPage: React.FC = () => {
     }
   };
 
-  const formatDuration = (song: Song): string => {
-    // Primero intentar obtener duración desde metadatos precargados
-    const cachedDuration = songDurations[song.id_cancion];
-    if (cachedDuration !== undefined && cachedDuration > 0) {
-      const mins = Math.floor(cachedDuration / 60);
-      const secs = Math.floor(cachedDuration % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    // Si no hay metadatos, usar duración de la base de datos
-    if (song.duracion && song.duracion > 0) {
-      const mins = Math.floor(song.duracion / 60);
-      const secs = Math.floor(song.duracion % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    // Fallback si no hay duración disponible
-    return '--:--';
-  };
-
-  const getAlbumImage = (albumGenre: string | undefined) => {
-    if (!albumGenre) return '/img/fondo-album.png'; // fallback for undefined/null
-
-    // Map album genres to specific images as requested
-    switch (albumGenre.toLowerCase().trim()) {
-      case 'lofi':
-        return '/img/Album_Lofi.png';
-      case 'naturaleza':
-        return '/img/Album_Naturaleza.png';
-      case 'relajante':
-        return '/img/Album_Instrumental.png';
-      default:
-        console.warn(`Unknown album genre: ${albumGenre}`);
-        return '/img/fondo-album.png'; // fallback
-    }
-  };
-
-  // Función auxiliar para obtener el nombre del artista
-  const getArtistName = (song: Song): string => {
-    return song.artista_cancion || 'Artista desconocido';
-  };
-
-  // Precargar duraciones de canciones
-  const preloadSongDurations = async (songsList: Song[]) => {
-    const durations: Record<number, number> = {};
-
-    for (const song of songsList) {
-      try {
-        const audio = new Audio();
-        audio.preload = 'metadata';
-
-        await new Promise<number>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
-
-          audio.addEventListener('loadedmetadata', () => {
-            clearTimeout(timeout);
-            resolve(audio.duration);
-          });
-          audio.addEventListener('error', () => {
-            clearTimeout(timeout);
-            reject(new Error('Error al cargar metadatos'));
-          });
-          audio.src = song.url_musica;
-        }).then(duration => {
-          durations[song.id_cancion] = duration;
-        }).catch(() => {
-          // Usar duración existente o valor por defecto
-          durations[song.id_cancion] = song.duracion || 0;
-        });
-      } catch {
-        durations[song.id_cancion] = song.duracion || 0;
-      }
-    }
-
-    setSongDurations(durations);
-  };
 
   if (loading) {
     return (
@@ -232,7 +156,7 @@ export const MusicSongsPage: React.FC = () => {
             {/* Album Cover */}
             <div className="w-48 h-48 rounded-xl overflow-hidden flex-shrink-0">
               <img
-                src={getAlbumImage(album.genero)}
+                src={getAlbumImage(albumIdNum)}
                 alt={`${album.nombre_album} cover`}
                 className="w-full h-full object-cover"
               />
@@ -291,7 +215,7 @@ export const MusicSongsPage: React.FC = () => {
                   {/* Album Image */}
                   <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                     <img
-                      src={getAlbumImage(album.genero)}
+                      src={getAlbumImage(albumIdNum)}
                       alt={`${album.nombre_album} cover`}
                       className="w-full h-full object-cover"
                     />
@@ -309,7 +233,7 @@ export const MusicSongsPage: React.FC = () => {
 
                   {/* Duration */}
                   <div className="text-gray-400 text-sm w-16 text-right">
-                    {formatDuration(song)}
+                    {formatDuration(song, songDurations[song.id_cancion])}
                   </div>
                 </div>
               ))}
