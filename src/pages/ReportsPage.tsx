@@ -8,8 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/ui/Sidebar";
 import { PageLayout } from "../components/ui/PageLayout";
 import { reportsService } from "../services/reportsService";
+import { sessionService } from "../services/sessionService";
 import { LOCAL_METHOD_ASSETS } from '../utils/methodAssets';
-import { formatTime } from "../utils/sessionMappers";
+import { formatTime, mapServerSession } from "../utils/sessionMappers";
 import Swal from 'sweetalert2';
 import {
   ExclamationTriangleIcon,
@@ -652,21 +653,100 @@ export const ReportsPage: React.FC = () => {
                   }}
                   className="bg-[#232323]/70 backdrop-blur-md rounded-xl shadow-lg border border-[#333]/50 overflow-hidden hover:shadow-xl hover:border-[#444]/70 transition-all duration-200 p-5 cursor-pointer"
                 >
-                  {/* Header with title and delete button */}
+                  {/* Header with title and action buttons */}
                   <div className={`flex items-start justify-between ${(session.metodoAsociado || session.albumAsociado) ? 'mb-3' : 'mb-6'}`}>
                     <h3 className="text-xl font-semibold text-white leading-tight pr-3 flex-1">
                       {session.nombreSesion}
                     </h3>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteReport(session.idReporte);
-                      }}
-                      className="p-2 text-gray-400 hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10 flex-shrink-0"
-                      title="Eliminar reporte"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {session.estado === 'pendiente' && session.metodoAsociado && (
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!session.metodoAsociado) return;
+
+                            try {
+                              // Load the session data from backend
+                              const sessionDto = await sessionService.getSession(session.idSesion.toString());
+                              const activeSession = mapServerSession(sessionDto);
+
+                              // Store session data in localStorage so provider can pick it up
+                              const sessionToStore = {
+                                ...activeSession,
+                                persistedAt: new Date().toISOString(),
+                              };
+                              localStorage.setItem('focusup:activeSession', JSON.stringify(sessionToStore));
+
+                              // Get method type and progress
+                              const methodType = getMethodType(session.metodoAsociado!.nombreMetodo);
+                              const methodReport = methodReports.find(m => m.idMetodo === session.metodoAsociado!.idMetodo);
+                              const progress = methodReport ? methodReport.progreso : 0;
+
+                              // Navigate to method steps
+                              if (methodType === 'mindmaps') {
+                                navigate(`/mind-maps/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                              } else if (methodType === 'spacedrepetition') {
+                                navigate(`/spaced-repetition/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                              } else if (methodType === 'activerecall') {
+                                navigate(`/active-recall/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                              } else if (methodType === 'feynman') {
+                                navigate(`/feynman/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                              } else if (methodType === 'cornell') {
+                                navigate(`/cornell/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                              } else {
+                                navigate(`/pomodoro/execute/${session.metodoAsociado!.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
+                              }
+
+                              // Show success alert
+                              setTimeout(() => {
+                                import('sweetalert2').then(Swal => {
+                                  Swal.default.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: `Sesión de ${session.metodoAsociado!.nombreMetodo} retomada correctamente`,
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    background: '#232323',
+                                    color: '#ffffff',
+                                    iconColor: '#22C55E',
+                                  });
+                                });
+                              }, 100);
+                            } catch (error) {
+                              console.error('Error resuming session:', error);
+                              import('sweetalert2').then(Swal => {
+                                Swal.default.fire({
+                                  toast: true,
+                                  position: 'top-end',
+                                  icon: 'error',
+                                  title: 'Error al retomar la sesión',
+                                  showConfirmButton: false,
+                                  timer: 3000,
+                                  background: '#232323',
+                                  color: '#ffffff',
+                                  iconColor: '#EF4444',
+                                });
+                              });
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-200 cursor-pointer"
+                          title="Continuar sesión"
+                        >
+                          Continuar
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteReport(session.idReporte);
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10 flex-shrink-0 cursor-pointer"
+                        title="Eliminar reporte"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Method and associated album tags - only show if they exist */}
