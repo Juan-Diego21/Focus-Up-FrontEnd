@@ -141,6 +141,14 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
         // Mapear sesión del servidor al cliente
         const session = mapServerSession(parsed, parsed.persistedAt);
 
+        // Verificar que la sesión tenga un ID válido
+        if (!session.sessionId) {
+          console.warn('Sesión restaurada sin ID válido, eliminando');
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.removeItem('focusup:directResume');
+          return;
+        }
+
         // Si la sesión estaba corriendo cuando se persistió, actualizar startTime al tiempo actual
         // para que el timer continue correctamente desde el punto de restauración
         const sessionWithCorrectedTimer = session.isRunning ? {
@@ -313,7 +321,11 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
    * PATCH /api/v1/reports/sessions/{id}/progress con status "pending".
    */
   const pauseSession = useCallback(async () => {
-    if (!state.activeSession || !state.activeSession.isRunning) return;
+    console.log('[PROVIDER] pauseSession called. Session ID:', state.activeSession?.sessionId, 'isRunning:', state.activeSession?.isRunning);
+    if (!state.activeSession || !state.activeSession.isRunning) {
+      console.log('[PROVIDER] pauseSession aborted: no active session or not running');
+      return;
+    }
 
     try {
       setState(prev => ({ ...prev, isSyncing: true }));
@@ -323,11 +335,15 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
       const currentElapsedMs = (state.activeSession.elapsedMs || 0) +
         (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
 
+      console.log('[PROVIDER] Pausing session with elapsedMs:', currentElapsedMs);
+
       // Intentar pausa en servidor usando nuevo endpoint, o enqueue si offline
       if (navigator.onLine) {
         await sessionService.pauseSession(state.activeSession.sessionId, currentElapsedMs);
+        console.log('[PROVIDER] Session paused successfully, report created');
       } else {
         offlineQueue.enqueue('pause', state.activeSession.sessionId, { elapsedMs: currentElapsedMs });
+        console.log('[PROVIDER] Session pause enqueued for offline');
       }
 
       // Actualizar estado local con tiempo acumulado correcto
@@ -629,6 +645,7 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
           // Mapear sesión del servidor al cliente
           const session = mapServerSession(parsed, parsed.persistedAt);
           console.log('[PROVIDER] Mapped session:', session);
+          console.log('[PROVIDER] Session status before correction:', session.status, 'isRunning:', session.isRunning, 'elapsedMs:', session.elapsedMs);
 
           // Para sesiones reanudadas, asegurar que startTime esté establecido correctamente
           const sessionWithCorrectedTimer = session.isRunning ? {
@@ -637,6 +654,7 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
           } : session;
 
           console.log('[PROVIDER] Session with corrected timer:', sessionWithCorrectedTimer);
+          console.log('[PROVIDER] Final session status:', sessionWithCorrectedTimer.status, 'isRunning:', sessionWithCorrectedTimer.isRunning);
 
           // Actualizar estado directamente sin mostrar modal
           setState(prev => ({
@@ -646,7 +664,12 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
             showContinueModal: false,
           }));
 
-          console.log('[PROVIDER] State updated, session restored');
+          console.log('[PROVIDER] State updated, session restored. Checking if session gets paused automatically...');
+
+          // Check if session is paused immediately after restore
+          setTimeout(() => {
+            console.log('[PROVIDER] Checking session status 1 second after restore:', state.activeSession?.status, 'isRunning:', state.activeSession?.isRunning);
+          }, 1000);
 
           localStorage.removeItem('focusup:directResume');
         } else {

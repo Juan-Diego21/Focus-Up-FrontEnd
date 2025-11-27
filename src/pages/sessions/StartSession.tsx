@@ -8,7 +8,7 @@
  * Diseño: Layout de dos columnas responsive, formulario con glassmorphism.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { PlayIcon, ChevronDownIcon, XMarkIcon, BookOpenIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,13 +19,31 @@ import { mapServerSession } from '../../utils/sessionMappers';
 import { useMusicPlayer } from '../../contexts/MusicPlayerContext';
 import { replaceIfSessionAlbum } from '../../services/audioService';
 import { getMethodType } from '../../utils/methodStatus';
-import { getSongsByAlbumId } from '../../utils/musicApi';
+import { getSongsByAlbumId, getAlbumById } from '../../utils/musicApi';
 import { MethodSelectionModal } from '../../components/MethodSelectionModal';
 import { AlbumSelectionModal } from '../../components/AlbumSelectionModal';
+import { LOCAL_METHOD_ASSETS, overrideMethodWithLocalAssets } from '../../utils/methodAssets';
 import { CountdownOverlay } from '../../components/ui/CountdownOverlay';
 import { PageLayout } from '../../components/ui/PageLayout';
 import { Sidebar } from '../../components/ui/Sidebar';
 import type { SessionCreateDto, SessionDto, Song } from '../../types/api';
+
+/**
+ * Obtiene un método por ID desde los activos locales
+ */
+const getMethodById = (id: number): any => {
+  const methodNames = Object.keys(LOCAL_METHOD_ASSETS);
+  const methodName = methodNames[id - 1]; // IDs start from 1
+  if (methodName) {
+    const assets = LOCAL_METHOD_ASSETS[methodName];
+    return overrideMethodWithLocalAssets({
+      id_metodo: id,
+      nombre_metodo: methodName,
+      ...assets
+    });
+  }
+  return null;
+};
 
 /**
  * Página de inicio de sesión
@@ -47,6 +65,12 @@ export const StartSession: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLate, setIsLate] = useState(false);
   const [minutesLate, setMinutesLate] = useState(0);
+
+  // Estado para sesión desde evento
+  const [eventSession, setEventSession] = useState<any>(null);
+
+  // Ref para prevenir múltiples llamadas a getSessionFromEvent por instancia del componente
+  const hasRequested = useRef(false);
 
   // Estado de los modales de selección
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
@@ -135,12 +159,18 @@ export const StartSession: React.FC = () => {
         // Si no existe la sesión, intentar crear una desde evento con ese ID
         console.log('Sesión no encontrada, intentando crear desde evento:', sessionId);
 
+        if (hasRequested.current) {
+          // Ya se intentó cargar desde evento, no repetir la llamada
+          throw sessionError;
+        }
+
+        hasRequested.current = true;
+
         try {
           const sessionDto: SessionDto = await sessionService.getSessionFromEvent(sessionId);
           const session = mapServerSession(sessionDto);
 
           // Redirigir para continuar la sesión recién creada
-          console.log('Sesión creada desde evento, redirigiendo para continuar:', session.sessionId);
           navigate(`/start-session/${session.sessionId}`);
           return;
 
@@ -194,19 +224,83 @@ export const StartSession: React.FC = () => {
    * Prepara configuración para evento programado
    *
    * Este método se ejecuta cuando el usuario llega a la página desde un enlace
-   * de evento con ?eventId={id}. Solo prepara la UI, NO crea sesiones automáticamente.
-   * La sesión se crea únicamente cuando el usuario hace click en "Iniciar sesión".
+   * de evento con ?eventId={id}. Llama al nuevo endpoint para obtener/crear la sesión
+   * y prellena el formulario con los datos. NO crea sesiones automáticamente adicionales.
    *
-   * CRÍTICO: No realiza llamadas API aquí para evitar creación automática de sesiones.
+   * Flujo de integración con backend:
+   * - Llama GET /api/v1/sessions/from-event/{eventId} para validar propiedad y obtener/crear sesión
+   * - Si la sesión existe y es de tipo 'concentracion', prellena el formulario
+   * - Si es otro tipo de evento, muestra comportamiento estándar
+   * - Evita localStorage para este flujo de reanudación, usa solo el endpoint del servidor
    */
-  const prepareEventConfiguration = (eventId: string) => {
-    console.log('[EVENT_CONFIG] Preparando configuración para evento:', eventId, '- NO se crea sesión automáticamente');
+  const prepareEventConfiguration = async (eventId: string) => {
+    if (hasRequested.current) return;
 
-    // IMPORTANTE: No hacer llamadas API aquí
-    // Solo preparar la UI para que el usuario pueda iniciar la sesión manualmente
-    // La creación de sesión ocurre en handleSubmit() cuando el usuario hace click
+    hasRequested.current = true;
 
-    console.log('[EVENT_CONFIG] Configuración preparada, esperando acción explícita del usuario');
+    try {
+
+        // Llamar al nuevo endpoint para obtener/crear sesión desde evento
+        const sessionDto = await sessionService.getSessionFromEvent(eventId);
+       const session = mapServerSession(sessionDto);
+
+      // Verificar que sea un evento de concentración
+       if (session.type !== 'scheduled') {
+         return;
+       }
+
+      // Almacenar la sesión del evento para usar en handleSubmit
+      setEventSession(session);
+
+      // Prellenar formulario con datos de la sesión del evento
+      setTitle(session.title || '');
+      if (session.description) {
+        setDescription(session.description);
+        setDescriptionExpanded(true);
+      }
+
+      // Pre-fill método si está disponible
+      if (session.methodId) {
+        try {
+          const method = getMethodById(session.methodId);
+          if (method) {
+            setSelectedMethod(method);
+            console.log('[EVENT_CONFIG] Método pre-seleccionado:', method.nombre_metodo);
+          }
+        } catch (methodError) {
+          console.error('[EVENT_CONFIG] Error cargando método:', methodError);
+        }
+      }
+
+      // Pre-fill álbum si está disponible
+      if (session.albumId) {
+        console.log('[EVENT_CONFIG] Estableciendo álbum fallback para ID:', session.albumId);
+        // El endpoint getAlbumById no funciona correctamente, usar fallback
+        setSelectedAlbum({
+          id_album: session.albumId,
+          nombre_album: 'Álbum de evento',
+          genero: 'Desconocido',
+          descripcion: 'Álbum asociado al evento',
+          url_imagen: undefined
+        });
+        console.log('[EVENT_CONFIG] Álbum fallback establecido para ID:', session.albumId);
+      } else {
+        console.log('[EVENT_CONFIG] Sesión no tiene albumId');
+      }
+
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message ||
+                          error?.response?.data?.error ||
+                          error?.message ||
+                          'Error desconocido';
+
+      // Si no hay sesión para este evento, mostrar mensaje informativo
+      if (errorMessage.includes('no encontrado') || errorMessage.includes('not found')) {
+        return;
+      }
+
+      // Error general - mostrar notificación pero permitir continuar
+    }
   };
 
   /**
@@ -272,81 +366,23 @@ export const StartSession: React.FC = () => {
             albumId: selectedAlbum?.id_album,
           });
         }
-      } else if (eventId) {
-        // Creando sesión desde evento (solo cuando el usuario hace click)
-        console.log('[SESSION_START] Creando sesión desde evento:', eventId);
+      } else if (eventId && eventSession) {
+        // Iniciando sesión desde evento con cuenta regresiva
+        console.log('[SESSION_START] Iniciando sesión desde evento con countdown:', eventId, 'con sesión:', eventSession.sessionId);
 
-        try {
-          // Crear sesión desde el evento usando el endpoint específico
-          const sessionDto: SessionDto = await sessionService.getSessionFromEvent(eventId);
-          const newSession = mapServerSession(sessionDto);
+        const payload: SessionCreateDto = {
+          title: title.trim() || 'Sesión de concentración',
+          description: description.trim() || undefined,
+          type: 'scheduled',
+          eventId: parseInt(eventId),
+          methodId: selectedMethod?.id_metodo,
+          albumId: selectedAlbum?.id_album,
+        };
 
-          console.log('[SESSION_START] Sesión creada desde evento:', newSession.sessionId);
+        console.log('[SESSION_START] Payload para sesión desde evento:', payload);
 
-          // Preparar para reanudación inmediata
-          const resumeData = {
-            ...newSession,
-            persistedAt: new Date().toISOString()
-          };
-          localStorage.setItem('focusup:activeSession', JSON.stringify(resumeData));
-          localStorage.setItem('focusup:directResume', 'true');
-
-          // Si tiene álbum, preparar canciones
-          if (newSession.albumId) {
-            console.log('[SESSION_START] Preparando canciones para álbum del evento:', newSession.albumId);
-            try {
-              const albumSongs = await getSongsByAlbumId(newSession.albumId);
-              localStorage.setItem('focusup:resume-album-songs', JSON.stringify({
-                albumId: newSession.albumId,
-                songs: albumSongs,
-                albumName: `Álbum de sesión`
-              }));
-              console.log('[SESSION_START] Canciones del evento preparadas:', albumSongs.length);
-            } catch (albumError) {
-              console.error('[SESSION_START] Error preparando canciones del evento:', albumError);
-            }
-          }
-
-          console.log('[SESSION_START] Redirigiendo a dashboard para iniciar sesión del evento');
-          // Navegar al dashboard donde se iniciará la sesión
-          navigate('/dashboard');
-
-        } catch (eventError: any) {
-          const errorMessage = eventError?.response?.data?.message ||
-                             eventError?.response?.data?.error ||
-                             eventError?.message ||
-                             'Error desconocido';
-
-          console.error('[SESSION_START] Error creando sesión desde evento:', errorMessage);
-
-          if (errorMessage.includes('Ya existe una sesión') ||
-              errorMessage.includes('A session already exists')) {
-            // Mostrar mensaje y redirigir a reportes
-            Swal.fire({
-              title: 'Sesión ya iniciada',
-              text: 'Ya existe una sesión activa para este evento. Revisa tus sesiones activas.',
-              icon: 'info',
-              confirmButtonText: 'Ir a Reportes',
-              confirmButtonColor: '#22C55E',
-              background: '#232323',
-              color: '#ffffff',
-            }).then(() => {
-              navigate('/reports');
-            });
-            return;
-          }
-
-          // Error general
-          Swal.fire({
-            title: 'Error',
-            text: 'No se pudo crear la sesión desde el evento.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar',
-            background: '#232323',
-            color: '#ffffff',
-          });
-          return;
-        }
+        // Iniciar sesión con cuenta regresiva para ejecutar método si está seleccionado
+        await startSessionWithCountdown(payload);
       } else {
         // Creando nueva sesión rápida
         console.log('[SESSION_START] Creando nueva sesión rápida');

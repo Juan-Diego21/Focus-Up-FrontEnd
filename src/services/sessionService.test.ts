@@ -50,27 +50,31 @@ describe('sessionService', () => {
   });
 
   describe('pauseSession', () => {
-    it('debe llamar al nuevo endpoint de reportes con status pending', async () => {
+    it('debe llamar al nuevo endpoint de reportes con status y estado pending, elapsedMs y duracion', async () => {
       (apiClient.patch as any).mockResolvedValue({});
 
       await sessionService.pauseSession('session-123', 30000);
 
       expect(apiClient.patch).toHaveBeenCalledWith('/reports/sessions/session-123/progress', {
         status: 'pending',
+        estado: 'pending',
         elapsedMs: 30000,
+        duracion: 30, // 30000ms = 30s
       });
     });
   });
 
   describe('finishLater', () => {
-    it('debe llamar al endpoint de reportes con status pending y notas', async () => {
+    it('debe llamar al endpoint de reportes con status y estado pending, elapsedMs, duracion y notas', async () => {
       (apiClient.patch as any).mockResolvedValue({});
 
       await sessionService.finishLater('session-123', 45000, 'Aplazada por usuario');
 
       expect(apiClient.patch).toHaveBeenCalledWith('/reports/sessions/session-123/progress', {
         status: 'pending',
+        estado: 'pending',
         elapsedMs: 45000,
+        duracion: 45, // 45000ms = 45s
         notes: 'Aplazada por usuario',
       });
     });
@@ -82,20 +86,24 @@ describe('sessionService', () => {
 
       expect(apiClient.patch).toHaveBeenCalledWith('/reports/sessions/session-123/progress', {
         status: 'pending',
+        estado: 'pending',
         elapsedMs: 45000,
+        duracion: 45,
       });
     });
   });
 
   describe('completeSession', () => {
-    it('debe llamar al endpoint de reportes con status completed', async () => {
+    it('debe llamar al endpoint de reportes con status y estado completed, elapsedMs, duracion y notas', async () => {
       (apiClient.patch as any).mockResolvedValue({});
 
       await sessionService.completeSession('session-123', 60000, 'Sesión completada exitosamente');
 
       expect(apiClient.patch).toHaveBeenCalledWith('/reports/sessions/session-123/progress', {
         status: 'completed',
+        estado: 'completed',
         elapsedMs: 60000,
+        duracion: 60, // 60000ms = 60s
         notes: 'Sesión completada exitosamente',
       });
     });

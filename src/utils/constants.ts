@@ -27,4 +27,6 @@ export const API_ENDPOINTS = {
   SESSION_COMPLETE: "/sessions/:id/complete",
   // Albums para sesiones
   ALBUMS: "/albumes",
+  // Música endpoints
+  MUSIC_ALBUMS: "/musica/albums",
 } as const;
