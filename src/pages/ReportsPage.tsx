@@ -11,6 +11,10 @@ import { reportsService } from "../services/reportsService";
 import { sessionService } from "../services/sessionService";
 import { LOCAL_METHOD_ASSETS } from '../utils/methodAssets';
 import { formatTime, mapServerSession } from "../utils/sessionMappers";
+import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import { replaceIfSessionAlbum } from '../services/audioService';
+import { getSongsByAlbumId } from '../utils/musicApi';
+import { useConcentrationSession } from '../providers/ConcentrationSessionProvider';
 import Swal from 'sweetalert2';
 import {
   ExclamationTriangleIcon,
@@ -61,7 +65,9 @@ const getMethodImage = (methodName: string): string => {
  * Página principal de reportes
  */
 export const ReportsPage: React.FC = () => {
-  const navigate = useNavigate();
+   const navigate = useNavigate();
+   const { playPlaylist, currentAlbum, isPlaying } = useMusicPlayer();
+   const { checkDirectResume } = useConcentrationSession();
 
   // Estado para los reportes
   const [sessionReports, setSessionReports] = useState<SessionReport[]>([]);
@@ -659,16 +665,21 @@ export const ReportsPage: React.FC = () => {
                       {session.nombreSesion}
                     </h3>
                     <div className="flex items-center gap-2">
-                      {session.estado === 'pendiente' && session.metodoAsociado && (
+                      {session.estado === 'pendiente' && (
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
-                            if (!session.metodoAsociado) return;
 
                             try {
+                              console.log('[RESUME] Starting session resume for session:', session.idSesion);
+                              console.log('[RESUME] Session report data:', session);
+
                               // Load the session data from backend
                               const sessionDto = await sessionService.getSession(session.idSesion.toString());
+                              console.log('[RESUME] Session DTO from backend:', sessionDto);
+
                               const activeSession = mapServerSession(sessionDto);
+                              console.log('[RESUME] Mapped active session:', activeSession);
 
                               // Store session data in localStorage so provider can pick it up
                               const sessionToStore = {
@@ -676,43 +687,138 @@ export const ReportsPage: React.FC = () => {
                                 persistedAt: new Date().toISOString(),
                               };
                               localStorage.setItem('focusup:activeSession', JSON.stringify(sessionToStore));
+                              localStorage.setItem('focusup:directResume', 'true');
 
-                              // Get method type and progress
-                              const methodType = getMethodType(session.metodoAsociado!.nombreMetodo);
-                              const methodReport = methodReports.find(m => m.idMetodo === session.metodoAsociado!.idMetodo);
-                              const progress = methodReport ? methodReport.progreso : 0;
+                              console.log('[RESUME] Stored session in localStorage');
 
-                              // Navigate to method steps
-                              if (methodType === 'mindmaps') {
-                                navigate(`/mind-maps/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                              } else if (methodType === 'spacedrepetition') {
-                                navigate(`/spaced-repetition/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                              } else if (methodType === 'activerecall') {
-                                navigate(`/active-recall/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                              } else if (methodType === 'feynman') {
-                                navigate(`/feynman/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                              } else if (methodType === 'cornell') {
-                                navigate(`/cornell/steps/${session.metodoAsociado!.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                              // Trigger direct resume in provider and wait for it to complete
+                              await new Promise(resolve => {
+                                checkDirectResume();
+                                // Give provider time to process the direct resume
+                                setTimeout(resolve, 100);
+                              });
+
+                              console.log('[RESUME] Direct resume triggered');
+
+                              // Handle method execution if session has a method
+                              if (session.metodoAsociado) {
+                                console.log('[RESUME] Session has method:', session.metodoAsociado);
+
+                                // Get method type and progress
+                                const methodTypeInput = { nombre_metodo: session.metodoAsociado.nombreMetodo };
+                                console.log('[RESUME] getMethodType input:', methodTypeInput);
+
+                                const methodType = getMethodType(methodTypeInput);
+                                console.log('[RESUME] Detected method type:', methodType);
+
+                                const methodReport = methodReports.find(m => m.idMetodo === session.metodoAsociado!.idMetodo);
+                                const progress = methodReport ? methodReport.progreso : 0;
+                                console.log('[RESUME] Method report and progress:', methodReport, progress);
+
+                                // Navigate to method steps
+                                if (methodType === 'mindmaps') {
+                                  console.log('[RESUME] Navigating to mindmaps');
+                                  navigate(`/mind-maps/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                } else if (methodType === 'spacedrepetition') {
+                                  console.log('[RESUME] Navigating to spacedrepetition');
+                                  navigate(`/spaced-repetition/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                } else if (methodType === 'activerecall') {
+                                  console.log('[RESUME] Navigating to activerecall');
+                                  navigate(`/active-re-call/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                } else if (methodType === 'feynman') {
+                                  console.log('[RESUME] Navigating to feynman');
+                                  navigate(`/feynman/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                } else if (methodType === 'cornell') {
+                                  console.log('[RESUME] Navigating to cornell');
+                                  navigate(`/cornell/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                } else if (methodType === 'pomodoro') {
+                                  console.log('[RESUME] Navigating to pomodoro');
+                                  navigate(`/pomodoro/execute/${session.metodoAsociado.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                } else {
+                                  console.error('[RESUME] Unknown method type:', methodType, 'for method:', session.metodoAsociado.nombreMetodo);
+                                  // Fallback to pomodoro if method type is unknown
+                                  navigate(`/pomodoro/execute/${session.metodoAsociado.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                }
+
+                                // Show success alert for method session
+                                setTimeout(() => {
+                                  import('sweetalert2').then(Swal => {
+                                    Swal.default.fire({
+                                      toast: true,
+                                      position: 'top-end',
+                                      icon: 'success',
+                                      title: `Sesión de ${session.metodoAsociado!.nombreMetodo} retomada correctamente`,
+                                      showConfirmButton: false,
+                                      timer: 3000,
+                                      background: '#232323',
+                                      color: '#ffffff',
+                                      iconColor: '#22C55E',
+                                    });
+                                  });
+                                }, 100);
                               } else {
-                                navigate(`/pomodoro/execute/${session.metodoAsociado!.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                console.log('[RESUME] Session without method');
+
+                                // Show success alert for timer-only session
+                                setTimeout(() => {
+                                  import('sweetalert2').then(Swal => {
+                                    Swal.default.fire({
+                                      toast: true,
+                                      position: 'top-end',
+                                      icon: 'success',
+                                      title: 'Sesión de concentración retomada correctamente',
+                                      showConfirmButton: false,
+                                      timer: 3000,
+                                      background: '#232323',
+                                      color: '#ffffff',
+                                      iconColor: '#22C55E',
+                                    });
+                                  });
+                                }, 100);
                               }
 
-                              // Show success alert
-                              setTimeout(() => {
-                                import('sweetalert2').then(Swal => {
-                                  Swal.default.fire({
-                                    toast: true,
-                                    position: 'top-end',
-                                    icon: 'success',
-                                    title: `Sesión de ${session.metodoAsociado!.nombreMetodo} retomada correctamente`,
-                                    showConfirmButton: false,
-                                    timer: 3000,
-                                    background: '#232323',
-                                    color: '#ffffff',
-                                    iconColor: '#22C55E',
-                                  });
-                                });
-                              }, 100);
+                              // Handle music restoration for ALL sessions that have albums (regardless of method)
+                              // Use setTimeout to ensure session is restored first
+                              if (session.albumAsociado) {
+                                console.log('[RESUME] Session has album, scheduling music loading:', session.albumAsociado);
+
+                                setTimeout(async () => {
+                                  try {
+                                    console.log('[RESUME] Loading songs for album:', session.albumAsociado!.idAlbum);
+
+                                    // Cargar canciones del álbum específico desde la API
+                                    const albumSongs = await getSongsByAlbumId(session.albumAsociado!.idAlbum);
+                                    console.log('[RESUME] Loaded album songs:', albumSongs.length, 'songs');
+
+                                    if (albumSongs.length === 0) {
+                                      console.warn(`[RESUME] El álbum ${session.albumAsociado!.nombreAlbum} no tiene canciones disponibles`);
+                                    } else {
+                                      // Usar función pura para iniciar reproducción del álbum
+                                      console.log('[RESUME] Starting music playback for album:', session.albumAsociado!.nombreAlbum);
+                                      await replaceIfSessionAlbum(
+                                        {
+                                          playPlaylist,
+                                          currentAlbum: currentAlbum, // Álbum actualmente reproduciendo
+                                          isPlaying: isPlaying,       // Estado de reproducción actual
+                                          togglePlayPause: () => {}, // No usado en este contexto
+                                        },
+                                        session.albumAsociado!.idAlbum,
+                                        albumSongs, // Ahora pasamos directamente las canciones del álbum
+                                        {
+                                          id_album: session.albumAsociado!.idAlbum,
+                                          nombre_album: session.albumAsociado!.nombreAlbum
+                                        }
+                                      );
+
+                                      console.log(`[RESUME] Música del álbum ${session.albumAsociado!.nombreAlbum} restaurada correctamente`);
+                                    }
+                                  } catch (musicError) {
+                                    console.error('[RESUME] Error restaurando música del álbum:', musicError);
+                                  }
+                                }, 200); // Small delay to ensure session is restored
+                              } else {
+                                console.log('[RESUME] Session has no album');
+                              }
                             } catch (error) {
                               console.error('Error resuming session:', error);
                               import('sweetalert2').then(Swal => {

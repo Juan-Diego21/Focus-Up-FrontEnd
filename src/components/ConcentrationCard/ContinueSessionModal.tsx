@@ -175,7 +175,7 @@ export const ContinueSessionModal: React.FC = () => {
           <div className="flex gap-3">
             <button
               onClick={handleContinue}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             >
               <PlayIcon className="w-5 h-5" />
               Continuar
@@ -183,7 +183,7 @@ export const ContinueSessionModal: React.FC = () => {
 
             <button
               onClick={handleDiscard}
-              className="px-4 py-3 bg-transparent border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+              className="px-4 py-3 bg-transparent border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             >
               <XMarkIcon className="w-5 h-5" />
               Descartar

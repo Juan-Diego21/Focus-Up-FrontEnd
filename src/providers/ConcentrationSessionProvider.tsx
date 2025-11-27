@@ -22,6 +22,9 @@ import { getBroadcastChannel, type BroadcastMessage } from '../utils/broadcastCh
 import { getOfflineQueue } from '../utils/offlineQueue';
 import { getSleepDetector } from '../utils/sleepDetector';
 import { mapServerSession, isSessionExpired } from '../utils/sessionMappers';
+import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import { replaceIfSessionAlbum } from '../services/audioService';
+import { getSongsByAlbumId } from '../utils/musicApi';
 
 // Claves para localStorage
 const SESSION_STORAGE_KEY = 'focusup:activeSession';
@@ -64,6 +67,9 @@ interface ConcentrationSessionContextType {
   broadcastState: () => void;
   acquireTabLock: () => boolean;
   releaseTabLock: () => void;
+
+  // Direct resume
+  checkDirectResume: () => void;
 }
 
 // Contexto
@@ -119,6 +125,8 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
   const initializeProvider = useCallback(() => {
     try {
       const stored = localStorage.getItem(SESSION_STORAGE_KEY);
+      const directResume = localStorage.getItem('focusup:directResume');
+
       if (stored) {
         const parsed = JSON.parse(stored);
 
@@ -126,6 +134,7 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
         if (isSessionExpired(parsed.persistedAt)) {
           console.log('Sesión expirada, eliminando');
           localStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.removeItem('focusup:directResume');
           return;
         }
 
@@ -139,14 +148,30 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
           startTime: new Date().toISOString(), // Nuevo punto de referencia para continuar el timer
         } : session;
 
-        setState(prev => ({
-          ...prev,
-          activeSession: sessionWithCorrectedTimer,
-          showContinueModal: true, // Mostrar modal de continuar
-        }));
+        if (directResume === 'true') {
+          // Continuación directa desde reportes - iniciar minimizada sin modal
+          setState(prev => ({
+            ...prev,
+            activeSession: sessionWithCorrectedTimer,
+            isMinimized: true,
+            showContinueModal: false,
+          }));
+          localStorage.removeItem('focusup:directResume');
+        } else {
+          // Inicialización normal - mostrar modal de continuar
+          setState(prev => ({
+            ...prev,
+            activeSession: sessionWithCorrectedTimer,
+            showContinueModal: true,
+          }));
+        }
+
+        // Broadcast a otras pestañas
+        broadcastChannel.broadcastSessionUpdate(session);
       }
     } catch (error) {
       console.error('Error inicializando provider:', error);
+      localStorage.removeItem('focusup:directResume');
     }
   }, []);
 
@@ -552,6 +577,7 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
     broadcastChannel.broadcastLockReleased();
   }, []);
 
+
   /**
    * Inicia sesión con cuenta regresiva
    */
@@ -572,6 +598,67 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
    */
   const hideCountdown = useCallback(() => {
     setState(prev => ({ ...prev, showCountdown: false }));
+  }, []);
+
+  /**
+   * Verifica si hay una reanudación directa pendiente
+   */
+  const checkDirectResume = useCallback(() => {
+    const directResume = localStorage.getItem('focusup:directResume');
+    console.log('[PROVIDER] checkDirectResume called, directResume flag:', directResume);
+
+    if (directResume === 'true') {
+      console.log('[PROVIDER] Processing direct resume');
+
+      // Re-run initialization
+      try {
+        const stored = localStorage.getItem(SESSION_STORAGE_KEY);
+        console.log('[PROVIDER] Stored session data:', stored ? JSON.parse(stored) : null);
+
+        if (stored) {
+          const parsed = JSON.parse(stored);
+
+          // Verificar expiración
+          if (isSessionExpired(parsed.persistedAt)) {
+            console.log('[PROVIDER] Sesión expirada, eliminando');
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            localStorage.removeItem('focusup:directResume');
+            return;
+          }
+
+          // Mapear sesión del servidor al cliente
+          const session = mapServerSession(parsed, parsed.persistedAt);
+          console.log('[PROVIDER] Mapped session:', session);
+
+          // Para sesiones reanudadas, asegurar que startTime esté establecido correctamente
+          const sessionWithCorrectedTimer = session.isRunning ? {
+            ...session,
+            startTime: new Date().toISOString(), // Nuevo punto de referencia para continuar el timer
+          } : session;
+
+          console.log('[PROVIDER] Session with corrected timer:', sessionWithCorrectedTimer);
+
+          // Actualizar estado directamente sin mostrar modal
+          setState(prev => ({
+            ...prev,
+            activeSession: sessionWithCorrectedTimer,
+            isMinimized: true,
+            showContinueModal: false,
+          }));
+
+          console.log('[PROVIDER] State updated, session restored');
+
+          localStorage.removeItem('focusup:directResume');
+        } else {
+          console.log('[PROVIDER] No stored session data found');
+        }
+      } catch (error) {
+        console.error('[PROVIDER] Error en checkDirectResume:', error);
+        localStorage.removeItem('focusup:directResume');
+      }
+    } else {
+      console.log('[PROVIDER] No direct resume pending');
+    }
   }, []);
 
   // Notificar cambios de estado
@@ -604,6 +691,7 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
     broadcastState,
     acquireTabLock,
     releaseTabLock,
+    checkDirectResume,
   };
 
   return (

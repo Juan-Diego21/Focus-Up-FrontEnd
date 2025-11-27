@@ -20,14 +20,15 @@ import {
   ChevronDownIcon,
   XMarkIcon,
   MusicalNoteIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  CheckIcon
 } from '@heroicons/react/24/outline';
 import { useConcentrationSession } from '../../providers/ConcentrationSessionProvider';
 import { formatTime } from '../../utils/sessionMappers';
 
 export const MiniSessionCard: React.FC = () => {
   const navigate = useNavigate();
-  const { getState, pauseSession, resumeSession, finishLater, maximize } = useConcentrationSession();
+  const { getState, pauseSession, resumeSession, finishLater, completeSession, maximize } = useConcentrationSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -112,6 +113,38 @@ export const MiniSessionCard: React.FC = () => {
   };
 
   /**
+   * Maneja completar sesión inmediatamente
+   */
+  const handleComplete = async () => {
+    if (!session || isUpdating) return;
+
+    try {
+      setIsUpdating(true);
+      await completeSession();
+
+      // Mostrar alerta de sesión completada y redirigir después de 3 segundos
+      Swal.fire({
+        title: 'Sesión completada',
+        text: 'Serás redirigido a Reportes en 3 segundos.',
+        icon: 'success',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#10B981',
+      }).then(() => {
+        // Redirigir a reportes después de que se cierre la alerta
+        navigate('/reports');
+      });
+
+    } catch (error) {
+      console.error('Error completing session:', error);
+      setIsUpdating(false);
+    }
+  };
+
+  /**
    * Maneja maximizar la tarjeta
    */
   const handleMaximize = () => {
@@ -180,7 +213,7 @@ export const MiniSessionCard: React.FC = () => {
 
                 <button
                   onClick={toggleExpanded}
-                  className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                  className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10 cursor-pointer"
                   aria-label={isExpanded ? 'Contraer tarjeta' : 'Expandir tarjeta'}
                   type="button"
                 >
@@ -191,7 +224,7 @@ export const MiniSessionCard: React.FC = () => {
 
                 <button
                   onClick={handleMaximize}
-                  className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                  className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10 cursor-pointer"
                   aria-label="Maximizar sesión"
                   type="button"
                 >
@@ -244,10 +277,10 @@ export const MiniSessionCard: React.FC = () => {
                     <button
                       onClick={handleTogglePause}
                       disabled={isUpdating}
-                      className={`flex-1 px-3 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`flex-1 max-w-[190px] mr-2 px-3 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                         session.isRunning
                           ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                          : 'bg-green-600 hover:bg-green-700 text-white'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
                       }`}
                       type="button"
                     >
@@ -267,12 +300,15 @@ export const MiniSessionCard: React.FC = () => {
                     </button>
 
                     <button
-                      onClick={handleFinishLater}
+                      onClick={handleComplete}
                       disabled={isUpdating}
-                      className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-0 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       type="button"
                     >
-                      Terminar
+                      <div className="flex items-center justify-end gap-2">
+                        <CheckIcon className="w-4 h-4" />
+                        <span>Finalizar</span>
+                      </div>
                     </button>
                   </div>
                 </div>
