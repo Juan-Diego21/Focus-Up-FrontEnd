@@ -226,6 +226,7 @@ class SessionService {
     }
   }
 
+
   /**
    * Mapea un DTO del servidor a un objeto ActiveSession del cliente
    *

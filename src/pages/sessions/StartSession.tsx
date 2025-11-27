@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { PlayIcon, ChevronDownIcon, XMarkIcon, BookOpenIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -32,9 +32,10 @@ import type { SessionCreateDto, SessionDto, Song } from '../../types/api';
  */
 export const StartSession: React.FC = () => {
   const navigate = useNavigate();
+  const { sessionId: routeSessionId } = useParams<{ sessionId: string }>();
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get('eventId');
-  const { startSession, startSessionWithCountdown, getState, minimize } = useConcentrationSession();
+  const { startSession, startSessionWithCountdown, getState, minimize, checkDirectResume } = useConcentrationSession();
   const { playPlaylist, currentAlbum, isPlaying } = useMusicPlayer();
 
   // Estado del formulario
@@ -52,12 +53,19 @@ export const StartSession: React.FC = () => {
   const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
 
 
-  // Cargar datos para deep link desde evento
+  // Preparar configuración para deep link desde evento
   useEffect(() => {
     if (eventId) {
-      loadSessionFromEvent(eventId);
+      prepareEventConfiguration(eventId);
     }
   }, [eventId]);
+
+  // Cargar sesión existente para continuación
+  useEffect(() => {
+    if (routeSessionId && !eventId) {
+      loadExistingSession(routeSessionId);
+    }
+  }, [routeSessionId, eventId]);
 
   // Cargar selecciones desde localStorage al montar
   useEffect(() => {
@@ -99,64 +107,106 @@ export const StartSession: React.FC = () => {
   }, [selectedAlbum]);
 
   /**
-   * Carga sesión desde evento programado para deep link
+   * Carga sesión existente para continuación
    *
-   * Este método se ejecuta cuando el usuario llega a la página desde un enlace
-   * de email con ?eventId={id}. Valida la propiedad del evento y crea/recupera
-   * la sesión correspondiente, prellenando el formulario automáticamente.
+   * Este método se ejecuta cuando el usuario llega a la página con un sessionId
+   * en la ruta (ej: /start-session/48). Carga los datos de la sesión existente
+   * y permite continuarla. NO crea sesiones automáticamente.
    */
-  const loadSessionFromEvent = async (eventId: string) => {
+  const loadExistingSession = async (sessionId: string) => {
     try {
       setIsLoading(true);
-      const sessionDto: SessionDto = await sessionService.getSessionFromEvent(eventId);
-      const session = mapServerSession(sessionDto);
 
-      // Prefill formulario con datos de la sesión del evento
-      setTitle(session.title || '');
-      if (session.description) {
-        setDescription(session.description);
-        setDescriptionExpanded(true);
-      }
+      try {
+        // Primero intentar cargar la sesión existente
+        const sessionDto: SessionDto = await sessionService.getSession(sessionId);
+        const session = mapServerSession(sessionDto);
 
-      // Prefill método si existe
-      if (session.methodId) {
-        // Aquí necesitaríamos obtener el método por ID, pero por ahora asumimos que viene en el DTO
-        // TODO: Implementar obtención de método por ID si no viene en el DTO
-      }
+        // Pre-fill formulario con datos de la sesión existente
+        setTitle(session.title || '');
+        if (session.description) {
+          setDescription(session.description);
+          setDescriptionExpanded(true);
+        }
 
-      // Prefill álbum si existe
-      if (session.albumId) {
-        // Aquí necesitaríamos obtener el álbum por ID, pero por ahora asumimos que viene en el DTO
-        // TODO: Implementar obtención de álbum por ID si no viene en el DTO
-      }
+        console.log('Sesión existente cargada para continuación:', session.sessionId);
 
-      // Calcular si es tarde (solo para eventos programados)
-      if (session.eventId) {
-        const now = new Date();
-        const eventTime = new Date(session.startTime);
-        const diffMinutes = Math.floor((now.getTime() - eventTime.getTime()) / (1000 * 60));
+      } catch (sessionError: any) {
+        // Si no existe la sesión, intentar crear una desde evento con ese ID
+        console.log('Sesión no encontrada, intentando crear desde evento:', sessionId);
 
-        if (diffMinutes > 10) {
-          setIsLate(true);
-          setMinutesLate(diffMinutes);
+        try {
+          const sessionDto: SessionDto = await sessionService.getSessionFromEvent(sessionId);
+          const session = mapServerSession(sessionDto);
+
+          // Redirigir para continuar la sesión recién creada
+          console.log('Sesión creada desde evento, redirigiendo para continuar:', session.sessionId);
+          navigate(`/start-session/${session.sessionId}`);
+          return;
+
+        } catch (eventError: any) {
+          // Si tampoco hay evento, mostrar error
+          const errorMessage = eventError?.response?.data?.message ||
+                             eventError?.response?.data?.error ||
+                             eventError?.message ||
+                             'Error desconocido';
+
+          if (errorMessage.includes('Ya existe una sesión') ||
+              errorMessage.includes('A session already exists')) {
+            // Mostrar mensaje informativo y redirigir a reportes
+            Swal.fire({
+              title: 'Sesión ya iniciada',
+              text: 'Ya existe una sesión activa para este evento. Revisa tus sesiones activas.',
+              icon: 'info',
+              confirmButtonText: 'Ir a Reportes',
+              confirmButtonColor: '#22C55E',
+              background: '#232323',
+              color: '#ffffff',
+            }).then(() => {
+              navigate('/reports');
+            });
+            return;
+          }
+
+          // Error general
+          throw eventError;
         }
       }
+
     } catch (error) {
-      console.error('Error cargando sesión desde evento:', error);
-      // Mostrar error al usuario si no se puede cargar la sesión del evento
+      console.error('Error cargando sesión o evento:', error);
       Swal.fire({
-        toast: true,
-        position: 'top-end',
+        title: 'Error',
+        text: 'No se pudo cargar la sesión ni crear una desde evento.',
         icon: 'error',
-        title: 'Error al cargar la sesión del evento',
-        showConfirmButton: false,
-        timer: 3000,
+        confirmButtonText: 'Aceptar',
         background: '#232323',
         color: '#ffffff',
+      }).then(() => {
+        navigate('/start-session');
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Prepara configuración para evento programado
+   *
+   * Este método se ejecuta cuando el usuario llega a la página desde un enlace
+   * de evento con ?eventId={id}. Solo prepara la UI, NO crea sesiones automáticamente.
+   * La sesión se crea únicamente cuando el usuario hace click en "Iniciar sesión".
+   *
+   * CRÍTICO: No realiza llamadas API aquí para evitar creación automática de sesiones.
+   */
+  const prepareEventConfiguration = (eventId: string) => {
+    console.log('[EVENT_CONFIG] Preparando configuración para evento:', eventId, '- NO se crea sesión automáticamente');
+
+    // IMPORTANTE: No hacer llamadas API aquí
+    // Solo preparar la UI para que el usuario pueda iniciar la sesión manualmente
+    // La creación de sesión ocurre en handleSubmit() cuando el usuario hace click
+
+    console.log('[EVENT_CONFIG] Configuración preparada, esperando acción explícita del usuario');
   };
 
   /**
@@ -172,17 +222,148 @@ export const StartSession: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const payload: SessionCreateDto = {
-        title: title.trim() || 'Sesión de concentración',
-        description: description.trim() || undefined,
-        type: eventId ? 'scheduled' : 'rapid',
-        eventId: eventId ? parseInt(eventId) : undefined,
-        methodId: selectedMethod?.id_metodo,
-        albumId: selectedAlbum?.id_album,
-      };
+      if (routeSessionId) {
+        // Continuando sesión existente
+        console.log('[SESSION_START] Continuando sesión existente:', routeSessionId);
 
-      // Iniciar sesión con cuenta regresiva
-      await startSessionWithCountdown(payload);
+        // Preparar la sesión para reanudación directa (similar a SessionsReport)
+        try {
+          const sessionDto = await sessionService.getSession(routeSessionId);
+          const activeSession = mapServerSession(sessionDto);
+
+          console.log('[SESSION_START] Sesión cargada para reanudación:', activeSession.sessionId);
+
+          // Almacenar en localStorage para reanudación
+          const resumeData = {
+            ...activeSession,
+            persistedAt: new Date().toISOString()
+          };
+          localStorage.setItem('focusup:activeSession', JSON.stringify(resumeData));
+          localStorage.setItem('focusup:directResume', 'true');
+
+          // Si tiene álbum, preparar canciones
+          if (activeSession.albumId) {
+            console.log('[SESSION_START] Preparando canciones para álbum:', activeSession.albumId);
+            try {
+              const albumSongs = await getSongsByAlbumId(activeSession.albumId);
+              localStorage.setItem('focusup:resume-album-songs', JSON.stringify({
+                albumId: activeSession.albumId,
+                songs: albumSongs,
+                albumName: `Álbum de sesión`
+              }));
+              console.log('[SESSION_START] Canciones preparadas:', albumSongs.length);
+            } catch (albumError) {
+              console.error('[SESSION_START] Error preparando canciones:', albumError);
+            }
+          }
+
+          console.log('[SESSION_START] Redirigiendo a dashboard para reanudación');
+          // Navegar al dashboard donde se restaurará la sesión
+          navigate('/dashboard');
+
+        } catch (resumeError) {
+          console.error('[SESSION_START] Error preparando reanudación:', resumeError);
+          // Fallback: intentar iniciar normalmente
+          await startSessionWithCountdown({
+            title: title.trim() || 'Sesión de concentración',
+            description: description.trim() || undefined,
+            type: 'scheduled',
+            methodId: selectedMethod?.id_metodo,
+            albumId: selectedAlbum?.id_album,
+          });
+        }
+      } else if (eventId) {
+        // Creando sesión desde evento (solo cuando el usuario hace click)
+        console.log('[SESSION_START] Creando sesión desde evento:', eventId);
+
+        try {
+          // Crear sesión desde el evento usando el endpoint específico
+          const sessionDto: SessionDto = await sessionService.getSessionFromEvent(eventId);
+          const newSession = mapServerSession(sessionDto);
+
+          console.log('[SESSION_START] Sesión creada desde evento:', newSession.sessionId);
+
+          // Preparar para reanudación inmediata
+          const resumeData = {
+            ...newSession,
+            persistedAt: new Date().toISOString()
+          };
+          localStorage.setItem('focusup:activeSession', JSON.stringify(resumeData));
+          localStorage.setItem('focusup:directResume', 'true');
+
+          // Si tiene álbum, preparar canciones
+          if (newSession.albumId) {
+            console.log('[SESSION_START] Preparando canciones para álbum del evento:', newSession.albumId);
+            try {
+              const albumSongs = await getSongsByAlbumId(newSession.albumId);
+              localStorage.setItem('focusup:resume-album-songs', JSON.stringify({
+                albumId: newSession.albumId,
+                songs: albumSongs,
+                albumName: `Álbum de sesión`
+              }));
+              console.log('[SESSION_START] Canciones del evento preparadas:', albumSongs.length);
+            } catch (albumError) {
+              console.error('[SESSION_START] Error preparando canciones del evento:', albumError);
+            }
+          }
+
+          console.log('[SESSION_START] Redirigiendo a dashboard para iniciar sesión del evento');
+          // Navegar al dashboard donde se iniciará la sesión
+          navigate('/dashboard');
+
+        } catch (eventError: any) {
+          const errorMessage = eventError?.response?.data?.message ||
+                             eventError?.response?.data?.error ||
+                             eventError?.message ||
+                             'Error desconocido';
+
+          console.error('[SESSION_START] Error creando sesión desde evento:', errorMessage);
+
+          if (errorMessage.includes('Ya existe una sesión') ||
+              errorMessage.includes('A session already exists')) {
+            // Mostrar mensaje y redirigir a reportes
+            Swal.fire({
+              title: 'Sesión ya iniciada',
+              text: 'Ya existe una sesión activa para este evento. Revisa tus sesiones activas.',
+              icon: 'info',
+              confirmButtonText: 'Ir a Reportes',
+              confirmButtonColor: '#22C55E',
+              background: '#232323',
+              color: '#ffffff',
+            }).then(() => {
+              navigate('/reports');
+            });
+            return;
+          }
+
+          // Error general
+          Swal.fire({
+            title: 'Error',
+            text: 'No se pudo crear la sesión desde el evento.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            background: '#232323',
+            color: '#ffffff',
+          });
+          return;
+        }
+      } else {
+        // Creando nueva sesión rápida
+        console.log('[SESSION_START] Creando nueva sesión rápida');
+
+        const payload: SessionCreateDto = {
+          title: title.trim() || 'Sesión de concentración',
+          description: description.trim() || undefined,
+          type: 'rapid',
+          methodId: selectedMethod?.id_metodo,
+          albumId: selectedAlbum?.id_album,
+        };
+
+        console.log('[SESSION_START] Payload para sesión rápida:', payload);
+
+        // Iniciar sesión con cuenta regresiva
+        await startSessionWithCountdown(payload);
+      }
 
     } catch (error) {
       console.error('Error iniciando sesión:', error);
@@ -367,7 +548,7 @@ export const StartSession: React.FC = () => {
 
             <div className="relative text-center">
               <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent mb-6 leading-tight">
-                {eventId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
+                {routeSessionId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
               </h2>
 
               <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
@@ -397,7 +578,7 @@ export const StartSession: React.FC = () => {
             <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-blue-500/20">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
-                  {eventId ? 'Continuar Sesión' : 'Configurar Sesión'}
+                  {routeSessionId ? 'Continuar Sesión' : 'Configurar Sesión'}
                 </h1>
                 <p className="text-gray-400 text-sm">
                   Personaliza tu experiencia de concentración

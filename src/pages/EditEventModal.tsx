@@ -5,6 +5,8 @@ import { Listbox } from '@headlessui/react';
 import { Scrollbar } from 'react-scrollbars-custom';
 import Swal from 'sweetalert2';
 import type { IEvento, IEventoUpdate } from '../types/events';
+import { MethodSelectionModal } from '../components/MethodSelectionModal';
+import { AlbumSelectionModal } from '../components/AlbumSelectionModal';
 
 interface EditEventModalProps {
   isOpen: boolean;
@@ -32,8 +34,18 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
     descripcionEvento: '',
   });
 
+  // Temporary input values for free typing
+  const [tempHours, setTempHours] = useState('01');
+  const [tempMinutes, setTempMinutes] = useState('00');
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Modal states for method and album selection
+  const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
+  const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<any>(null);
+  const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
 
   // Helper functions to access event properties
   const getProperty = (snakeCase: string, camelCase: string) => {
@@ -70,6 +82,15 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         period: timeData.period,
         descripcionEvento: getProperty('descripcion_evento', 'descripcionEvento'),
       });
+      setTempHours(timeData.hours.toString().padStart(2, '0'));
+      setTempMinutes(timeData.minutes.toString().padStart(2, '0'));
+
+      // Initialize method and album if they exist
+      // Note: The API might not return method/album data in the event object
+      // This would need to be fetched separately if required
+      setSelectedMethod(null); // Reset - would need API enhancement to populate
+      setSelectedAlbum(null);  // Reset - would need API enhancement to populate
+
       setErrors({});
     }
   }, [event, isOpen]);
@@ -175,7 +196,9 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         fecha_evento: new Date(formData.fechaEvento).toISOString().split('T')[0], // Enviar como cadena YYYY-MM-DD
         hora_evento: convertTo24Hour(formData.hours, formData.period), // Convertir a formato HH:MM:00
         descripcion_evento: formData.descripcionEvento.trim() || undefined,
-        // id_metodo e id_album se establecerán cuando se implementen los botones placeholder
+        // Include method and album if selected (for concentration sessions)
+        ...(selectedMethod && { id_metodo: selectedMethod.id_metodo }),
+        ...(selectedAlbum && { id_album: selectedAlbum.id_album }),
       };
 
       await onSave(getId(), eventData);
@@ -216,6 +239,33 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  // Manejadores de selección de método y álbum
+  const handleAddMethod = () => {
+    setIsMethodModalOpen(true);
+  };
+
+  const handleAddAlbum = () => {
+    setIsAlbumModalOpen(true);
+  };
+
+  const handleMethodSelect = (method: any) => {
+    setSelectedMethod(method);
+    setIsMethodModalOpen(false);
+  };
+
+  const handleAlbumSelect = (album: any) => {
+    setSelectedAlbum(album);
+    setIsAlbumModalOpen(false);
+  };
+
+  const handleRemoveMethod = () => {
+    setSelectedMethod(null);
+  };
+
+  const handleRemoveAlbum = () => {
+    setSelectedAlbum(null);
   };
 
   if (!isOpen || !event) return null;
@@ -354,36 +404,29 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                   <input
                     type="text"
                     maxLength={2}
-                    value={formData.hours}
+                    value={tempHours}
                     onChange={(e) => {
-                      const inputValue = e.target.value;
-                      // Allow empty input for clearing
-                      if (inputValue === '') {
-                        setFormData(prev => ({ ...prev, hours: 1 }));
-                        return;
-                      }
-                      // Only allow numeric input
-                      const numericValue = inputValue.replace(/\D/g, '');
-                      if (numericValue === '') {
-                        setFormData(prev => ({ ...prev, hours: 1 }));
-                        return;
-                      }
-                      const numValue = parseInt(numericValue);
-                      // Allow intermediate values during typing (like "2" before "20")
-                      if (numValue >= 0 && numValue <= 99) {
-                        setFormData(prev => ({ ...prev, hours: numValue }));
-                      }
+                      // Allow completely free typing without restrictions
+                      setTempHours(e.target.value);
                     }}
                     onBlur={() => {
-                      // Validate on blur - ensure valid hour range
-                      if (formData.hours < 1 || formData.hours > 12) {
+                      // Validate and convert on blur
+                      const numValue = parseInt(tempHours) || 0;
+                      if (numValue < 1 || numValue > 12) {
                         setFormData(prev => ({ ...prev, hours: 1 }));
+                        setTempHours('01');
+                      } else {
+                        setFormData(prev => ({ ...prev, hours: numValue }));
+                        setTempHours(numValue.toString().padStart(2, '0'));
                       }
                     }}
                     className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white text-left pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     placeholder="HH"
                   />
-                  <Listbox value={formData.hours} onChange={(value) => setFormData(prev => ({ ...prev, hours: value }))}>
+                  <Listbox value={formData.hours} onChange={(value) => {
+                    setFormData(prev => ({ ...prev, hours: value }));
+                    setTempHours(value.toString().padStart(2, '0'));
+                  }}>
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <Listbox.Button className="p-1 rounded hover:bg-gray-700">
                         <ChevronDown className="w-5 h-5 text-gray-400 pointer-events-none" />
@@ -459,36 +502,29 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                   <input
                     type="text"
                     maxLength={2}
-                    value={formData.minutes.toString().padStart(2, '0')}
+                    value={tempMinutes}
                     onChange={(e) => {
-                      const inputValue = e.target.value;
-                      // Allow empty input for clearing
-                      if (inputValue === '') {
-                        setFormData(prev => ({ ...prev, minutes: 0 }));
-                        return;
-                      }
-                      // Only allow numeric input
-                      const numericValue = inputValue.replace(/\D/g, '');
-                      if (numericValue === '') {
-                        setFormData(prev => ({ ...prev, minutes: 0 }));
-                        return;
-                      }
-                      const numValue = parseInt(numericValue);
-                      // Allow intermediate values during typing (like "3" before "30")
-                      if (numValue >= 0 && numValue <= 99) {
-                        setFormData(prev => ({ ...prev, minutes: numValue }));
-                      }
+                      // Allow completely free typing without restrictions
+                      setTempMinutes(e.target.value);
                     }}
                     onBlur={() => {
-                      // Validate on blur - ensure valid minute range
-                      if (formData.minutes < 0 || formData.minutes > 59) {
+                      // Validate and convert on blur
+                      const numValue = parseInt(tempMinutes) || 0;
+                      if (numValue < 0 || numValue > 59) {
                         setFormData(prev => ({ ...prev, minutes: 0 }));
+                        setTempMinutes('00');
+                      } else {
+                        setFormData(prev => ({ ...prev, minutes: numValue }));
+                        setTempMinutes(numValue.toString().padStart(2, '0'));
                       }
                     }}
                     className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white text-left pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     placeholder="MM"
                   />
-                  <Listbox value={formData.minutes} onChange={(value) => setFormData(prev => ({ ...prev, minutes: value }))}>
+                  <Listbox value={formData.minutes} onChange={(value) => {
+                    setFormData(prev => ({ ...prev, minutes: value }));
+                    setTempMinutes(value.toString().padStart(2, '0'));
+                  }}>
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <Listbox.Button className="p-1 rounded hover:bg-gray-700">
                         <ChevronDown className="w-5 h-5 text-gray-400 pointer-events-none" />
@@ -615,6 +651,111 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
               placeholder="Describe tu evento (opcional)"
             />
           </div>
+
+          {/* Concentration Session Options - Only show if event has method or album */}
+          {(getProperty('id_metodo', 'idMetodo') || getProperty('id_album', 'idAlbum')) && (
+            <>
+              {/* Method and Album Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent flex-1"></div>
+                  <p className="text-sm text-gray-400 font-medium px-3">Configuración de concentración</p>
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent flex-1"></div>
+                </div>
+
+                {/* Method Selection */}
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleAddMethod}
+                    className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-[#1a1a1a]/70 to-[#232323]/70 border-2 border-dashed border-blue-500/30 rounded-xl text-left hover:border-blue-500/60 hover:bg-blue-500/5 transition-all duration-300 cursor-pointer group"
+                    aria-haspopup="dialog"
+                    aria-expanded={isMethodModalOpen}
+                    aria-label="Seleccionar método de estudio"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-700/20 flex items-center justify-center group-hover:from-blue-600/30 group-hover:to-blue-700/30 transition-all duration-200 border border-blue-500/20">
+                        <BookOpenIcon className="w-5 h-5 text-blue-400 group-hover:text-blue-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-white mb-1">
+                          {selectedMethod ? selectedMethod.nombre_metodo : 'Seleccionar método'}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {selectedMethod ? 'Método de estudio seleccionado' : 'Método de estudio (opcional)'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Album Selection */}
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleAddAlbum}
+                    className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-[#1a1a1a]/70 to-[#232323]/70 border-2 border-dashed border-purple-500/30 rounded-xl text-left hover:border-purple-500/60 hover:bg-purple-500/5 transition-all duration-300 cursor-pointer group"
+                    aria-haspopup="dialog"
+                    aria-expanded={isAlbumModalOpen}
+                    aria-label="Seleccionar álbum de música"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/20 to-purple-700/20 flex items-center justify-center group-hover:from-purple-600/30 group-hover:to-purple-700/30 transition-all duration-200 border border-purple-500/20">
+                        <MusicalNoteIcon className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-white mb-1">
+                          {selectedAlbum ? selectedAlbum.nombre_album : 'Seleccionar álbum'}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {selectedAlbum ? 'Álbum de música seleccionado' : 'Música de fondo (opcional)'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Selected Items Display */}
+                {(selectedMethod || selectedAlbum) && (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-3">
+                      {selectedMethod && (
+                        <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-xl border border-blue-500/30 backdrop-blur-sm">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 flex items-center justify-center">
+                            <BookOpenIcon className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-sm font-medium text-white">{selectedMethod.nombre_metodo}</span>
+                          <button
+                            type="button"
+                            onClick={handleRemoveMethod}
+                            className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer p-1 hover:bg-red-500/20 rounded-lg"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+
+                      {selectedAlbum && (
+                        <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-500/30 backdrop-blur-sm">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-400 to-purple-500 flex items-center justify-center">
+                            <MusicalNoteIcon className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-sm font-medium text-white">{selectedAlbum.nombre_album}</span>
+                          <button
+                            type="button"
+                            onClick={handleRemoveAlbum}
+                            className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer p-1 hover:bg-red-500/20 rounded-lg"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </form>
         </Scrollbar>
 
@@ -648,6 +789,21 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Modals de selección */}
+      <MethodSelectionModal
+        isOpen={isMethodModalOpen}
+        onClose={() => setIsMethodModalOpen(false)}
+        onSelect={handleMethodSelect}
+        selectedMethod={selectedMethod}
+      />
+
+      <AlbumSelectionModal
+        isOpen={isAlbumModalOpen}
+        onClose={() => setIsAlbumModalOpen(false)}
+        onSelect={handleAlbumSelect}
+        selectedAlbum={selectedAlbum}
+      />
     </div>
   );
 };
