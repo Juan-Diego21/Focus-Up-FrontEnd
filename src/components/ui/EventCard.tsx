@@ -256,13 +256,13 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
               className={`inline-flex space-between gap-2 px-3 py-2 ml-1 text-sm font-medium rounded-xl transition-all duration-300 cursor-pointer hover:scale-105 ${
                 getEstado() === "completado"
                   ? "bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white shadow-lg hover:shadow-yellow-500/25"
-                  : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-green-500/25"
+                  : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-green-500/25 ml-3"
               }`}
               aria-label={getEstado() === "completado" ? "Marcar como pendiente" : "Marcar como completado"}
               aria-pressed={getEstado() === "completado"}
             >
               <CheckIcon className="w-4 h-4" />
-              <span>{getEstado() === "completado" ? "Pendiente" : "Completado"}</span>
+              <span>{getEstado() === "completado" ? "Pendiente" : "Completar"}</span>
             </button>
           </div>
         </div>

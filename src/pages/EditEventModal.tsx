@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, CalendarDaysIcon, BookOpenIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { ChevronDown } from 'lucide-react';
 import { Listbox } from '@headlessui/react';
+import { Scrollbar } from 'react-scrollbars-custom';
 import Swal from 'sweetalert2';
 import type { IEvento, IEventoUpdate } from '../types/events';
 
@@ -220,81 +221,132 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   if (!isOpen || !event) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#232323] rounded-2xl shadow-2xl w-full max-w-lg border border-[#333] max-h-[90vh] overflow-y-auto edit-event-modal-scroll">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-lg border border-blue-500/20 max-h-[90vh] min-h-[600px] flex flex-col ring-1 ring-white/10">
+        <Scrollbar
+          style={{ flex: 1, minHeight: 0 }}
+          thumbYProps={{
+            renderer: (props: any) => {
+              const { elementRef, ...restProps } = props;
+              return (
+                <div
+                  {...restProps}
+                  ref={elementRef}
+                  style={{
+                    ...restProps.style,
+                    background: '#374151',
+                    borderRadius: '4px',
+                    border: '1px solid #1a1a1a',
+                  }}
+                />
+              );
+            },
+          }}
+          trackYProps={{
+            renderer: (props: any) => {
+              const { elementRef, ...restProps } = props;
+              return (
+                <div
+                  {...restProps}
+                  ref={elementRef}
+                  style={{
+                    ...restProps.style,
+                    background: '#1a1a1a',
+                    borderRadius: '4px',
+                    width: '8px',
+                  }}
+                />
+              );
+            },
+          }}
+        >
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#333]">
-          <h2 className="text-xl font-semibold text-white">Editar Evento</h2>
+        <div className="flex items-center justify-between p-8 border-b border-blue-500/20">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-2xl border border-blue-500/30">
+              <CalendarDaysIcon className="w-6 h-6 text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Editar Evento</h2>
+              <p className="text-gray-400 text-sm">Modifica los detalles de tu evento</p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-[#2a2a2a] transition-colors cursor-pointer"
+            className="p-3 rounded-xl bg-gray-500/10 hover:bg-red-500/20 border border-gray-500/20 hover:border-red-500/40 transition-all duration-200 cursor-pointer hover:scale-105"
             aria-label="Cerrar modal"
           >
-            <XMarkIcon className="w-5 h-5 text-gray-400" />
+            <XMarkIcon className="w-5 h-5 text-gray-400 hover:text-red-400 transition-colors" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
           {/* Event Name */}
-          <div>
-            <label htmlFor="edit-nombreEvento" className="block text-sm font-medium text-gray-300 mb-2">
-              Nombre del Evento *
+          <div className="space-y-3">
+            <label htmlFor="edit-nombreEvento" className="block text-sm font-semibold text-gray-200">
+              Nombre del Evento <span className="text-red-400">*</span>
             </label>
-            <input
-              type="text"
-              id="edit-nombreEvento"
-              value={formData.nombreEvento}
-              onChange={(e) => handleInputChange('nombreEvento', e.target.value)}
-              className={`w-full px-3 py-2 bg-[#1a1a1a] border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.nombreEvento ? 'border-red-500' : 'border-gray-600'
-              }`}
-              placeholder="Ej: Sesión de estudio matutina"
-            />
-            {errors.nombreEvento && (
-              <p className="mt-1 text-sm text-red-400">{errors.nombreEvento}</p>
-            )}
+            <div className="relative">
+              <input
+                type="text"
+                id="edit-nombreEvento"
+                value={formData.nombreEvento}
+                onChange={(e) => handleInputChange('nombreEvento', e.target.value)}
+                className={`w-full px-4 py-3 bg-gradient-to-r from-[#1a1a1a] to-[#232323] border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  errors.nombreEvento
+                    ? 'border-red-500/50 focus:ring-red-500/50 bg-red-500/5'
+                    : 'border-gray-600/50 focus:ring-blue-500/50 focus:border-blue-500/50'
+                }`}
+                placeholder="Ej: Sesión de estudio matutina"
+              />
+              {errors.nombreEvento && (
+                <div className="absolute -bottom-6 left-0 flex items-center gap-2 text-red-400 text-sm">
+                  <span className="text-xs">⚠️</span>
+                  {errors.nombreEvento}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Date */}
-          <div>
-            <label htmlFor="edit-fechaEvento" className="block text-sm font-medium text-gray-300 mb-2">
-              Fecha *
+          <div className="space-y-3">
+            <label htmlFor="edit-fechaEvento" className="block text-sm font-semibold text-gray-200">
+              Fecha del Evento <span className="text-red-400">*</span>
             </label>
             <div className="relative">
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
+                <CalendarDaysIcon className="w-5 h-5 text-blue-400" />
+              </div>
               <input
                 type="date"
                 id="edit-fechaEvento"
                 value={formData.fechaEvento}
                 onChange={(e) => handleInputChange('fechaEvento', e.target.value)}
-                className={`w-full pl-4 pr-10 py-2 bg-[#1a1a1a] border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer date-input-custom ${
-                  errors.fechaEvento ? 'border-red-500' : 'border-gray-600'
+                className={`w-full pl-12 pr-4 py-3 bg-gradient-to-r from-[#1a1a1a] to-[#232323] border rounded-xl text-white focus:outline-none focus:ring-2 transition-all duration-200 cursor-pointer date-input-custom ${
+                  errors.fechaEvento
+                    ? 'border-red-500/50 focus:ring-red-500/50 bg-red-500/5'
+                    : 'border-gray-600/50 focus:ring-blue-500/50 focus:border-blue-500/50'
                 }`}
                 style={{
                   colorScheme: 'dark'
                 }}
               />
-              <CalendarDaysIcon
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white cursor-pointer"
-                onClick={() => {
-                  const input = document.getElementById('edit-fechaEvento') as HTMLInputElement;
-                  if (input && input.showPicker) {
-                    input.showPicker();
-                  }
-                }}
-              />
+              {errors.fechaEvento && (
+                <div className="absolute -bottom-6 left-0 flex items-center gap-2 text-red-400 text-sm">
+                  <span className="text-xs">⚠️</span>
+                  {errors.fechaEvento}
+                </div>
+              )}
             </div>
-            {errors.fechaEvento && (
-              <p className="mt-1 text-sm text-red-400">{errors.fechaEvento}</p>
-            )}
           </div>
 
           {/* Time */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Hora *
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-200">
+              Hora del Evento <span className="text-red-400">*</span>
             </label>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-4">
               {/* Hours */}
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-400 mb-2">Horas</label>
@@ -336,13 +388,50 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                       <Listbox.Button className="p-1 rounded hover:bg-gray-700">
                         <ChevronDown className="w-5 h-5 text-gray-400 pointer-events-none" />
                       </Listbox.Button>
-                      <Listbox.Options className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-30 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                      <Listbox.Options className="absolute bottom-full mb-1 -left-6 z-50 w-20 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-40 focus:outline-none">
+                        <Scrollbar
+                          style={{ height: '160px' }}
+                          thumbYProps={{
+                            renderer: (props: any) => {
+                              const { elementRef, ...restProps } = props;
+                              return (
+                                <div
+                                  {...restProps}
+                                  ref={elementRef}
+                                  style={{
+                                    ...restProps.style,
+                                    background: '#6b7280',
+                                    borderRadius: '3px',
+                                    border: '1px solid #374151',
+                                  }}
+                                />
+                              );
+                            },
+                          }}
+                          trackYProps={{
+                            renderer: (props: any) => {
+                              const { elementRef, ...restProps } = props;
+                              return (
+                                <div
+                                  {...restProps}
+                                  ref={elementRef}
+                                  style={{
+                                    ...restProps.style,
+                                    background: '#374151',
+                                    borderRadius: '3px',
+                                    width: '6px',
+                                  }}
+                                />
+                              );
+                            },
+                          }}
+                        >
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
                           <Listbox.Option
                             key={hour}
                             value={hour}
                             className={({ active }) =>
-                              `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                              `cursor-pointer select-none relative py-2 px-3 text-center transition-all duration-150 ${
                                 active ? 'bg-gray-700 text-white' : 'text-gray-200'
                               }`
                             }
@@ -356,6 +445,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                             )}
                           </Listbox.Option>
                         ))}
+                        </Scrollbar>
                       </Listbox.Options>
                     </div>
                   </Listbox>
@@ -403,13 +493,50 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                       <Listbox.Button className="p-1 rounded hover:bg-gray-700">
                         <ChevronDown className="w-5 h-5 text-gray-400 pointer-events-none" />
                       </Listbox.Button>
-                      <Listbox.Options className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-30 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                      <Listbox.Options className="absolute bottom-full mb-1 -left-6 z-50 w-20 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-40 focus:outline-none">
+                        <Scrollbar
+                          style={{ height: '160px' }}
+                          thumbYProps={{
+                            renderer: (props: any) => {
+                              const { elementRef, ...restProps } = props;
+                              return (
+                                <div
+                                  {...restProps}
+                                  ref={elementRef}
+                                  style={{
+                                    ...restProps.style,
+                                    background: '#6b7280',
+                                    borderRadius: '3px',
+                                    border: '1px solid #374151',
+                                  }}
+                                />
+                              );
+                            },
+                          }}
+                          trackYProps={{
+                            renderer: (props: any) => {
+                              const { elementRef, ...restProps } = props;
+                              return (
+                                <div
+                                  {...restProps}
+                                  ref={elementRef}
+                                  style={{
+                                    ...restProps.style,
+                                    background: '#374151',
+                                    borderRadius: '3px',
+                                    width: '6px',
+                                  }}
+                                />
+                              );
+                            },
+                          }}
+                        >
                         {Array.from({ length: 60 }, (_, i) => i).map(minute => (
                           <Listbox.Option
                             key={minute}
                             value={minute}
                             className={({ active }) =>
-                              `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                              `cursor-pointer select-none relative py-2 px-3 text-center transition-all duration-150 ${
                                 active ? 'bg-gray-700 text-white' : 'text-gray-200'
                               }`
                             }
@@ -423,6 +550,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                             )}
                           </Listbox.Option>
                         ))}
+                        </Scrollbar>
                       </Listbox.Options>
                     </div>
                   </Listbox>
@@ -440,7 +568,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                       </span>
                       <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                     </Listbox.Button>
-                    <Listbox.Options className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-30 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                    <Listbox.Options className="absolute bottom-full mb-1 left-0 z-50 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
                       {[
                         { value: "AM", label: "AM" },
                         { value: "PM", label: "PM" }
@@ -449,7 +577,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                           key={period.value}
                           value={period.value}
                           className={({ active }) =>
-                            `cursor-pointer select-none relative py-2 pl-4 pr-4 text-center transition-all duration-150 ${
+                            `cursor-pointer select-none relative py-2 px-4 text-center transition-all duration-150 ${
                               active ? 'bg-gray-700 text-white' : 'text-gray-200'
                             }`
                           }
@@ -474,28 +602,29 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
           </div>
 
           {/* Description */}
-          <div>
-            <label htmlFor="edit-descripcionEvento" className="block text-sm font-medium text-gray-300 mb-2">
-              Descripción
+          <div className="space-y-3">
+            <label htmlFor="edit-descripcionEvento" className="block text-sm font-semibold text-gray-200">
+              Descripción <span className="text-gray-400 font-normal">(opcional)</span>
             </label>
             <textarea
               id="edit-descripcionEvento"
               value={formData.descripcionEvento}
               onChange={(e) => handleInputChange('descripcionEvento', e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-3 bg-gradient-to-r from-[#1a1a1a] to-[#232323] border border-gray-600/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none"
               placeholder="Describe tu evento (opcional)"
             />
           </div>
         </form>
+        </Scrollbar>
 
         {/* Modal Footer */}
-        <div className="flex gap-3 p-6 border-t border-[#333]">
+        <div className="flex gap-4 p-8 border-t border-blue-500/20 flex-shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-600/20 to-gray-700/20 hover:from-gray-600/30 hover:to-gray-700/30 border border-gray-500/30 hover:border-gray-500/50 text-gray-300 hover:text-white rounded-xl font-semibold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
           >
             Cancelar
           </button>
@@ -503,15 +632,18 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
             type="submit"
             onClick={handleSubmit}
             disabled={loading}
-            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 hover:scale-105 shadow-lg hover:shadow-blue-500/25"
           >
             {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Guardando...
+                <span>Guardando...</span>
               </>
             ) : (
-              'Guardar Cambios'
+              <>
+                <CalendarDaysIcon className="w-5 h-5" />
+                <span>Guardar Cambios</span>
+              </>
             )}
           </button>
         </div>
