@@ -168,7 +168,7 @@ export const AlbumSelectionModal: React.FC<AlbumSelectionModalProps> = ({
                       key={album.id_album}
                       onClick={() => handleSelect(album)}
                       className={`
-                        group relative overflow-hidden rounded-xl transition-all duration-200 text-left cursor-pointer
+                        group relative overflow-hidden rounded-xl transition-all duration-200 text-left
                         ${isSelected
                           ? 'ring-2 ring-purple-500 shadow-lg shadow-purple-500/20'
                           : 'hover:shadow-lg hover:shadow-purple-500/10'

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { XMarkIcon, BookOpenIcon, MusicalNoteIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, BookOpenIcon, MusicalNoteIcon, CalendarDaysIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ChevronDown } from 'lucide-react';
 import { Listbox } from '@headlessui/react';
 import { Scrollbar } from 'react-scrollbars-custom';
 import Swal from 'sweetalert2';
 import type { IEventoCreate } from '../types/events';
+import { MethodSelectionModal } from '../components/MethodSelectionModal';
+import { AlbumSelectionModal } from '../components/AlbumSelectionModal';
 
 interface CreateEventModalProps {
   isOpen: boolean;
@@ -28,6 +30,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
     minutes: 0,
     period: 'AM',
     descripcionEvento: '',
+    tipoEvento: 'concentracion' as 'normal' | 'concentracion', // Default to concentration session
   });
 
   // Temporary input values for free typing
@@ -36,6 +39,12 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Modal states for method and album selection
+  const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
+  const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<any>(null);
+  const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
 
   // Reiniciar formulario cuando se abre el modal
   React.useEffect(() => {
@@ -47,9 +56,12 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         minutes: 0,
         period: 'AM',
         descripcionEvento: '',
+        tipoEvento: 'concentracion',
       });
       setTempHours('01');
       setTempMinutes('00');
+      setSelectedMethod(null);
+      setSelectedAlbum(null);
       setErrors({});
     }
   }, [isOpen]);
@@ -141,7 +153,12 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         fechaEvento: new Date(formData.fechaEvento).toISOString().split('T')[0], // Enviar como cadena YYYY-MM-DD
         horaEvento: convertTo24Hour(formData.hours, formData.period), // Convertir a formato HH:MM:00
         descripcionEvento: formData.descripcionEvento.trim() || undefined,
-        // idMetodo e idAlbum se establecerán cuando se implementen los botones placeholder
+        tipoEvento: formData.tipoEvento,
+        // Solo incluir método y álbum si es una sesión de concentración
+        ...(formData.tipoEvento === 'concentracion' && {
+          idMetodo: selectedMethod?.id_metodo,
+          idAlbum: selectedAlbum?.id_album,
+        }),
         // id_usuario se extrae automáticamente del token JWT
       };
 
@@ -199,15 +216,31 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
     }
   };
 
-  // Manejadores de botones placeholder (solo UI)
+  // Manejadores de selección de método y álbum
   const handleAddMethod = () => {
-    // TODO: Implementar modal de selección de método
-    console.log('Botón añadir método clickeado - placeholder');
+    setIsMethodModalOpen(true);
   };
 
   const handleAddAlbum = () => {
-    // TODO: Implementar modal de selección de álbum
-    console.log('Botón añadir álbum clickeado - placeholder');
+    setIsAlbumModalOpen(true);
+  };
+
+  const handleMethodSelect = (method: any) => {
+    setSelectedMethod(method);
+    setIsMethodModalOpen(false);
+  };
+
+  const handleAlbumSelect = (album: any) => {
+    setSelectedAlbum(album);
+    setIsAlbumModalOpen(false);
+  };
+
+  const handleRemoveMethod = () => {
+    setSelectedMethod(null);
+  };
+
+  const handleRemoveAlbum = () => {
+    setSelectedAlbum(null);
   };
 
   if (!isOpen) return null;
@@ -260,7 +293,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">Crear Nuevo Evento</h2>
-              <p className="text-gray-400 text-sm">Programa tu próxima sesión de estudio</p>
+              <p className="text-gray-400 text-sm">Programa tu próxima sesión de estudio o evento</p>
             </div>
           </div>
           <button
@@ -594,32 +627,187 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
             />
           </div>
 
-          {/* Placeholder Buttons */}
+          {/* Session Type Selection */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent flex-1"></div>
-              <p className="text-sm text-gray-400 font-medium px-3">Elementos opcionales</p>
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent flex-1"></div>
+              <label className="block text-sm font-semibold text-gray-200">
+                Tipo de Evento
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  Swal.fire({
+                    title: 'Tipos de Evento',
+                    html: `
+                      <div class="text-left space-y-4">
+                        <div>
+                          <h3 class="font-semibold text-blue-400 mb-2">📅 Evento Normal</h3>
+                          <p class="text-sm text-gray-300">Un evento de calendario estándar sin funcionalidades de concentración. Solo recordatorios y organización básica.</p>
+                        </div>
+                        <div>
+                          <h3 class="font-semibold text-purple-400 mb-2">🎯 Sesión de Concentración</h3>
+                          <p class="text-sm text-gray-300">Una sesión programada con temporizador, métodos de estudio y música ambiental. Se integra con el sistema de concentración para maximizar la productividad.</p>
+                        </div>
+                      </div>
+                    `,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#22C55E',
+                    background: '#232323',
+                    color: '#ffffff',
+                    customClass: {
+                      popup: 'rounded-2xl',
+                    },
+                  });
+                }}
+                className="p-1 rounded-full bg-gray-500/10 hover:bg-gray-500/20 text-gray-400 hover:text-gray-300 transition-all duration-200 cursor-pointer"
+                title="Información sobre tipos de evento"
+              >
+                <ExclamationTriangleIcon className="w-4 h-4" />
+              </button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={handleAddMethod}
-                className="flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/10 to-blue-600/10 hover:from-blue-500/20 hover:to-blue-600/20 border border-blue-500/30 hover:border-blue-500/50 rounded-xl text-blue-300 hover:text-blue-200 transition-all duration-200 cursor-pointer hover:scale-105 group"
-              >
-                <BookOpenIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="font-medium">Método</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleAddAlbum}
-                className="flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500/10 to-purple-600/10 hover:from-purple-500/20 hover:to-purple-600/20 border border-purple-500/30 hover:border-purple-500/50 rounded-xl text-purple-300 hover:text-purple-200 transition-all duration-200 cursor-pointer hover:scale-105 group"
-              >
-                <MusicalNoteIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="font-medium">Música</span>
-              </button>
+
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 p-4 bg-gradient-to-r from-[#1a1a1a] to-[#232323] border border-gray-600/50 rounded-xl cursor-pointer hover:border-green-500/50 transition-all duration-200">
+                <input
+                  type="radio"
+                  name="tipoEvento"
+                  value="concentracion"
+                  checked={formData.tipoEvento === 'concentracion'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, tipoEvento: e.target.value as 'concentracion' }))}
+                  className="w-4 h-4 text-green-600 bg-gray-700 border-gray-600 focus:ring-green-500 focus:ring-2"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-medium">Sesión de Concentración</span>
+                    <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Recomendado</span>
+                  </div>
+                  <p className="text-gray-400 text-sm mt-1">Incluye temporizador, métodos de estudio y música ambiental</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 p-4 bg-gradient-to-r from-[#1a1a1a] to-[#232323] border border-gray-600/50 rounded-xl cursor-pointer hover:border-blue-500/50 transition-all duration-200">
+                <input
+                  type="radio"
+                  name="tipoEvento"
+                  value="normal"
+                  checked={formData.tipoEvento === 'normal'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, tipoEvento: e.target.value as 'normal' }))}
+                  className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 focus:ring-blue-500 focus:ring-2"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-medium">Evento Normal</span>
+                  </div>
+                  <p className="text-gray-400 text-sm mt-1">Solo recordatorio de calendario básico</p>
+                </div>
+              </label>
             </div>
           </div>
+
+          {/* Concentration Session Options */}
+          {formData.tipoEvento === 'concentracion' && (
+            <>
+              {/* Method and Album Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent flex-1"></div>
+                  <p className="text-sm text-gray-400 font-medium px-3">Configuración de concentración</p>
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent flex-1"></div>
+                </div>
+
+                {/* Method Selection */}
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleAddMethod}
+                    className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-[#1a1a1a]/70 to-[#232323]/70 border-2 border-dashed border-blue-500/30 rounded-xl text-left hover:border-blue-500/60 hover:bg-blue-500/5 transition-all duration-300 cursor-pointer group"
+                    aria-haspopup="dialog"
+                    aria-expanded={isMethodModalOpen}
+                    aria-label="Seleccionar método de estudio"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-700/20 flex items-center justify-center group-hover:from-blue-600/30 group-hover:to-blue-700/30 transition-all duration-200 border border-blue-500/20">
+                        <BookOpenIcon className="w-5 h-5 text-blue-400 group-hover:text-blue-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-white mb-1">
+                          {selectedMethod ? selectedMethod.nombre_metodo : 'Seleccionar método'}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {selectedMethod ? 'Método de estudio seleccionado' : 'Método de estudio (opcional)'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Album Selection */}
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleAddAlbum}
+                    className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-[#1a1a1a]/70 to-[#232323]/70 border-2 border-dashed border-purple-500/30 rounded-xl text-left hover:border-purple-500/60 hover:bg-purple-500/5 transition-all duration-300 cursor-pointer group"
+                    aria-haspopup="dialog"
+                    aria-expanded={isAlbumModalOpen}
+                    aria-label="Seleccionar álbum de música"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/20 to-purple-700/20 flex items-center justify-center group-hover:from-purple-600/30 group-hover:to-purple-700/30 transition-all duration-200 border border-purple-500/20">
+                        <MusicalNoteIcon className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-white mb-1">
+                          {selectedAlbum ? selectedAlbum.nombre_album : 'Seleccionar álbum'}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {selectedAlbum ? 'Álbum de música seleccionado' : 'Música de fondo (opcional)'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Selected Items Display */}
+                {(selectedMethod || selectedAlbum) && (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-3">
+                      {selectedMethod && (
+                        <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-xl border border-blue-500/30 backdrop-blur-sm">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 flex items-center justify-center">
+                            <BookOpenIcon className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-sm font-medium text-white">{selectedMethod.nombre_metodo}</span>
+                          <button
+                            type="button"
+                            onClick={handleRemoveMethod}
+                            className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer p-1 hover:bg-red-500/20 rounded-lg"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+
+                      {selectedAlbum && (
+                        <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-500/30 backdrop-blur-sm">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-400 to-purple-500 flex items-center justify-center">
+                            <MusicalNoteIcon className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-sm font-medium text-white">{selectedAlbum.nombre_album}</span>
+                          <button
+                            type="button"
+                            onClick={handleRemoveAlbum}
+                            className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer p-1 hover:bg-red-500/20 rounded-lg"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </form>
         </Scrollbar>
 
@@ -653,6 +841,21 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Modals de selección */}
+      <MethodSelectionModal
+        isOpen={isMethodModalOpen}
+        onClose={() => setIsMethodModalOpen(false)}
+        onSelect={handleMethodSelect}
+        selectedMethod={selectedMethod}
+      />
+
+      <AlbumSelectionModal
+        isOpen={isAlbumModalOpen}
+        onClose={() => setIsAlbumModalOpen(false)}
+        onSelect={handleAlbumSelect}
+        selectedAlbum={selectedAlbum}
+      />
 
     </div>
   );

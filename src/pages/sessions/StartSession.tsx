@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { PlayIcon, ChevronDownIcon, XMarkIcon, BookOpenIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -32,7 +32,8 @@ import type { SessionCreateDto, SessionDto, Song } from '../../types/api';
  */
 export const StartSession: React.FC = () => {
   const navigate = useNavigate();
-  const { sessionId } = useParams<{ sessionId: string }>();
+  const [searchParams] = useSearchParams();
+  const eventId = searchParams.get('eventId');
   const { startSession, startSessionWithCountdown, getState, minimize } = useConcentrationSession();
   const { playPlaylist, currentAlbum, isPlaying } = useMusicPlayer();
 
@@ -51,12 +52,12 @@ export const StartSession: React.FC = () => {
   const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
 
 
-  // Cargar datos para deep link
+  // Cargar datos para deep link desde evento
   useEffect(() => {
-    if (sessionId) {
-      loadSessionForDeepLink(sessionId);
+    if (eventId) {
+      loadSessionFromEvent(eventId);
     }
-  }, [sessionId]);
+  }, [eventId]);
 
   // Cargar selecciones desde localStorage al montar
   useEffect(() => {
@@ -98,25 +99,39 @@ export const StartSession: React.FC = () => {
   }, [selectedAlbum]);
 
   /**
-   * Carga sesión para deep link
+   * Carga sesión desde evento programado para deep link
+   *
+   * Este método se ejecuta cuando el usuario llega a la página desde un enlace
+   * de email con ?eventId={id}. Valida la propiedad del evento y crea/recupera
+   * la sesión correspondiente, prellenando el formulario automáticamente.
    */
-  const loadSessionForDeepLink = async (id: string) => {
+  const loadSessionFromEvent = async (eventId: string) => {
     try {
       setIsLoading(true);
-      const sessionDto: SessionDto = await sessionService.getSession(id);
+      const sessionDto: SessionDto = await sessionService.getSessionFromEvent(eventId);
       const session = mapServerSession(sessionDto);
 
-      // Prefill formulario
-      setTitle(session.title);
+      // Prefill formulario con datos de la sesión del evento
+      setTitle(session.title || '');
       if (session.description) {
         setDescription(session.description);
         setDescriptionExpanded(true);
       }
 
-      // Calcular si es tarde
+      // Prefill método si existe
+      if (session.methodId) {
+        // Aquí necesitaríamos obtener el método por ID, pero por ahora asumimos que viene en el DTO
+        // TODO: Implementar obtención de método por ID si no viene en el DTO
+      }
+
+      // Prefill álbum si existe
+      if (session.albumId) {
+        // Aquí necesitaríamos obtener el álbum por ID, pero por ahora asumimos que viene en el DTO
+        // TODO: Implementar obtención de álbum por ID si no viene en el DTO
+      }
+
+      // Calcular si es tarde (solo para eventos programados)
       if (session.eventId) {
-        // Aquí iría la lógica para calcular si la sesión programada está atrasada
-        // Por ahora, simulamos
         const now = new Date();
         const eventTime = new Date(session.startTime);
         const diffMinutes = Math.floor((now.getTime() - eventTime.getTime()) / (1000 * 60));
@@ -127,7 +142,18 @@ export const StartSession: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error cargando sesión para deep link:', error);
+      console.error('Error cargando sesión desde evento:', error);
+      // Mostrar error al usuario si no se puede cargar la sesión del evento
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'Error al cargar la sesión del evento',
+        showConfirmButton: false,
+        timer: 3000,
+        background: '#232323',
+        color: '#ffffff',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -149,8 +175,8 @@ export const StartSession: React.FC = () => {
       const payload: SessionCreateDto = {
         title: title.trim() || 'Sesión de concentración',
         description: description.trim() || undefined,
-        type: sessionId ? 'scheduled' : 'rapid',
-        eventId: sessionId ? parseInt(sessionId) : undefined,
+        type: eventId ? 'scheduled' : 'rapid',
+        eventId: eventId ? parseInt(eventId) : undefined,
         methodId: selectedMethod?.id_metodo,
         albumId: selectedAlbum?.id_album,
       };
@@ -173,8 +199,8 @@ export const StartSession: React.FC = () => {
       const payload: SessionCreateDto = {
         title: title.trim() || 'Sesión de concentración',
         description: description.trim() || undefined,
-        type: sessionId ? 'scheduled' : 'rapid',
-        eventId: sessionId ? parseInt(sessionId) : undefined,
+        type: eventId ? 'scheduled' : 'rapid',
+        eventId: eventId ? parseInt(eventId) : undefined,
         methodId: selectedMethod?.id_metodo,
         albumId: selectedAlbum?.id_album,
       };
@@ -341,7 +367,7 @@ export const StartSession: React.FC = () => {
 
             <div className="relative text-center">
               <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent mb-6 leading-tight">
-                {sessionId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
+                {eventId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
               </h2>
 
               <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
@@ -371,7 +397,7 @@ export const StartSession: React.FC = () => {
             <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-blue-500/20">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
-                  {sessionId ? 'Continuar Sesión' : 'Configurar Sesión'}
+                  {eventId ? 'Continuar Sesión' : 'Configurar Sesión'}
                 </h1>
                 <p className="text-gray-400 text-sm">
                   Personaliza tu experiencia de concentración

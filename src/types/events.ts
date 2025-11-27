@@ -31,8 +31,9 @@ export interface IEventoCreate {
   fechaEvento: string;        // Required - ISO date string (YYYY-MM-DD)
   horaEvento: string;         // Required - HH:MM:SS format
   descripcionEvento?: string;
-  idMetodo?: number;          // Optional - method association
-  idAlbum?: number;           // Optional - album association
+  tipoEvento?: 'normal' | 'concentracion'; // Tipo de evento: normal o sesión de concentración
+  idMetodo?: number;          // Optional - method association (solo para concentración)
+  idAlbum?: number;           // Optional - album association (solo para concentración)
   // Note: id_usuario is extracted from JWT token, not sent in request body
 }
 

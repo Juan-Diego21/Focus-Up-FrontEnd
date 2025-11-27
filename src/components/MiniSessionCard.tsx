@@ -182,7 +182,7 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={toggleExpanded}
-                    className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                    className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10 cursor-pointer"
                     aria-label={isExpanded ? 'Contraer tarjeta' : 'Expandir tarjeta'}
                     type="button"
                   >
@@ -193,7 +193,7 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
 
                   <button
                     onClick={handleMaximize}
-                    className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                    className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10 cursor-pointer"
                     aria-label="Maximizar sesión"
                     type="button"
                   >
@@ -246,7 +246,7 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
                       <button
                         onClick={handleTogglePause}
                         disabled={isUpdating}
-                        className={`flex-1 px-3 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`flex-1 px-3 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                           session.isRunning
                             ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                             : 'bg-green-600 hover:bg-green-700 text-white'
@@ -269,7 +269,7 @@ export const MiniSessionCard: React.FC<MiniSessionCardProps> = ({
                       <button
                         onClick={handleFinishLater}
                         disabled={isUpdating}
-                        className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         type="button"
                       >
                         Terminar

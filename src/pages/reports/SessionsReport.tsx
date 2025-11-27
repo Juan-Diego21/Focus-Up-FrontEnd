@@ -18,9 +18,14 @@ import {
 import { motion } from 'framer-motion';
 import { reportsService } from '../../services/reportsService';
 import { sessionService } from '../../services/sessionService';
-import { formatTime } from '../../utils/sessionMappers';
+import { formatTime, mapServerSession } from '../../utils/sessionMappers';
 import { getBroadcastChannel, type BroadcastMessage } from '../../utils/broadcastChannel';
+import { getSongsByAlbumId } from '../../utils/musicApi';
+import { replaceIfSessionAlbum } from '../../services/audioService';
 import type { SessionReport } from '../../types/api';
+
+// Clave para localStorage (igual que en el provider)
+const SESSION_STORAGE_KEY = 'focusup:activeSession';
 
 /**
  * Página de reportes de sesiones
@@ -172,13 +177,54 @@ export const SessionsReport: React.FC = () => {
   };
 
   /**
-   * Maneja reanudar sesión (desde reportes)
+   * Maneja continuar sesión desde reportes
+   *
+   * Implementa el flujo de reanudación simplificado:
+   * 1. Obtiene la sesión completa desde el servidor
+   * 2. Almacena datos para reanudación en localStorage
+   * 3. Establece flag de reanudación directa
+   * 4. Navega al dashboard donde el provider restaurará la sesión
    */
-  const handleResumeSession = (session: SessionReport) => {
-    // Para reportes, "reanudar" significa iniciar una nueva sesión basada en esta
-    console.log('Reanudar sesión desde reporte:', session.idSesion);
-    // Navegar a start session con el ID de la sesión original
-    navigate(`/start-session/${session.idSesion}`);
+  const handleResumeSession = async (session: SessionReport) => {
+    try {
+      console.log('Continuando sesión desde reporte:', session.idSesion);
+
+      // 1. Obtener sesión completa desde servidor
+      const sessionDto = await sessionService.getSession(session.idSesion.toString());
+      const activeSession = mapServerSession(sessionDto);
+
+      // 2. Preparar datos de reanudación
+      const resumeData = {
+        ...activeSession,
+        persistedAt: new Date().toISOString()
+      };
+
+      // 3. Almacenar en localStorage para que el provider los restaure
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(resumeData));
+      localStorage.setItem('focusup:directResume', 'true');
+
+      // 4. Si tiene albumId, preparar datos de música para restauración
+      if (activeSession.albumId) {
+        try {
+          const albumSongs = await getSongsByAlbumId(activeSession.albumId);
+          localStorage.setItem('focusup:resume-album-songs', JSON.stringify({
+            albumId: activeSession.albumId,
+            songs: albumSongs,
+            albumName: session.albumAsociado?.nombreAlbum || 'Álbum de sesión'
+          }));
+        } catch (albumError) {
+          console.error('Error obteniendo canciones para reanudación:', albumError);
+        }
+      }
+
+      // 5. Navegar al dashboard donde se restaurará la sesión
+      navigate('/dashboard');
+
+    } catch (error) {
+      console.error('Error continuando sesión desde reporte:', error);
+      // Fallback: navegar a start-session como antes
+      navigate(`/start-session/${session.idSesion}`);
+    }
   };
 
   /**

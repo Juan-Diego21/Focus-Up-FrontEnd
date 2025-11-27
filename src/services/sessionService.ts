@@ -162,6 +162,26 @@ class SessionService {
   }
 
   /**
+   * Crea o recupera una sesión desde un evento programado
+   *
+   * Este endpoint valida la propiedad del evento y crea una sesión si no existe,
+   * o recupera la sesión existente. Se utiliza para deep links desde correos electrónicos
+   * de eventos de concentración.
+   *
+   * @param eventId - ID del evento programado
+   * @returns DTO de la sesión creada/recuperada
+   */
+  async getSessionFromEvent(eventId: string): Promise<SessionDto> {
+    try {
+      const response = await apiClient.get(`${API_ENDPOINTS.SESSIONS}/from-event/${eventId}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error obteniendo sesión desde evento:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Lista sesiones del usuario con filtros opcionales
    *
    * @param filters - Filtros opcionales para la consulta
