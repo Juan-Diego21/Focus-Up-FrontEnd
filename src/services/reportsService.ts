@@ -23,7 +23,7 @@ class ReportsService {
    */
   async getSessionReports(): Promise<SessionReport[]> {
     try {
-      console.log('Obteniendo reportes de sesiones desde:', API_ENDPOINTS.SESSION_PROGRESS);
+      console.log('[REPORTS] Obteniendo reportes de sesiones desde:', API_ENDPOINTS.SESSION_PROGRESS);
       const response = await apiClient.get(API_ENDPOINTS.SESSION_PROGRESS);
 
       // Determinar la estructura de la respuesta

@@ -6,6 +6,10 @@ export interface User {
   genero?: string;
   fecha_nacimiento: Date;
   horario_fav?: string;
+  // Campos de encuesta agregados según el nuevo contrato del backend
+  intereses?: number[];
+  distracciones?: number[];
+  objetivo?: number;
 }
 
 export interface LoginRequest {

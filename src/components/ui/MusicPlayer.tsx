@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   PlayIcon,
   PauseIcon,
@@ -16,6 +16,7 @@ import {
 import { useMusicPlayer, type PlaybackMode } from '../../contexts/MusicPlayerContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAlbumImage, getArtistName } from '../../utils/musicUtils';
+import { getSongsByAlbumId } from '../../utils/musicApi';
 
 export const MusicPlayer: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -39,11 +40,32 @@ export const MusicPlayer: React.FC = () => {
     seekTo,
     removeFromPlaylist,
     reorderPlaylist,
+    playPlaylist,
   } = useMusicPlayer();
 
   const [showQueue, setShowQueue] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
+
+  // Restaurar música de sesión reanudada
+  useEffect(() => {
+    const resumeData = localStorage.getItem('focusup:resume-album-songs');
+    if (resumeData) {
+      try {
+        const { albumId, songs, albumName } = JSON.parse(resumeData);
+        console.log('Restaurando música de sesión reanudada:', albumName);
+
+        // Reemplazar playlist con las canciones de la sesión
+        playPlaylist(songs, 0, { id_album: albumId, nombre_album: albumName });
+
+        // Limpiar los datos de reanudación
+        localStorage.removeItem('focusup:resume-album-songs');
+      } catch (error) {
+        console.error('Error restaurando música de sesión:', error);
+        localStorage.removeItem('focusup:resume-album-songs');
+      }
+    }
+  }, [playPlaylist]);
 
   // Calcular si hay canción siguiente/anterior disponible
   const currentIndex = currentSong ? playlist.findIndex(song => song.id_cancion === currentSong.id_cancion) : -1;

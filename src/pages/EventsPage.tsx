@@ -105,7 +105,24 @@ export const EventsPage: React.FC = () => {
     return events.filter(event => {
       const fecha = event.fecha_evento || event.fechaEvento;
       const hora = event.hora_evento || event.horaEvento;
-      const isPast = fecha && hora ? new Date(`${fecha.split('T')[0]}T${hora}`) < new Date() : false;
+
+      // Improved date parsing - handle various date formats
+      let isPast = false;
+      if (fecha && hora) {
+        try {
+          // Extract date part (remove time if present)
+          const datePart = fecha.includes('T') ? fecha.split('T')[0] : fecha;
+          // Ensure hora is in HH:MM:SS format
+          const timePart = hora.length === 5 ? `${hora}:00` : hora;
+          const eventDateTime = new Date(`${datePart}T${timePart}`);
+          const now = new Date();
+          isPast = eventDateTime < now;
+        } catch (error) {
+          console.warn('Error parsing event date/time:', fecha, hora, error);
+          // If parsing fails, assume it's not past
+          isPast = false;
+        }
+      }
 
       if (!isPast) return false; // Only show events that have passed
 
@@ -114,7 +131,8 @@ export const EventsPage: React.FC = () => {
       if (filter === 'completed') {
         return status === 'completado';
       } else if (filter === 'pending') {
-        return status === 'pendiente' || (status === null && isPast);
+        // An event is pending if explicitly marked as 'pendiente' OR has no status (null/undefined) and is past
+        return status === 'pendiente' || status === null || status === undefined;
       }
 
       return true;

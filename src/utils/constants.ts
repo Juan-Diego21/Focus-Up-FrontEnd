@@ -6,8 +6,13 @@ export const API_ENDPOINTS = {
   LOGOUT: "/users/logout",
   PROFILE: "/users/profile",
   DELETE_ACCOUNT: "/users/delete",
+  CHECK_USERNAME: "/users/check-username",
   REQUEST_PASSWORD_RESET: "/users/request-password-reset",
   RESET_PASSWORD_WITH_CODE: "/users/reset-password-with-code",
+  // Nuevos endpoints para el flujo de registro de dos pasos según el contrato del backend
+  REQUEST_VERIFICATION_CODE: "/auth/request-verification-code",
+  VERIFY_CODE: "/auth/verify-code",
+  REGISTER: "/auth/register",
   STUDY_METHODS: "/metodos-estudio",
   STUDY_METHODS_DETAILS: "/bibliotecametodosestudio",
   BENEFITS: "/beneficios",
@@ -27,4 +32,6 @@ export const API_ENDPOINTS = {
   SESSION_COMPLETE: "/sessions/:id/complete",
   // Albums para sesiones
   ALBUMS: "/albumes",
+  // Música endpoints
+  MUSIC_ALBUMS: "/musica/albums",
 } as const;

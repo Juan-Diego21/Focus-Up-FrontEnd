@@ -207,7 +207,7 @@ export const ConcentrationCard: React.FC<ConcentrationCardProps> = ({
 
                 <button
                   onClick={handleMinimize}
-                  className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+                  className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10 cursor-pointer"
                   aria-label="Minimizar sesión"
                   type="button"
                 >
@@ -254,7 +254,7 @@ export const ConcentrationCard: React.FC<ConcentrationCardProps> = ({
                 <button
                   onClick={handleTogglePause}
                   disabled={isUpdating}
-                  className={`p-4 rounded-full transition-all duration-200 ${
+                  className={`p-4 rounded-full transition-all duration-200 cursor-pointer ${
                     session.isRunning
                       ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                       : 'bg-green-600 hover:bg-green-700 text-white'
@@ -292,7 +292,7 @@ export const ConcentrationCard: React.FC<ConcentrationCardProps> = ({
                 <button
                   onClick={handleFinishLater}
                   disabled={isUpdating}
-                  className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
                   type="button"
                 >
                   Terminar más tarde
@@ -301,7 +301,7 @@ export const ConcentrationCard: React.FC<ConcentrationCardProps> = ({
                 <button
                   onClick={handleComplete}
                   disabled={isUpdating}
-                  className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   type="button"
                 >
                   {isUpdating ? 'Finalizando...' : 'Finalizar sesión'}

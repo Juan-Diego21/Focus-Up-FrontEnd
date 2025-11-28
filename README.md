@@ -14,16 +14,23 @@ src/
 │   │   ├── MusicPlayer.tsx   # UI del reproductor de música global
 │   │   ├── ProgressCircle.tsx # Indicador de progreso circular
 │   │   ├── Sidebar.tsx       # Barra lateral de navegación
-│   │   └── Timer.tsx         # Componente de temporizador de estudio
+│   │   ├── Timer.tsx         # Componente de temporizador de estudio
+│   │   ├── ConcentrationCard.tsx # UI del temporizador de concentración
+│   │   └── FinishLaterModal.tsx # Modal de pausa de sesión
 │   ├── auth/                 # Componentes de autenticación
-│   │   ├── RequireAuth.tsx   # Wrapper de protección de rutas
-│   │   └── LoginPage.tsx     # Formulario de inicio de sesión
-│   └── ui/                   # Componentes de UI adicionales
-│       └── FinishLaterModal.tsx # Modal de pausa de sesión
+│   │   └── RequireAuth.tsx   # Wrapper de protección de rutas
+│   └── ConcentrationCard/    # Componentes de sesión de concentración
+│       ├── ContinueSessionModal.tsx # Modal de continuar sesión
+│       └── SessionFloatingButton.tsx # Botón flotante de sesión
 ├── contexts/                 # Proveedores de contexto de React
 │   ├── AuthContext.tsx       # Estado de autenticación de usuario
-│   └── MusicPlayerContext.tsx # Estado global del reproductor de música
+│   ├── MusicPlayerContext.tsx # Estado global del reproductor de música
+│   └── RequireAuth.tsx       # Contexto de protección de rutas
 ├── hooks/                    # Hooks personalizados de React
+│   ├── useApi.ts            # Hook para llamadas API
+│   ├── useAuth.ts           # Hook para autenticación
+│   ├── useConcentrationSession.ts # Hook para sesiones de concentración
+│   └── useEvents.ts         # Hook para gestión de eventos
 ├── pages/                    # Componentes de página (rutas)
 │   ├── DashboardPage.tsx     # Panel principal
 │   ├── StudyMethodsLibraryPage.tsx # Selección de métodos
@@ -31,22 +38,34 @@ src/
 │   ├── MusicSongsPage.tsx    # Vista de canciones del álbum
 │   ├── ProfilePage.tsx       # Perfil de usuario
 │   ├── ReportsPage.tsx       # Reportes de estudio
-│   ├── SurveyPage.tsx        # Encuesta inicial
 │   ├── LoginPage.tsx         # Autenticación
 │   ├── RegisterPage.tsx      # Registro de usuario
 │   ├── ForgotPassword*.tsx   # Recuperación de contraseña
-│   ├── ConfirmationPage.tsx  # Confirmación de correo electrónico
-│   └── [Method]IntroView.tsx # Introducciones de métodos de estudio
-│   └── [Method]StepsView.tsx # Ejecución de métodos de estudio
+│   ├── EventsPage.tsx        # Gestión de eventos
+│   ├── NotificationPage.tsx  # Notificaciones
+│   ├── StartSession.tsx      # Inicio de sesiones de concentración
+│   └── [Method]*.tsx         # Páginas de métodos de estudio
+├── providers/                # Proveedores de estado global
+│   └── ConcentrationSessionProvider.tsx # Estado de sesiones activas
+├── services/                 # Servicios de API
+│   ├── sessionService.ts     # API de sesiones
+│   ├── reportsService.ts     # API de reportes
+│   └── audioService.ts       # Servicio de audio
 ├── types/                    # Definiciones de tipos TypeScript
 │   ├── api.ts               # Tipos de respuestas de API
-│   └── user.ts              # Tipos de datos de usuario
+│   ├── user.ts              # Tipos de datos de usuario
+│   ├── events.ts            # Tipos de eventos
+│   └── sessionMappers.ts    # Utilidades de mapeo de sesiones
 ├── utils/                   # Funciones de utilidad
 │   ├── apiClient.ts         # Cliente HTTP Axios
 │   ├── constants.ts         # Constantes de la aplicación
+│   ├── validationUtils.ts   # Utilidades de validación (nuevo)
 │   ├── methodAssets.ts      # Configuraciones de métodos de estudio
 │   ├── methodStatus.ts      # Utilidades de progreso de métodos
-│   └── musicApi.ts          # Funciones de API de música
+│   ├── musicApi.ts          # Funciones de API de música
+│   ├── broadcastChannel.ts  # Comunicación multi-pestaña
+│   ├── offlineQueue.ts      # Cola de acciones offline
+│   └── sleepDetector.ts     # Detección de suspensión del sistema
 ├── App.tsx                  # Componente principal con enrutamiento
 ├── main.tsx                 # Punto de entrada de la aplicación
 └── index.css                # Estilos globales
@@ -71,8 +90,13 @@ La aplicación utiliza una arquitectura de proveedores en capas para asegurar la
       <AuthProvider>
         {" "}
         // 👤 Autenticación de usuario
-        <App /> // 📱 Aplicación principal
-        <MusicPlayer /> // 🎵 UI de música global (condicional)
+        <ConcentrationSessionProvider>
+          {" "}
+          // ⏱️ Estado global de sesiones de concentración
+          <App /> // 📱 Aplicación principal
+          <MusicPlayer /> // 🎵 UI de música global (condicional)
+          <ConcentrationCard /> // ⏱️ UI de temporizador (condicional)
+        </ConcentrationSessionProvider>
       </AuthProvider>
     </StrictMode>
   </BrowserRouter>
@@ -91,7 +115,7 @@ La aplicación utiliza una arquitectura de proveedores en capas para asegurar la
 2. **BrowserRouter** (Navegación SPA)
 
    - Habilita enrutamiento del lado del cliente sin recargas de página
-   - Crítico para la persistencia de música durante la navegación
+   - Crítico para la persistencia de música y sesiones durante la navegación
    - Envuelve todas las rutas autenticadas
 
 3. **AuthProvider** (Sesión de Usuario)
@@ -100,10 +124,18 @@ La aplicación utiliza una arquitectura de proveedores en capas para asegurar la
    - Controla visibilidad de rutas protegidas
    - Maneja limpieza de cierre de sesión
 
-4. **MusicPlayer UI** (Componente Global)
-   - Se renderiza condicionalmente basado en autenticación
-   - Posicionado globalmente (fijo en la parte inferior)
-   - Solo visible cuando el usuario está autenticado
+4. **ConcentrationSessionProvider** (Sesiones de Concentración)
+
+   - Gestiona estado global de sesiones activas
+   - Persistencia en LocalStorage para supervivencia a recargas
+   - Sincronización multi-pestaña con BroadcastChannel
+   - Integración con música y métodos de estudio
+
+5. **Componentes Globales** (UI Condicional)
+
+   - **MusicPlayer**: Barra de reproducción fija en la parte inferior
+   - **ConcentrationCard**: Overlay de temporizador centrado
+   - Se renderizan condicionalmente basado en estado de autenticación y sesiones
 
 ## 🎵 Arquitectura del Reproductor de Música
 
@@ -162,6 +194,35 @@ Inicio de Sesión/Registro → AuthContext → Almacenamiento de Token → Requi
 Cierre de Sesión → Limpiar Tokens → Redirigir a Inicio de Sesión → Limpieza del Reproductor de Música
 ```
 
+### Nuevo Flujo de Registro de Dos Pasos
+
+El sistema de registro ha sido actualizado para implementar un flujo de verificación de email de dos pasos:
+
+```
+Registro Paso 1 → Solicitar Código → Registro Paso 2 → Verificar Código → Registrar Usuario → Primer Login → Modal de Encuesta
+     ↓              ↓              ↓              ↓              ↓              ↓              ↓
+Formulario básico → API /auth/   → Formulario de → API /auth/   → API /auth/   → Modal de     → Navegación a
+(username, email, → request-     → código        → verify-code → register     → bienvenida   → ProfilePage
+password)        → verification- → (6 dígitos)  → (email +     → (email +     → opcional     → (campos de
+                → code          →              → código)      → username +   → para         → encuesta)
+                →               →              →              → password)    → completar
+                →               →              →              →              → perfil
+```
+
+#### Características del Nuevo Flujo
+
+- **Paso 1 (RegisterPage)**: Recopila datos básicos (username, email, password) y solicita código de verificación
+- **Paso 2 (RegisterStep2)**: Verifica código de 6 dígitos y completa el registro
+- **Primer Login**: Modal opcional para completar perfil con encuesta
+- **Campos de Encuesta**: Integrados en ProfilePage (fecha nacimiento, intereses, distracciones)
+
+#### Seguridad Implementada
+
+- Contraseña no se almacena en localStorage durante el flujo
+- Datos temporales namespaced (`focusup:register:*`)
+- Verificación secuencial de APIs (verify-code → register)
+- Limpieza automática de datos temporales
+
 ## 📚 Sistema de Métodos de Estudio
 
 ### Arquitectura
@@ -187,6 +248,70 @@ StudyMethodsLibraryPage → [Method]IntroView → [Method]StepsView
 - **Persistencia**: Capacidad de reanudación entre sesiones
 - **Validación**: Restricciones de progreso por tipo de método
 
+## ⏱️ Sistema de Sesiones de Concentración
+
+### Arquitectura
+
+El sistema de sesiones de concentración permite a los usuarios crear y gestionar sesiones de estudio con temporizador, música opcional y métodos de estudio integrados:
+
+```
+StartSession → ConcentrationCard → [MethodExecution] → Reports
+      ↓              ↓                    ↓              ↓
+  Creación       Temporizador        Método activo    Resultados
+  de sesión      persistente         (opcional)       guardados
+```
+
+### Componentes Principales
+
+#### ConcentrationSessionProvider (`src/providers/ConcentrationSessionProvider.tsx`)
+
+- **Gestión de Estado Global**: Estado único para sesiones activas
+- **Persistencia en LocalStorage**: Sesiones sobreviven a recargas de página
+- **Sincronización Multi-pestaña**: BroadcastChannel para coordinación entre pestañas
+- **Integración con Música**: Reproducción automática de álbumes de sesión
+- **Detección de Sueño**: Corrección automática de temporizador cuando el sistema suspende
+
+#### ConcentrationCard (`src/components/ConcentrationCard.tsx`)
+
+- **UI de Temporizador**: Overlay centrado con controles intuitivos
+- **Estados de Sesión**: Activa, pausada, completada
+- **Controles**: Play/pause, terminar más tarde, finalizar
+- **Información Contextual**: Muestra método y música activos
+- **Accesibilidad Completa**: Atributos ARIA y navegación por teclado
+
+### Características Principales
+
+- ✅ **Temporizador Persistente**: Continúa corriendo a través de navegación
+- ✅ **Pausa/Resume**: Capacidad de pausar y reanudar sesiones
+- ✅ **Música Integrada**: Reproducción automática de álbumes asociados
+- ✅ **Métodos de Estudio**: Integración con Pomodoro, Mapas Mentales, etc.
+- ✅ **Reportes Automáticos**: Guardado de resultados al finalizar
+- ✅ **Multi-pestaña**: Una sesión activa por usuario, sincronizada
+- ✅ **Corrección de Sueño**: Ajuste automático por suspensión del sistema
+
+### Flujo de Sesiones
+
+```
+Creación → Inicio → [Pausa/Resume] → Finalización → Reporte
+     ↓        ↓            ↓              ↓          ↓
+Formulario  Overlay    Estados         API       Dashboard
+de sesión  centrado   temporales      /sessions  /reports
+```
+
+### Gestión de Estado
+
+- **ActiveSession**: Interfaz para sesiones en ejecución
+- **SessionDto**: Contrato con API del backend
+- **Broadcast Messages**: Comunicación entre pestañas
+- **Offline Queue**: Acciones pendientes cuando sin conexión
+
+### Integraciones
+
+- **Música**: MusicPlayerContext para reproducción persistente
+- **Métodos**: Navegación automática a vistas de ejecución
+- **Reportes**: Actualización automática de estadísticas
+- **Eventos**: Creación desde eventos programados
+
 ## 🧭 Navegación y Enrutamiento
 
 ### Estructura de Rutas
@@ -199,11 +324,27 @@ StudyMethodsLibraryPage → [Method]IntroView → [Method]StepsView
 
 // Rutas Protegidas (autenticación requerida)
 <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
-<Route path="/music/*" element={<RequireAuth><... /></RequireAuth>} />
-<Route path="/study-methods" element={<RequireAuth><... /></RequireAuth>} />
-<Route path="/pomodoro/*" element={<RequireAuth><... /></RequireAuth>} />
-<Route path="/mind-maps/*" element={<RequireAuth><... /></RequireAuth>} />
-// ... otras rutas de métodos
+<Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+<Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
+<Route path="/start-session" element={<RequireAuth><StartSession /></RequireAuth>} />
+<Route path="/start-session/:sessionId" element={<RequireAuth><StartSession /></RequireAuth>} />
+<Route path="/events" element={<RequireAuth><EventsPage /></RequireAuth>} />
+<Route path="/notifications" element={<RequireAuth><NotificationPage /></RequireAuth>} />
+<Route path="/music/albums" element={<RequireAuth><MusicAlbumsPage /></RequireAuth>} />
+<Route path="/music/albums/:albumId" element={<RequireAuth><MusicSongsPage /></RequireAuth>} />
+<Route path="/study-methods" element={<RequireAuth><StudyMethodsLibraryPage /></RequireAuth>} />
+<Route path="/pomodoro/intro/:methodId" element={<RequireAuth><PomodoroIntroView /></RequireAuth>} />
+<Route path="/pomodoro/execute/:methodId" element={<RequireAuth><PomodoroExecutionView /></RequireAuth>} />
+<Route path="/mind-maps/intro/:methodId" element={<RequireAuth><MindMapsInfoPage /></RequireAuth>} />
+<Route path="/mind-maps/steps/:methodId" element={<RequireAuth><MindMapsStepsPage /></RequireAuth>} />
+<Route path="/spaced-repetition/intro/:methodId" element={<RequireAuth><SpacedRepetitionIntroView /></RequireAuth>} />
+<Route path="/spaced-repetition/steps/:methodId" element={<RequireAuth><SpacedRepetitionStepsView /></RequireAuth>} />
+<Route path="/active-recall/intro/:methodId" element={<RequireAuth><ActiveRecallIntroView /></RequireAuth>} />
+<Route path="/active-recall/steps/:methodId" element={<RequireAuth><ActiveRecallStepsView /></RequireAuth>} />
+<Route path="/feynman/intro/:methodId" element={<RequireAuth><FeynmanIntroView /></RequireAuth>} />
+<Route path="/feynman/steps/:methodId" element={<RequireAuth><FeynmanStepsView /></RequireAuth>} />
+<Route path="/cornell/intro/:methodId" element={<RequireAuth><CornellIntroView /></RequireAuth>} />
+<Route path="/cornell/steps/:methodId" element={<RequireAuth><CornellStepsView /></RequireAuth>} />
 ```
 
 ### Principios de Navegación SPA
@@ -380,6 +521,91 @@ Asegurar que el entorno de producción tenga:
 - Ejecutar `npm run lint` para problemas de código
 - Verificar errores de TypeScript
 - Verificar que todas las dependencias estén instaladas
+
+## 🧹 Plan "Código Limpio" - Optimización y Mantenimiento
+
+### Resumen del Plan
+
+El plan "Código Limpio" se ejecutó en fases para limpiar, optimizar y mantener el código del frontend, eliminando malas prácticas, código no usado y mejorando la mantenibilidad.
+
+### Fases Ejecutadas
+
+#### Fase 1: Auditoría
+
+- Análisis estático del código en `src/` para identificar dead code, imports redundantes y problemas de rendimiento.
+- Identificación de componentes con re-renders innecesarios y falta de memoización.
+- Verificación del uso correcto de hooks (no llamados fuera de componentes).
+- Revisión de fetches duplicados y gestión de side-effects.
+- Identificación de comentarios en inglés para conversión.
+
+#### Fase 2: Pruebas
+
+- Ejecución de suite de tests existente.
+- Identificación de cobertura faltante.
+- Preparación para añadir tests unitarios e integración.
+
+#### Fase 3: Refactor
+
+- **Eliminación de código no usado**: Remoción de carpeta `Bloc_de_notas/` (4 archivos) que no era referenciada.
+- **Extracción de utilidades**: Creación de `src/utils/validationUtils.ts` con funciones de validación reutilizables (username, password, email, date).
+- **Memoización**: Verificación y mejora de uso de `useMemo` y `useCallback` donde necesario.
+- **Corrección de hooks**: Aseguramiento de reglas de hooks de React.
+- **Optimización**: Imágenes y lazy-loading para componentes pesados.
+- **Accesibilidad**: Verificación de atributos `aria-*` y `cursor-pointer`.
+
+#### Fase 4: Tests
+
+- Ejecución de tests después de refactor para asegurar compatibilidad.
+- Adición de tests para nuevas utilidades.
+
+#### Fase 5: Revisión
+
+- Ejecución de linter y formatter.
+- Conversión de comentarios en inglés a español (ej: interceptores de API, tipos de módulos).
+- Actualización de documentación.
+
+#### Fase 6: Despliegue
+
+- Build local exitoso.
+- Creación de changelog `src/CHANGES_CODIGO_LIMPIO.md`.
+- Verificación de compatibilidad con backend y rutas públicas.
+
+### Cambios Realizados
+
+- **Archivos eliminados**: `src/Bloc_de_notas/` (completa carpeta con app.js, html, css).
+- **Archivos modificados**: `src/pages/RegisterPage.tsx`, `src/pages/ProfilePage.tsx`, `src/utils/validationUtils.ts` (nuevo), `src/utils/apiClient.ts`, `src/types/api.ts`.
+- **Comentarios convertidos**: Todos los comentarios en inglés cambiados a español.
+- **Utilidades extraídas**: Validaciones comunes centralizadas.
+- **README actualizado**: Sección del plan "Código Limpio" añadida.
+
+### Patrones Usados
+
+- **Provider Pattern**: Para estado global (Auth, Music, Sessions).
+- **Hooks personalizados**: `useApi`, `useAuth`, etc.
+- **Servicio API**: Cliente Axios centralizado con interceptores.
+- **Memoización**: `useCallback` para funciones, `useMemo` para cálculos costosos.
+- **Validación centralizada**: Utilidades reutilizables en `validationUtils.ts`.
+
+### Cómo Ejecutar Tests
+
+```bash
+npm run test  # Ejecuta tests con Vitest
+npm run lint  # Verifica código con ESLint
+```
+
+### Verificación de Build
+
+```bash
+npm run build  # Construcción de producción
+npm run preview  # Vista previa del build
+```
+
+### Revertir Cambios
+
+Si algo falla, los cambios son seguros y pueden revertirse:
+
+- Restaurar archivos desde git.
+- Revertir commits por fase.
 
 ---
 

@@ -236,7 +236,8 @@ export const getCornellLabelByProgress = (progress: number): string => {
  * @returns true si es un método de mapas mentales
  */
 export const isMindMapsMethod = (methodName: string): boolean => {
-  return methodName.toLowerCase().includes('mapa') || methodName.toLowerCase().includes('mentales');
+  const name = methodName.toLowerCase();
+  return name.includes('mapa') || name.includes('mentales') || name.includes('mind') || name.includes('map');
 };
 
 /**
@@ -245,7 +246,8 @@ export const isMindMapsMethod = (methodName: string): boolean => {
  * @returns true si es un método Pomodoro
  */
 export const isPomodoroMethod = (methodName: string): boolean => {
-  return methodName.toLowerCase().includes('pomodoro');
+  const name = methodName.toLowerCase();
+  return name.includes('pomodoro') || name.includes('técnica pomodoro') || name.includes('pomodoro technique');
 };
 
 /**
@@ -254,7 +256,10 @@ export const isPomodoroMethod = (methodName: string): boolean => {
  * @returns true si es un método de repaso espaciado
  */
 export const isSpacedRepetitionMethod = (methodName: string): boolean => {
-  return methodName.toLowerCase().includes('repaso') && methodName.toLowerCase().includes('espaciado');
+  const name = methodName.toLowerCase();
+  return (name.includes('repaso') && name.includes('espaciado')) ||
+         (name.includes('spaced') && name.includes('repetition')) ||
+         name.includes('repetición espaciada');
 };
 
 /**
@@ -263,7 +268,10 @@ export const isSpacedRepetitionMethod = (methodName: string): boolean => {
  * @returns true si es un método de práctica activa
  */
 export const isActiveRecallMethod = (methodName: string): boolean => {
-  return methodName.toLowerCase().includes('práctica') && methodName.toLowerCase().includes('activa');
+  const name = methodName.toLowerCase();
+  return (name.includes('práctica') && name.includes('activa')) ||
+         (name.includes('active') && name.includes('recall')) ||
+         name.includes('recuerdo activo');
 };
 
 /**
@@ -272,7 +280,8 @@ export const isActiveRecallMethod = (methodName: string): boolean => {
  * @returns true si es un método Feynman
  */
 export const isFeynmanMethod = (methodName: string): boolean => {
-  return methodName.toLowerCase().includes('feynman');
+  const name = methodName.toLowerCase();
+  return name.includes('feynman') || name.includes('método feynman') || name.includes('feynman technique');
 };
 
 /**
@@ -281,7 +290,8 @@ export const isFeynmanMethod = (methodName: string): boolean => {
  * @returns true si es un método Cornell
  */
 export const isCornellMethod = (methodName: string): boolean => {
-  return methodName.toLowerCase().includes('cornell');
+  const name = methodName.toLowerCase();
+  return name.includes('cornell') || name.includes('método cornell') || name.includes('cornell method');
 };
 
 /**

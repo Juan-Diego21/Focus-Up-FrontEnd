@@ -40,6 +40,12 @@ export async function replaceIfSessionAlbum(
   albumInfo?: { id_album: number; nombre_album: string }
 ): Promise<void> {
   try {
+    // Si no hay albumId, no hacer nada
+    if (!albumId) {
+      console.log('No hay albumId especificado, no se cambia la reproducción');
+      return;
+    }
+
     if (albumSongs.length === 0) {
       console.warn(`No se encontraron canciones para el álbum ${albumId}`);
       return;

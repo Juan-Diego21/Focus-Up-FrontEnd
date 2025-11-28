@@ -40,6 +40,15 @@ export const ContinueSessionModal: React.FC = () => {
     try {
       console.log('Continuando sesión anterior');
 
+      // Verificar que la sesión tenga un ID válido antes de continuar
+      if (!activeSession?.sessionId) {
+        console.error('Sesión sin ID válido, no se puede continuar');
+        // Mostrar error al usuario y descartar la sesión
+        alert('La sesión guardada no es válida. Se descartará automáticamente.');
+        await handleDiscard();
+        return;
+      }
+
       // Ocultar el modal de continuar
       hideContinueModal();
 
@@ -47,7 +56,7 @@ export const ContinueSessionModal: React.FC = () => {
       minimize();
 
       // Restaurar reproducción de música si hay un álbum seleccionado
-      if (activeSession?.albumId) {
+      if (activeSession.albumId) {
         try {
           console.log('Restaurando música del álbum seleccionado:', activeSession.albumId);
 
@@ -85,6 +94,12 @@ export const ContinueSessionModal: React.FC = () => {
       }
     } catch (error) {
       console.error('Error continuando sesión:', error);
+      // En caso de error, intentar descartar la sesión
+      try {
+        await handleDiscard();
+      } catch (discardError) {
+        console.error('Error descartando sesión tras fallo en continuar:', discardError);
+      }
     }
   };
 
@@ -98,12 +113,22 @@ export const ContinueSessionModal: React.FC = () => {
       // Ocultar el modal primero para feedback inmediato al usuario
       hideContinueModal();
 
-      // Usar finishLater para marcar la sesión como terminada más tarde
-      // Esto limpiará el estado local y el almacenamiento persistente
-      await finishLater();
+      // Limpiar localStorage inmediatamente para evitar que el modal reaparezca
+      // Se hace antes de la llamada API por si esta falla
+      localStorage.removeItem('focusup:activeSession');
+      localStorage.removeItem('focusup:directResume');
+
+      // Usar finishLater para marcar la sesión como terminada más tarde en el servidor
+      // Esto es opcional y no debería impedir que el usuario continúe
+      try {
+        await finishLater();
+      } catch (finishError) {
+        console.warn('Error marcando sesión como terminada en servidor, pero estado local limpiado:', finishError);
+        // No relanzar el error, el estado local ya está limpio
+      }
     } catch (error) {
       console.error('Error descartando sesión:', error);
-      // Fallback: recargar la página si hay error
+      // Fallback: recargar la página si hay error crítico
       window.location.reload();
     }
   };
@@ -175,7 +200,7 @@ export const ContinueSessionModal: React.FC = () => {
           <div className="flex gap-3">
             <button
               onClick={handleContinue}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             >
               <PlayIcon className="w-5 h-5" />
               Continuar
@@ -183,7 +208,7 @@ export const ContinueSessionModal: React.FC = () => {
 
             <button
               onClick={handleDiscard}
-              className="px-4 py-3 bg-transparent border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+              className="px-4 py-3 bg-transparent border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             >
               <XMarkIcon className="w-5 h-5" />
               Descartar

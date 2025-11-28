@@ -108,27 +108,10 @@ export const ConcentrationCard: React.FC = () => {
   };
 
   /**
-   * Maneja completar sesión
+   * Maneja completar sesión inmediatamente (sin confirmación)
    */
   const handleComplete = async () => {
     if (!session || isUpdating) return;
-
-    // Mostrar diálogo de confirmación
-    const result = await Swal.fire({
-      title: '¿Completar sesión?',
-      text: 'Esta acción finalizará la sesión de concentración y guardará el progreso. ¿Estás seguro?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#22C55E',
-      cancelButtonColor: '#6B7280',
-      confirmButtonText: 'Completar',
-      cancelButtonText: 'Cancelar',
-      background: '#232323',
-      color: '#ffffff',
-      iconColor: '#22C55E',
-    });
-
-    if (!result.isConfirmed) return;
 
     try {
       setIsUpdating(true);
@@ -217,7 +200,7 @@ export const ConcentrationCard: React.FC = () => {
 
               <button
                 onClick={handleMinimize}
-                className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+                className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10 cursor-pointer"
                 aria-label="Minimizar sesión"
                 type="button"
               >
@@ -264,7 +247,7 @@ export const ConcentrationCard: React.FC = () => {
               <button
                 onClick={handleTogglePause}
                 disabled={isUpdating}
-                className={`p-4 rounded-full transition-all duration-200 ${
+                className={`p-4 rounded-full transition-all duration-200 cursor-pointer ${
                   session.isRunning
                     ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                     : 'bg-green-600 hover:bg-green-700 text-white'
@@ -302,7 +285,7 @@ export const ConcentrationCard: React.FC = () => {
               <button
                 onClick={handleFinishLater}
                 disabled={isUpdating}
-                className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
                 type="button"
               >
                 Terminar más tarde
@@ -311,7 +294,7 @@ export const ConcentrationCard: React.FC = () => {
               <button
                 onClick={handleComplete}
                 disabled={isUpdating}
-                className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
                 type="button"
               >
                 {isUpdating ? 'Finalizando...' : 'Finalizar sesión'}

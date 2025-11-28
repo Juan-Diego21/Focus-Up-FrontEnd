@@ -8,8 +8,8 @@
  * Diseño: Layout de dos columnas responsive, formulario con glassmorphism.
  */
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { PlayIcon, ChevronDownIcon, XMarkIcon, BookOpenIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -19,21 +19,41 @@ import { mapServerSession } from '../../utils/sessionMappers';
 import { useMusicPlayer } from '../../contexts/MusicPlayerContext';
 import { replaceIfSessionAlbum } from '../../services/audioService';
 import { getMethodType } from '../../utils/methodStatus';
-import { getSongsByAlbumId } from '../../utils/musicApi';
+import { getSongsByAlbumId, getAlbumById } from '../../utils/musicApi';
 import { MethodSelectionModal } from '../../components/MethodSelectionModal';
 import { AlbumSelectionModal } from '../../components/AlbumSelectionModal';
+import { LOCAL_METHOD_ASSETS, overrideMethodWithLocalAssets } from '../../utils/methodAssets';
 import { CountdownOverlay } from '../../components/ui/CountdownOverlay';
 import { PageLayout } from '../../components/ui/PageLayout';
 import { Sidebar } from '../../components/ui/Sidebar';
 import type { SessionCreateDto, SessionDto, Song } from '../../types/api';
 
 /**
+ * Obtiene un método por ID desde los activos locales
+ */
+const getMethodById = (id: number): any => {
+  const methodNames = Object.keys(LOCAL_METHOD_ASSETS);
+  const methodName = methodNames[id - 1]; // IDs start from 1
+  if (methodName) {
+    const assets = LOCAL_METHOD_ASSETS[methodName];
+    return overrideMethodWithLocalAssets({
+      id_metodo: id,
+      nombre_metodo: methodName,
+      ...assets
+    });
+  }
+  return null;
+};
+
+/**
  * Página de inicio de sesión
  */
 export const StartSession: React.FC = () => {
   const navigate = useNavigate();
-  const { sessionId } = useParams<{ sessionId: string }>();
-  const { startSession, startSessionWithCountdown, getState, minimize } = useConcentrationSession();
+  const { sessionId: routeSessionId } = useParams<{ sessionId: string }>();
+  const [searchParams] = useSearchParams();
+  const eventId = searchParams.get('eventId');
+  const { startSession, startSessionWithCountdown, getState, minimize, checkDirectResume } = useConcentrationSession();
   const { playPlaylist, currentAlbum, isPlaying } = useMusicPlayer();
 
   // Estado del formulario
@@ -46,17 +66,30 @@ export const StartSession: React.FC = () => {
   const [isLate, setIsLate] = useState(false);
   const [minutesLate, setMinutesLate] = useState(0);
 
+  // Estado para sesión desde evento
+  const [eventSession, setEventSession] = useState<any>(null);
+
+  // Ref para prevenir múltiples llamadas a getSessionFromEvent por instancia del componente
+  const hasRequested = useRef(false);
+
   // Estado de los modales de selección
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
   const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
 
 
-  // Cargar datos para deep link
+  // Preparar configuración para deep link desde evento
   useEffect(() => {
-    if (sessionId) {
-      loadSessionForDeepLink(sessionId);
+    if (eventId) {
+      prepareEventConfiguration(eventId);
     }
-  }, [sessionId]);
+  }, [eventId]);
+
+  // Cargar sesión existente para continuación
+  useEffect(() => {
+    if (routeSessionId && !eventId) {
+      loadExistingSession(routeSessionId);
+    }
+  }, [routeSessionId, eventId]);
 
   // Cargar selecciones desde localStorage al montar
   useEffect(() => {
@@ -98,38 +131,175 @@ export const StartSession: React.FC = () => {
   }, [selectedAlbum]);
 
   /**
-   * Carga sesión para deep link
+   * Carga sesión existente para continuación
+   *
+   * Este método se ejecuta cuando el usuario llega a la página con un sessionId
+   * en la ruta (ej: /start-session/48). Carga los datos de la sesión existente
+   * y permite continuarla. NO crea sesiones automáticamente.
    */
-  const loadSessionForDeepLink = async (id: string) => {
+  const loadExistingSession = async (sessionId: string) => {
     try {
       setIsLoading(true);
-      const sessionDto: SessionDto = await sessionService.getSession(id);
-      const session = mapServerSession(sessionDto);
 
-      // Prefill formulario
-      setTitle(session.title);
+      try {
+        // Primero intentar cargar la sesión existente
+        const sessionDto: SessionDto = await sessionService.getSession(sessionId);
+        const session = mapServerSession(sessionDto);
+
+        // Pre-fill formulario con datos de la sesión existente
+        setTitle(session.title || '');
+        if (session.description) {
+          setDescription(session.description);
+          setDescriptionExpanded(true);
+        }
+
+        console.log('Sesión existente cargada para continuación:', session.sessionId);
+
+      } catch (sessionError: any) {
+        // Si no existe la sesión, intentar crear una desde evento con ese ID
+        console.log('Sesión no encontrada, intentando crear desde evento:', sessionId);
+
+        if (hasRequested.current) {
+          // Ya se intentó cargar desde evento, no repetir la llamada
+          throw sessionError;
+        }
+
+        hasRequested.current = true;
+
+        try {
+          const sessionDto: SessionDto = await sessionService.getSessionFromEvent(sessionId);
+          const session = mapServerSession(sessionDto);
+
+          // Redirigir para continuar la sesión recién creada
+          navigate(`/start-session/${session.sessionId}`);
+          return;
+
+        } catch (eventError: any) {
+          // Si tampoco hay evento, mostrar error
+          const errorMessage = eventError?.response?.data?.message ||
+                             eventError?.response?.data?.error ||
+                             eventError?.message ||
+                             'Error desconocido';
+
+          if (errorMessage.includes('Ya existe una sesión') ||
+              errorMessage.includes('A session already exists')) {
+            // Mostrar mensaje informativo y redirigir a reportes
+            Swal.fire({
+              title: 'Sesión ya iniciada',
+              text: 'Ya existe una sesión activa para este evento. Revisa tus sesiones activas.',
+              icon: 'info',
+              confirmButtonText: 'Ir a Reportes',
+              confirmButtonColor: '#22C55E',
+              background: '#232323',
+              color: '#ffffff',
+            }).then(() => {
+              navigate('/reports');
+            });
+            return;
+          }
+
+          // Error general
+          throw eventError;
+        }
+      }
+
+    } catch (error) {
+      console.error('Error cargando sesión o evento:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo cargar la sesión ni crear una desde evento.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        background: '#232323',
+        color: '#ffffff',
+      }).then(() => {
+        navigate('/start-session');
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Prepara configuración para evento programado
+   *
+   * Este método se ejecuta cuando el usuario llega a la página desde un enlace
+   * de evento con ?eventId={id}. Llama al nuevo endpoint para obtener/crear la sesión
+   * y prellena el formulario con los datos. NO crea sesiones automáticamente adicionales.
+   *
+   * Flujo de integración con backend:
+   * - Llama GET /api/v1/sessions/from-event/{eventId} para validar propiedad y obtener/crear sesión
+   * - Si la sesión existe y es de tipo 'concentracion', prellena el formulario
+   * - Si es otro tipo de evento, muestra comportamiento estándar
+   * - Evita localStorage para este flujo de reanudación, usa solo el endpoint del servidor
+   */
+  const prepareEventConfiguration = async (eventId: string) => {
+    if (hasRequested.current) return;
+
+    hasRequested.current = true;
+
+    try {
+
+        // Llamar al nuevo endpoint para obtener/crear sesión desde evento
+        const sessionDto = await sessionService.getSessionFromEvent(eventId);
+       const session = mapServerSession(sessionDto);
+
+      // Verificar que sea un evento de concentración
+       if (session.type !== 'scheduled') {
+         return;
+       }
+
+      // Almacenar la sesión del evento para usar en handleSubmit
+      setEventSession(session);
+
+      // Prellenar formulario con datos de la sesión del evento
+      setTitle(session.title || '');
       if (session.description) {
         setDescription(session.description);
         setDescriptionExpanded(true);
       }
 
-      // Calcular si es tarde
-      if (session.eventId) {
-        // Aquí iría la lógica para calcular si la sesión programada está atrasada
-        // Por ahora, simulamos
-        const now = new Date();
-        const eventTime = new Date(session.startTime);
-        const diffMinutes = Math.floor((now.getTime() - eventTime.getTime()) / (1000 * 60));
-
-        if (diffMinutes > 10) {
-          setIsLate(true);
-          setMinutesLate(diffMinutes);
+      // Pre-fill método si está disponible
+      if (session.methodId) {
+        try {
+          const method = getMethodById(session.methodId);
+          if (method) {
+            setSelectedMethod(method);
+            console.log('[EVENT_CONFIG] Método pre-seleccionado:', method.nombre_metodo);
+          }
+        } catch (methodError) {
+          console.error('[EVENT_CONFIG] Error cargando método:', methodError);
         }
       }
-    } catch (error) {
-      console.error('Error cargando sesión para deep link:', error);
-    } finally {
-      setIsLoading(false);
+
+      // Pre-fill álbum si está disponible
+      if (session.albumId) {
+        console.log('[EVENT_CONFIG] Estableciendo álbum fallback para ID:', session.albumId);
+        // El endpoint getAlbumById no funciona correctamente, usar fallback
+        setSelectedAlbum({
+          id_album: session.albumId,
+          nombre_album: 'Álbum de evento',
+          genero: 'Desconocido',
+          descripcion: 'Álbum asociado al evento',
+          url_imagen: undefined
+        });
+        console.log('[EVENT_CONFIG] Álbum fallback establecido para ID:', session.albumId);
+      } else {
+        console.log('[EVENT_CONFIG] Sesión no tiene albumId');
+      }
+
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message ||
+                          error?.response?.data?.error ||
+                          error?.message ||
+                          'Error desconocido';
+
+      // Si no hay sesión para este evento, mostrar mensaje informativo
+      if (errorMessage.includes('no encontrado') || errorMessage.includes('not found')) {
+        return;
+      }
+
+      // Error general - mostrar notificación pero permitir continuar
     }
   };
 
@@ -146,17 +316,90 @@ export const StartSession: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const payload: SessionCreateDto = {
-        title: title.trim() || 'Sesión de concentración',
-        description: description.trim() || undefined,
-        type: sessionId ? 'scheduled' : 'rapid',
-        eventId: sessionId ? parseInt(sessionId) : undefined,
-        methodId: selectedMethod?.id_metodo,
-        albumId: selectedAlbum?.id_album,
-      };
+      if (routeSessionId) {
+        // Continuando sesión existente
+        console.log('[SESSION_START] Continuando sesión existente:', routeSessionId);
 
-      // Iniciar sesión con cuenta regresiva
-      await startSessionWithCountdown(payload);
+        // Preparar la sesión para reanudación directa (similar a SessionsReport)
+        try {
+          const sessionDto = await sessionService.getSession(routeSessionId);
+          const activeSession = mapServerSession(sessionDto);
+
+          console.log('[SESSION_START] Sesión cargada para reanudación:', activeSession.sessionId);
+
+          // Almacenar en localStorage para reanudación
+          const resumeData = {
+            ...activeSession,
+            persistedAt: new Date().toISOString()
+          };
+          localStorage.setItem('focusup:activeSession', JSON.stringify(resumeData));
+          localStorage.setItem('focusup:directResume', 'true');
+
+          // Si tiene álbum, preparar canciones
+          if (activeSession.albumId) {
+            console.log('[SESSION_START] Preparando canciones para álbum:', activeSession.albumId);
+            try {
+              const albumSongs = await getSongsByAlbumId(activeSession.albumId);
+              localStorage.setItem('focusup:resume-album-songs', JSON.stringify({
+                albumId: activeSession.albumId,
+                songs: albumSongs,
+                albumName: `Álbum de sesión`
+              }));
+              console.log('[SESSION_START] Canciones preparadas:', albumSongs.length);
+            } catch (albumError) {
+              console.error('[SESSION_START] Error preparando canciones:', albumError);
+            }
+          }
+
+          console.log('[SESSION_START] Redirigiendo a dashboard para reanudación');
+          // Navegar al dashboard donde se restaurará la sesión
+          navigate('/dashboard');
+
+        } catch (resumeError) {
+          console.error('[SESSION_START] Error preparando reanudación:', resumeError);
+          // Fallback: intentar iniciar normalmente
+          await startSessionWithCountdown({
+            title: title.trim() || 'Sesión de concentración',
+            description: description.trim() || undefined,
+            type: 'scheduled',
+            methodId: selectedMethod?.id_metodo,
+            albumId: selectedAlbum?.id_album,
+          });
+        }
+      } else if (eventId && eventSession) {
+        // Iniciando sesión desde evento con cuenta regresiva
+        console.log('[SESSION_START] Iniciando sesión desde evento con countdown:', eventId, 'con sesión:', eventSession.sessionId);
+
+        const payload: SessionCreateDto = {
+          title: title.trim() || 'Sesión de concentración',
+          description: description.trim() || undefined,
+          type: 'scheduled',
+          eventId: parseInt(eventId),
+          methodId: selectedMethod?.id_metodo,
+          albumId: selectedAlbum?.id_album,
+        };
+
+        console.log('[SESSION_START] Payload para sesión desde evento:', payload);
+
+        // Iniciar sesión con cuenta regresiva para ejecutar método si está seleccionado
+        await startSessionWithCountdown(payload);
+      } else {
+        // Creando nueva sesión rápida
+        console.log('[SESSION_START] Creando nueva sesión rápida');
+
+        const payload: SessionCreateDto = {
+          title: title.trim() || 'Sesión de concentración',
+          description: description.trim() || undefined,
+          type: 'rapid',
+          methodId: selectedMethod?.id_metodo,
+          albumId: selectedAlbum?.id_album,
+        };
+
+        console.log('[SESSION_START] Payload para sesión rápida:', payload);
+
+        // Iniciar sesión con cuenta regresiva
+        await startSessionWithCountdown(payload);
+      }
 
     } catch (error) {
       console.error('Error iniciando sesión:', error);
@@ -173,8 +416,8 @@ export const StartSession: React.FC = () => {
       const payload: SessionCreateDto = {
         title: title.trim() || 'Sesión de concentración',
         description: description.trim() || undefined,
-        type: sessionId ? 'scheduled' : 'rapid',
-        eventId: sessionId ? parseInt(sessionId) : undefined,
+        type: eventId ? 'scheduled' : 'rapid',
+        eventId: eventId ? parseInt(eventId) : undefined,
         methodId: selectedMethod?.id_metodo,
         albumId: selectedAlbum?.id_album,
       };
@@ -341,7 +584,7 @@ export const StartSession: React.FC = () => {
 
             <div className="relative text-center">
               <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent mb-6 leading-tight">
-                {sessionId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
+                {routeSessionId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
               </h2>
 
               <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
@@ -371,7 +614,7 @@ export const StartSession: React.FC = () => {
             <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-blue-500/20">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
-                  {sessionId ? 'Continuar Sesión' : 'Configurar Sesión'}
+                  {routeSessionId ? 'Continuar Sesión' : 'Configurar Sesión'}
                 </h1>
                 <p className="text-gray-400 text-sm">
                   Personaliza tu experiencia de concentración

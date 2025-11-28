@@ -50,11 +50,15 @@ class SessionService {
    */
   async pauseSession(sessionId: string, elapsedMs: number): Promise<void> {
     try {
-      // Nuevo contrato API: PATCH /reports/sessions/{id}/progress
-      // Contract: {"status": "completed"|"pending", "elapsedMs": number, "notes": string}
+      // Nuevo contrato API: PATCH /api/v1/reports/sessions/{id}/progress
+      // Contract: {"status": "completed"|"pending", "estado": "completed"|"pending", "elapsedMs": number, "duracion": number, "notes": string}
+      // Se calcula duracion en segundos desde elapsedMs en milisegundos
+      const duracion = Math.floor(elapsedMs / 1000);
       await apiClient.patch(`/reports/sessions/${sessionId}/progress`, {
         status: 'pending',
-        elapsedMs: elapsedMs
+        estado: 'pending',
+        elapsedMs: elapsedMs,
+        duracion: duracion
       });
 
       // Emitir broadcast para notificar a otras páginas sobre la actualización
@@ -93,11 +97,15 @@ class SessionService {
    */
   async finishLater(sessionId: string, elapsedMs: number, notes?: string): Promise<void> {
     try {
-      // Nuevo contrato API: PATCH /reports/sessions/{id}/progress
-      // Contract: {"status": "completed"|"pending", "elapsedMs": number, "notes": string}
+      // Nuevo contrato API: PATCH /api/v1/reports/sessions/{id}/progress
+      // Contract: {"status": "completed"|"pending", "estado": "completed"|"pending", "elapsedMs": number, "duracion": number, "notes": string}
+      // Se calcula duracion en segundos desde elapsedMs en milisegundos
+      const duracion = Math.floor(elapsedMs / 1000);
       const payload: any = {
         status: 'pending',
-        elapsedMs: elapsedMs
+        estado: 'pending',
+        elapsedMs: elapsedMs,
+        duracion: duracion
       };
       if (notes) {
         payload.notes = notes;
@@ -125,11 +133,15 @@ class SessionService {
    */
   async completeSession(sessionId: string, elapsedMs: number, notes?: string): Promise<void> {
     try {
-      // Nuevo contrato API: PATCH /reports/sessions/{id}/progress
-      // Contract: {"status": "completed"|"pending", "elapsedMs": number, "notes": string}
+      // Nuevo contrato API: PATCH /api/v1/reports/sessions/{id}/progress
+      // Contract: {"status": "completed"|"pending", "estado": "completed"|"pending", "elapsedMs": number, "duracion": number, "notes": string}
+      // Se calcula duracion en segundos desde elapsedMs en milisegundos
+      const duracion = Math.floor(elapsedMs / 1000);
       const payload: any = {
         status: 'completed',
-        elapsedMs: elapsedMs
+        estado: 'completed',
+        elapsedMs: elapsedMs,
+        duracion: duracion
       };
       if (notes) {
         payload.notes = notes;
@@ -157,6 +169,26 @@ class SessionService {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error obteniendo sesión:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea o recupera una sesión desde un evento programado
+   *
+   * Este endpoint valida la propiedad del evento y crea una sesión si no existe,
+   * o recupera la sesión existente. Se utiliza para deep links desde correos electrónicos
+   * de eventos de concentración.
+   *
+   * @param eventId - ID del evento programado
+   * @returns DTO de la sesión creada/recuperada
+   */
+  async getSessionFromEvent(eventId: string): Promise<SessionDto> {
+    try {
+      const response = await apiClient.get(`${API_ENDPOINTS.SESSIONS}/from-event/${eventId}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error obteniendo sesión desde evento:', error);
       throw error;
     }
   }
@@ -205,6 +237,7 @@ class SessionService {
       throw error;
     }
   }
+
 
   /**
    * Mapea un DTO del servidor a un objeto ActiveSession del cliente
