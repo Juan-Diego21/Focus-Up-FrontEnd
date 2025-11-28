@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
-
-// Expresiones regulares para validación de campos
-const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { validateUsername, validateEmail, validatePassword } from "../utils/validationUtils";
 
 // Componente para el primer paso del registro: recopilar datos básicos
 export const RegisterPage: React.FC = () => {
@@ -35,34 +31,25 @@ export const RegisterPage: React.FC = () => {
     let newFormData = { ...formData };
 
     if (name === "nombre_usuario") {
-      // Validación del nombre de usuario con regex
-      if (!usernameRegex.test(value) && value !== "") {
-        setUsernameError("El nombre de usuario solo puede contener letras, números, guion bajo y guion.");
-      } else {
-        setUsernameError("");
-      }
+      // Validación del nombre de usuario
+      const error = value !== "" ? validateUsername(value) : null;
+      setUsernameError(error || "");
       newFormData = {
         ...newFormData,
         [name]: value,
       };
     } else if (name === "correo") {
       // Validación del correo electrónico
-      if (!emailRegex.test(value) && value !== "") {
-        setEmailError("Por favor ingresa un correo electrónico válido.");
-      } else {
-        setEmailError("");
-      }
+      const error = value !== "" ? validateEmail(value) : null;
+      setEmailError(error || "");
       newFormData = {
         ...newFormData,
         [name]: value,
       };
     } else if (name === "password") {
       // Validación de la contraseña
-      if (!passwordRegex.test(value) && value !== "") {
-        setPasswordError("La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.");
-      } else {
-        setPasswordError("");
-      }
+      const error = value !== "" ? validatePassword(value) : null;
+      setPasswordError(error || "");
       newFormData = {
         ...newFormData,
         [name]: value,

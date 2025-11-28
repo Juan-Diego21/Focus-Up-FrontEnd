@@ -10,7 +10,7 @@ export interface ApiError {
   error: string;
 }
 
-// Music Module Types
+// Tipos del módulo de música
 export interface Album {
   id_album: number;
   nombre_album: string;
@@ -29,7 +29,7 @@ export interface Song {
   duracion?: number; // En segundos
 }
 
-// Notification Module Types
+// Tipos del módulo de notificaciones
 export interface NotificationSettings {
   idUsuario?: number;
   eventos: boolean;
@@ -53,7 +53,7 @@ export interface NotificationConfigUpdate {
   enabled: boolean;
 }
 
-// Session Module Types
+// Tipos del módulo de sesiones
 export interface SessionDto {
   sessionId: string;
   title: string;

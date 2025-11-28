@@ -10,7 +10,7 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor for JWT
+// Interceptor de solicitud para JWT
 apiClient.interceptors.request.use(
   (config) => {
     // Get token from localStorage
@@ -23,7 +23,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+// Interceptor de respuesta para manejo de errores
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error) => {

@@ -6,6 +6,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Listbox } from "@headlessui/react";
 import Swal from "sweetalert2";
 import type { User as UserType } from "../types/user";
+import { validatePassword, validateDateOfBirth, checkUsernameAvailability } from "../utils/validationUtils";
 
 const countries = [
   "Colombia", "México", "Argentina", "Estados Unidos", "Canadá", "España",
@@ -49,64 +50,6 @@ const distractions = [
   { value: "20", label: "Estrés o ansiedad" },
 ];
 
-// Expresiones regulares para validación
-const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
-
-// Función para validar fecha de nacimiento
-const validateDateOfBirth = (date: Date): string | null => {
-  const today = new Date();
-  const minAge = 13; // Edad mínima razonable
-  const maxAge = 120; // Edad máxima razonable
-
-  if (date > today) {
-    return "La fecha de nacimiento no puede ser en el futuro";
-  }
-
-  const age = today.getFullYear() - date.getFullYear();
-  if (age < minAge) {
-    return `Debes tener al menos ${minAge} años`;
-  }
-
-  if (age > maxAge) {
-    return `La edad no puede ser mayor a ${maxAge} años`;
-  }
-
-  return null;
-};
-
-// Función para validar contraseña
-const validatePassword = (password: string): string | null => {
-  if (!passwordRegex.test(password)) {
-    return "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números";
-  }
-  return null;
-};
-
-// Función para verificar disponibilidad de nombre de usuario
-const checkUsernameAvailability = async (username: string, currentUsername: string): Promise<string | null> => {
-  // Si el nombre de usuario no cambió, no validar
-  if (username === currentUsername) {
-    return null;
-  }
-
-  // Validar formato básico primero
-  if (!usernameRegex.test(username)) {
-    return "El nombre de usuario solo puede contener letras, números, guion bajo y guion";
-  }
-
-  try {
-    // Llamada a la API para verificar disponibilidad del nombre de usuario
-    const { apiClient } = await import("../utils/apiClient");
-    const { API_ENDPOINTS } = await import("../utils/constants");
-
-    await apiClient.post(API_ENDPOINTS.CHECK_USERNAME, { nombre_usuario: username });
-    return null;
-  } catch (error: unknown) {
-    const apiError = error as { response?: { data?: { error?: string } } };
-    return apiError.response?.data?.error || "Error al verificar disponibilidad del nombre de usuario";
-  }
-};
 
 export const ProfilePage: React.FC = () => {
   const { user, loading: authLoading, updateUser } = useAuth();
