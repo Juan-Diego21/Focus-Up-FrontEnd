@@ -1,15 +1,19 @@
 // Importaciones de contextos y componentes
 import { RequireAuth } from "./components/auth/RequireAuth";
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useAuth } from "./contexts/AuthContext";
+import { FirstLoginModal } from "./components/FirstLoginModal";
 
 // Importaciones de páginas públicas
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { RegisterStep2 } from "./pages/RegisterStep2";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ForgotPasswordCodePage } from "./pages/ForgotPasswordCodePage";
 import { ForgotPasswordResetPage } from "./pages/ForgotPasswordResetPage";
-import { ConfirmationPage } from "./pages/ConfirmationPage";
-import { SurveyPage } from "./pages/SurveyPage";
+
+// Se eliminaron ConfirmationPage y SurveyPage para implementar el nuevo flujo de registro de dos pasos
+// y mover los campos de encuesta a ProfilePage según los nuevos requisitos del backend.
 
 // Importaciones de páginas protegidas
 import { DashboardPage } from "./pages/DashboardPage";
@@ -36,14 +40,31 @@ import { NotificationPage } from "./pages/NotificationPage";
 
 // Componente principal de la aplicación
 function App() {
+  const { showFirstLoginModal, setShowFirstLoginModal } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAcceptSurvey = () => {
+    setShowFirstLoginModal(false);
+    navigate("/profile");
+  };
+
+  const handleDeclineSurvey = () => {
+    setShowFirstLoginModal(false);
+    navigate("/dashboard");
+  };
+
   return (
     <div className="App">
+      <FirstLoginModal
+        isOpen={showFirstLoginModal}
+        onAccept={handleAcceptSurvey}
+        onDecline={handleDeclineSurvey}
+      />
       <Routes>
         {/* Rutas públicas */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/confirmation" element={<ConfirmationPage />} />
-        <Route path="/survey" element={<SurveyPage />} />
+        <Route path="/register/step2" element={<RegisterStep2 />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/forgot-password-code" element={<ForgotPasswordCodePage />} />
         <Route path="/forgot-password-reset" element={<ForgotPasswordResetPage />} />

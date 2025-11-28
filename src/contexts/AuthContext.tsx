@@ -15,7 +15,10 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
   loading: boolean;
+  showFirstLoginModal: boolean;
+  setShowFirstLoginModal: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.getItem("token")
   );
   const [loading, setLoading] = useState(true);
+  const [showFirstLoginModal, setShowFirstLoginModal] = useState(false);
 
   const isAuthenticated = !!token && !!user;
 
@@ -104,8 +108,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(newToken);
         setUser(userData);
 
-        // Redirigir al dashboard después del login exitoso
-        window.location.href = "/dashboard";
+        // Verificar si es el primer login para mostrar el modal de encuesta
+        const isFirstLogin = localStorage.getItem("focusup:firstLogin") === "true";
+        if (isFirstLogin) {
+          localStorage.removeItem("focusup:firstLogin");
+          setShowFirstLoginModal(true);
+        } else {
+          // Redirigir al dashboard después del login exitoso
+          window.location.href = "/dashboard";
+        }
       } else {
         throw new Error(response.message || "Inicio de sesión fallido");
       }
@@ -144,6 +155,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: unknown) {
       const apiError = error as { message?: string };
       throw new Error(apiError.message || "Error al registrar usuario");
+    }
+  };
+
+  // Función para actualizar datos del usuario
+  const updateUser = (userData: Partial<User>): void => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem("userData", JSON.stringify(updatedUser));
     }
   };
 
@@ -206,7 +226,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
     loading,
+    showFirstLoginModal,
+    setShowFirstLoginModal,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

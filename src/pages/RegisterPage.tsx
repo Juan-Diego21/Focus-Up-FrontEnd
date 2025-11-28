@@ -1,20 +1,19 @@
-import React, { useState, useEffect } from "react";
-import type { RegisterRequest } from "../types/user";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-
+// Expresiones regulares para validación de campos
 const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Componente para el primer paso del registro: recopilar datos básicos
 export const RegisterPage: React.FC = () => {
-  const [formData, setFormData] = useState<RegisterRequest>({
+  // Estado del formulario simplificado para el primer paso
+  const [formData, setFormData] = useState({
     nombre_usuario: "",
     correo: "",
     password: "",
-    fecha_nacimiento: new Date(),
-    pais: "",
-    genero: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,23 +24,9 @@ export const RegisterPage: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
   const [showPasswordHint, setShowPasswordHint] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Load saved form data on component mount
-  useEffect(() => {
-    const savedData = localStorage.getItem("registrationFormData");
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        // Convert fecha_nacimiento back to Date object
-        if (parsedData.fecha_nacimiento) {
-          parsedData.fecha_nacimiento = new Date(parsedData.fecha_nacimiento);
-        }
-        setFormData(parsedData);
-      } catch (error) {
-        console.error("Error loading saved form data:", error);
-      }
-    }
-  }, []);
+  const navigate = useNavigate();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -49,15 +34,8 @@ export const RegisterPage: React.FC = () => {
     const { name, value } = e.target;
     let newFormData = { ...formData };
 
-    if (name === "fecha_nacimiento") {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        newFormData = {
-          ...newFormData,
-          [name]: date,
-        };
-      }
-    } else if (name === "nombre_usuario") {
+    if (name === "nombre_usuario") {
+      // Validación del nombre de usuario con regex
       if (!usernameRegex.test(value) && value !== "") {
         setUsernameError("El nombre de usuario solo puede contener letras, números, guion bajo y guion.");
       } else {
@@ -68,6 +46,7 @@ export const RegisterPage: React.FC = () => {
         [name]: value,
       };
     } else if (name === "correo") {
+      // Validación del correo electrónico
       if (!emailRegex.test(value) && value !== "") {
         setEmailError("Por favor ingresa un correo electrónico válido.");
       } else {
@@ -78,8 +57,9 @@ export const RegisterPage: React.FC = () => {
         [name]: value,
       };
     } else if (name === "password") {
+      // Validación de la contraseña
       if (!passwordRegex.test(value) && value !== "") {
-        setPasswordError("La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial.");
+        setPasswordError("La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.");
       } else {
         setPasswordError("");
       }
@@ -87,44 +67,61 @@ export const RegisterPage: React.FC = () => {
         ...newFormData,
         [name]: value,
       };
-    } else {
-      newFormData = {
-        ...newFormData,
-        [name]: value,
-      };
     }
 
     setFormData(newFormData);
-    // Save to localStorage for persistence
-    localStorage.setItem("registrationFormData", JSON.stringify(newFormData));
     setError("");
     setSuccess("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    // Validación completa del formulario antes de enviar
-    if (usernameError || emailError || passwordError) {
-      setError("Corrige los errores en el formulario antes de continuar.");
-      return;
+    try {
+      // Validación completa del formulario antes de enviar
+      if (usernameError || emailError || passwordError) {
+        setError("Corrige los errores en el formulario antes de continuar.");
+        return;
+      }
+
+      if (!formData.nombre_usuario || !formData.correo || !formData.password) {
+        setError("Todos los campos obligatorios deben estar completos.");
+        return;
+      }
+
+      if (formData.password !== confirmPassword) {
+        setError("Las contraseñas no coinciden");
+        return;
+      }
+
+      // Persistir nombre de usuario y correo en localStorage con claves namespaced
+      // Se utiliza namespacing para evitar conflictos con otras claves del sistema
+      localStorage.setItem("focusup:register:username", formData.nombre_usuario);
+      localStorage.setItem("focusup:register:email", formData.correo);
+
+      // Solicitar código de verificación al backend
+      const { apiClient } = await import("../utils/apiClient");
+      const { API_ENDPOINTS } = await import("../utils/constants");
+
+      await apiClient.post(API_ENDPOINTS.REQUEST_VERIFICATION_CODE, {
+        email: formData.correo,
+        password: formData.password,
+      });
+
+      // Navegar al segundo paso pasando la contraseña por estado de ruta (no en localStorage por seguridad)
+      navigate("/register/step2", {
+        state: { password: formData.password }
+      });
+
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { error?: string } }; message?: string };
+      const errorMessage = apiError?.response?.data?.error || apiError?.message || "Error al solicitar código de verificación";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    if (!formData.nombre_usuario || !formData.correo || !formData.password) {
-      setError("Todos los campos obligatorios deben estar completos.");
-      return;
-    }
-
-    if (formData.password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      return;
-    }
-
-    // Store form data in localStorage for later use
-    localStorage.setItem("registrationData", JSON.stringify(formData));
-
-    // Redirect to confirmation page
-    window.location.href = "/confirmation";
   };
 
   return (
@@ -186,7 +183,7 @@ export const RegisterPage: React.FC = () => {
                   required
                   value={formData.nombre_usuario}
                   onChange={handleChange}
-                  disabled={false}
+                  disabled={loading}
                 />
               </div>
               {usernameError && (
@@ -209,7 +206,7 @@ export const RegisterPage: React.FC = () => {
                   required
                   value={formData.correo}
                   onChange={handleChange}
-                  disabled={false}
+                  disabled={loading}
                 />
               </div>
               {emailError && (
@@ -234,7 +231,7 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   onFocus={() => setShowPasswordHint(true)}
                   onBlur={() => setShowPasswordHint(false)}
-                  disabled={false}
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -247,7 +244,7 @@ export const RegisterPage: React.FC = () => {
               {/* Sugerencia de contraseña que aparece solo al enfocar el campo */}
               {showPasswordHint && (
                 <div className="mt-2 text-sm text-gray-500 transition-all duration-200 ease-in-out animate-fade-in">
-                  La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial.
+                  La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.
                 </div>
               )}
               {passwordError && (
@@ -269,7 +266,7 @@ export const RegisterPage: React.FC = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={false}
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -285,9 +282,10 @@ export const RegisterPage: React.FC = () => {
             {/* Botón Siguiente */}
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg"
             >
-              Siguiente
+              {loading ? "Solicitando código..." : "Siguiente"}
             </button>
 
             {/* Separador */}

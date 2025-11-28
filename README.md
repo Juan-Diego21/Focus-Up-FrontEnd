@@ -162,6 +162,35 @@ Inicio de Sesión/Registro → AuthContext → Almacenamiento de Token → Requi
 Cierre de Sesión → Limpiar Tokens → Redirigir a Inicio de Sesión → Limpieza del Reproductor de Música
 ```
 
+### Nuevo Flujo de Registro de Dos Pasos
+
+El sistema de registro ha sido actualizado para implementar un flujo de verificación de email de dos pasos:
+
+```
+Registro Paso 1 → Solicitar Código → Registro Paso 2 → Verificar Código → Registrar Usuario → Primer Login → Modal de Encuesta
+     ↓              ↓              ↓              ↓              ↓              ↓              ↓
+Formulario básico → API /auth/   → Formulario de → API /auth/   → API /auth/   → Modal de     → Navegación a
+(username, email, → request-     → código        → verify-code → register     → bienvenida   → ProfilePage
+password)        → verification- → (6 dígitos)  → (email +     → (email +     → opcional     → (campos de
+                → code          →              → código)      → username +   → para         → encuesta)
+                →               →              →              → password)    → completar
+                →               →              →              →              → perfil
+```
+
+#### Características del Nuevo Flujo
+
+- **Paso 1 (RegisterPage)**: Recopila datos básicos (username, email, password) y solicita código de verificación
+- **Paso 2 (RegisterStep2)**: Verifica código de 6 dígitos y completa el registro
+- **Primer Login**: Modal opcional para completar perfil con encuesta
+- **Campos de Encuesta**: Integrados en ProfilePage (fecha nacimiento, intereses, distracciones)
+
+#### Seguridad Implementada
+
+- Contraseña no se almacena en localStorage durante el flujo
+- Datos temporales namespaced (`focusup:register:*`)
+- Verificación secuencial de APIs (verify-code → register)
+- Limpieza automática de datos temporales
+
 ## 📚 Sistema de Métodos de Estudio
 
 ### Arquitectura
