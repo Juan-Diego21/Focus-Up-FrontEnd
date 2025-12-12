@@ -14,6 +14,9 @@ export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * @returns Mensaje de error o null si es válido
  */
 export const validateUsername = (username: string): string | null => {
+  if (username.length < 3) {
+    return "El nombre de usuario debe tener al menos 3 caracteres";
+  }
   if (!usernameRegex.test(username)) {
     return "El nombre de usuario solo puede contener letras, números, guion bajo y guion";
   }
@@ -68,35 +71,4 @@ export const validateDateOfBirth = (date: Date): string | null => {
   }
 
   return null;
-};
-
-/**
- * Verifica la disponibilidad de un nombre de usuario
- * @param username - El nombre de usuario a verificar
- * @param currentUsername - El nombre de usuario actual (para evitar validación si no cambió)
- * @returns Mensaje de error o null si está disponible
- */
-export const checkUsernameAvailability = async (username: string, currentUsername: string): Promise<string | null> => {
-  // Si el nombre de usuario no cambió, no validar
-  if (username === currentUsername) {
-    return null;
-  }
-
-  // Validar formato básico primero
-  const formatError = validateUsername(username);
-  if (formatError) {
-    return formatError;
-  }
-
-  try {
-    // Llamada a la API para verificar disponibilidad del nombre de usuario
-    const { apiClient } = await import("../utils/apiClient");
-    const { API_ENDPOINTS } = await import("../utils/constants");
-
-    await apiClient.post(API_ENDPOINTS.CHECK_USERNAME, { nombre_usuario: username });
-    return null;
-  } catch (error: unknown) {
-    const apiError = error as { response?: { data?: { error?: string } } };
-    return apiError.response?.data?.error || "Error al verificar disponibilidad del nombre de usuario";
-  }
 };

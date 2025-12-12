@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { apiClient } from "../utils/apiClient";
 import { API_ENDPOINTS } from "../utils/constants";
+import Swal from "sweetalert2";
 
 export const ForgotPasswordResetPage: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -58,7 +59,17 @@ export const ForgotPasswordResetPage: React.FC = () => {
       localStorage.removeItem("resetEmail");
       localStorage.removeItem("resetCode");
 
-      // Redirigir al login
+      // Mostrar alerta de éxito y redirigir al login
+      await Swal.fire({
+        title: 'Contraseña restablecida',
+        text: 'Tu contraseña ha sido cambiada exitosamente. Redirigiendo al inicio de sesión...',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#22C55E',
+      });
       window.location.href = "/login";
     } catch (err: unknown) {
       const apiError = err as { message?: string };
@@ -95,11 +106,11 @@ export const ForgotPasswordResetPage: React.FC = () => {
           <img
             src="/img/Logo.png"
             alt="Logo de Focus Up"
-            className="w-72 mx-auto pb-10"
+            className="w-48 mx-auto pb-6"
           />
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <p className="text-gray-300 text-center mb-8 text-lg font-medium">
+            <p className="text-gray-100 text-center mb-8 text-lg font-medium">
               Escribe una nueva contraseña
             </p>
 
@@ -117,7 +128,7 @@ export const ForgotPasswordResetPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none cursor-pointer"
                   aria-label={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showNewPassword ? (
@@ -146,7 +157,7 @@ export const ForgotPasswordResetPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none cursor-pointer"
                   aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showConfirmPassword ? (
