@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 // Componente para el segundo paso del registro: verificación del código y registro final
 // Este componente maneja la verificación del código enviado por email y el registro completo del usuario
 // según el nuevo flujo de dos pasos implementado para mejorar la seguridad del registro
+// Ahora usa SweetAlert para todas las notificaciones en lugar de alert nativo para consistencia visual
 export const RegisterStep2: React.FC = () => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [error, setError] = useState<string>("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
@@ -48,7 +49,6 @@ export const RegisterStep2: React.FC = () => {
   // Función para reenviar código
   const handleResendCode = async () => {
     setResendLoading(true);
-    setError("");
 
     try {
       const email = localStorage.getItem("focusup:register:email");
@@ -64,13 +64,29 @@ export const RegisterStep2: React.FC = () => {
         password,
       });
 
-      // Mostrar mensaje de éxito temporal
-      setError(""); // Limpiar errores previos
-      alert("Código reenviado exitosamente");
+      // Mostrar mensaje de éxito con SweetAlert - Nuevo flujo usando SweetAlert en lugar de alert nativo
+      await Swal.fire({
+        title: 'Código reenviado',
+        text: 'Se ha enviado un nuevo código de verificación a tu correo electrónico.',
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#22C55E',
+      });
     } catch (error: unknown) {
       const apiError = error as { response?: { data?: { error?: string } }; message?: string };
       const errorMessage = apiError?.response?.data?.error || apiError?.message || "Error al reenviar código";
-      setError(errorMessage);
+      await Swal.fire({
+        title: 'Error al reenviar código',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        background: '#232323',
+        color: '#ffffff',
+        confirmButtonColor: '#EF4444',
+      });
     } finally {
       setResendLoading(false);
     }
@@ -81,12 +97,19 @@ export const RegisterStep2: React.FC = () => {
     const fullCode = code.join("");
 
     if (fullCode.length !== 6) {
-      setError("Por favor ingresa el código completo de 6 dígitos");
+      await Swal.fire({
+        title: 'Código incompleto',
+        text: 'Por favor ingresa el código completo de 6 dígitos',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        background: '#232323',
+        color: '#ffffff',
+        confirmButtonColor: '#F59E0B',
+      });
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       // Recuperar datos almacenados de forma segura en localStorage durante el registro
@@ -120,14 +143,32 @@ export const RegisterStep2: React.FC = () => {
       // Marcar que es el primer login para mostrar el modal de encuesta en el próximo inicio de sesión
       localStorage.setItem("focusup:firstLogin", "true");
 
-      // Mostrar alerta de éxito y redirigir al login
-      alert("Registro completado exitosamente. Redirigiendo al inicio de sesión...");
+      // Mostrar alerta de éxito con SweetAlert y redirigir al login - Nuevo flujo usando SweetAlert para consistencia visual
+      await Swal.fire({
+        title: 'Registro completado',
+        text: 'Tu cuenta ha sido creada exitosamente. Redirigiendo al inicio de sesión...',
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false,
+        background: '#232323',
+        color: '#ffffff',
+        iconColor: '#22C55E',
+      });
       navigate("/login");
 
     } catch (error: unknown) {
       const apiError = error as { response?: { data?: { error?: string } }; message?: string };
       const errorMessage = apiError?.response?.data?.error || apiError?.message || "Error en el proceso de registro";
-      setError(errorMessage);
+      // Mostrar error con SweetAlert en lugar de setError para consistencia
+      await Swal.fire({
+        title: 'Error en el registro',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        background: '#232323',
+        color: '#ffffff',
+        confirmButtonColor: '#EF4444',
+      });
     } finally {
       setLoading(false);
     }
@@ -160,19 +201,13 @@ export const RegisterStep2: React.FC = () => {
           <img
             src="/img/Logo.png"
             alt="Logo de Focus Up"
-            className="w-72 mx-auto pb-10"
+            className="w-48 mx-auto pb-6"
           />
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <p className="text-gray-300 text-center mb-8 text-lg font-medium">
+            <p className="text-gray-100 text-center mb-8 text-lg font-medium">
               Hemos enviado un código de verificación a tu correo para completar el registro
             </p>
-
-            {error && (
-              <div className="bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium">
-                {error}
-              </div>
-            )}
 
             <div className="flex justify-center gap-2 mb-8">
               {code.map((digit, index) => (

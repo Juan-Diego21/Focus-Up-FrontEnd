@@ -71,11 +71,11 @@ export const ForgotPasswordCodePage: React.FC = () => {
           <img
             src="/img/Logo.png"
             alt="Logo de Focus Up"
-            className="w-72 mx-auto pb-10"
+            className="w-48 mx-auto pb-6"
           />
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <p className="text-gray-300 text-center mb-8 text-lg font-medium">
+            <p className="text-gray-100 text-center mb-8 text-lg font-medium">
               Hemos enviado un código de verificación a tu correo para poder restablecer tu contraseña
             </p>
 

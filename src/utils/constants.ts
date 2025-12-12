@@ -6,9 +6,9 @@ export const API_ENDPOINTS = {
   LOGOUT: "/users/logout",
   PROFILE: "/users/profile",
   DELETE_ACCOUNT: "/users/delete",
-  CHECK_USERNAME: "/users/check-username",
   REQUEST_PASSWORD_RESET: "/users/request-password-reset",
   RESET_PASSWORD_WITH_CODE: "/users/reset-password-with-code",
+  PASSWORD_CHANGE: "/users/:id/password",
   // Nuevos endpoints para el flujo de registro de dos pasos según el contrato del backend
   REQUEST_VERIFICATION_CODE: "/auth/request-verification-code",
   VERIFY_CODE: "/auth/verify-code",

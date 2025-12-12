@@ -6,7 +6,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Listbox } from "@headlessui/react";
 import Swal from "sweetalert2";
 import type { User as UserType } from "../types/user";
-import { validatePassword, validateDateOfBirth, checkUsernameAvailability } from "../utils/validationUtils";
+import { validatePassword, validateDateOfBirth, validateUsername } from "../utils/validationUtils";
 
 const countries = [
   "Colombia", "México", "Argentina", "Estados Unidos", "Canadá", "España",
@@ -186,12 +186,12 @@ export const ProfilePage: React.FC = () => {
         return;
       }
 
-      // Validar nombre de usuario si cambió
+      // Validar nombre de usuario si cambió - Validación solo en frontend ya que no existe endpoint check-username
       if (formData.nombre_usuario !== user.nombre_usuario) {
-        const usernameError = await checkUsernameAvailability(formData.nombre_usuario, user.nombre_usuario);
+        const usernameError = validateUsername(formData.nombre_usuario);
         if (usernameError) {
           await Swal.fire({
-            title: 'Nombre de usuario no disponible',
+            title: 'Nombre de usuario inválido',
             text: usernameError,
             icon: 'error',
             confirmButtonText: 'Entendido',
@@ -203,7 +203,7 @@ export const ProfilePage: React.FC = () => {
         }
       }
 
-      // Validar contraseña si se está cambiando
+      // Validar contraseña si se está cambiando - Asegurar que la contraseña actual no esté vacía y cumpla con requisitos
       if (showPasswordFields) {
         if (!passwordData.currentPassword || !passwordData.newPassword) {
           await Swal.fire({
@@ -246,6 +246,65 @@ export const ProfilePage: React.FC = () => {
         }
       }
 
+      // Cambiar contraseña si se solicitó - Nuevo flujo usando PATCH /users/:id/password
+      if (showPasswordFields) {
+        try {
+          const { apiClient } = await import("../utils/apiClient");
+          const { API_ENDPOINTS } = await import("../utils/constants");
+
+          await apiClient.patch(`${API_ENDPOINTS.USERS}/${user.id_usuario}/password`, {
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword
+          });
+
+          // Mostrar alerta de éxito para cambio de contraseña
+          await Swal.fire({
+            title: 'Contraseña cambiada',
+            text: 'Tu contraseña ha sido actualizada exitosamente.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false,
+            background: '#232323',
+            color: '#ffffff',
+            iconColor: '#22C55E',
+          });
+
+          // Reset password fields
+          setPasswordData({
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+          setShowPasswordFields(false);
+
+        } catch (passwordError: unknown) {
+          let errorMessage = "Error al cambiar contraseña";
+          if (passwordError && typeof passwordError === 'object' && 'error' in passwordError) {
+            const err = passwordError as { error: string };
+            if (err.error.includes('current password') || err.error.includes('incorrect')) {
+              errorMessage = "La contraseña actual es incorrecta";
+            } else if (err.error.includes('invalid') || err.error.includes('password')) {
+              errorMessage = "La nueva contraseña no cumple con los requisitos";
+            } else if (err.error.includes('not allowed') || err.error.includes('permission')) {
+              errorMessage = "No tienes permisos para cambiar la contraseña de este usuario";
+            } else {
+              errorMessage = err.error;
+            }
+          }
+
+          await Swal.fire({
+            title: 'Error al cambiar contraseña',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'Entendido',
+            background: '#232323',
+            color: '#ffffff',
+            confirmButtonColor: '#EF4444',
+          });
+          return;
+        }
+      }
+
       // Convertir componentes de tiempo a formato HH:MM si están completos
       let horarioFav: string | null = null;
       if (formData.hours && formData.minutes && formData.period) {
@@ -272,16 +331,13 @@ export const ProfilePage: React.FC = () => {
         distracciones: distracciones,
       };
 
-      // If password change is requested, include it
-      if (showPasswordFields) {
-        updateData.currentPassword = passwordData.currentPassword;
-        updateData.newPassword = passwordData.newPassword;
-      }
+      console.log('Profile update data being sent:', updateData);
 
       const { apiClient } = await import("../utils/apiClient");
       const { API_ENDPOINTS } = await import("../utils/constants");
 
-      await apiClient.put(`${API_ENDPOINTS.USERS}/${user.id_usuario}`, updateData);
+      const response = await apiClient.put(`${API_ENDPOINTS.USERS}/${user.id_usuario}`, updateData);
+      console.log('Profile update response:', response);
 
       // Actualizar los datos del usuario en el contexto de autenticación
       const updatedUserData: Partial<UserType> = {
@@ -306,14 +362,6 @@ export const ProfilePage: React.FC = () => {
         color: '#ffffff',
         iconColor: '#22C55E',
       });
-
-      // Reset password fields
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      setShowPasswordFields(false);
 
     } catch (err: unknown) {
       let errorMessage = "Error al actualizar perfil";

@@ -59,17 +59,19 @@ export const ForgotPasswordPage: React.FC = () => {
           <img
             src="/img/Logo.png"
             alt="Logo de Focus Up"
-            className="w-72 mx-auto pb-10"
+            className="w-48 mx-auto pb-6"
           />
 
+          <h2 className="text-2xl font-bold text-gray-100">Restablecer contraseña</h2>
+
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <p className="text-gray-400 text-center mb-8 text-lg font-medium">
+            <p className="text-gray-400 text-center mb-6 text-sm font-medium">
               Ingresa el correo electrónico asociado a tu cuenta
             </p>
 
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Correo electrónico
+              <label className="flex text-sm font-medium text-gray-200 mb-2">
+                Correo electrónico <span className="text-red-500 ml-1">*</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />

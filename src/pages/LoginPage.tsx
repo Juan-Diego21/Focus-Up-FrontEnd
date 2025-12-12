@@ -46,7 +46,7 @@ export const LoginPage: React.FC = () => {
           <img
             src="/img/Logo.png"
             alt="Logo de Focus Up"
-            className="w-72 mx-auto pb-10"
+            className="w-48 mx-auto pb-6"
           />
 
           {/* Formulario */}
@@ -59,8 +59,8 @@ export const LoginPage: React.FC = () => {
 
             {/* Campo para correo electrónico o nombre de usuario */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Correo electrónico o nombre de usuario
+              <label className="flex text-sm font-medium text-gray-200 mb-2">
+                Correo electrónico o nombre de usuario <span className="text-red-500 ml-1">*</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -79,11 +79,11 @@ export const LoginPage: React.FC = () => {
 
             {/* Campo para contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Contraseña
+              <label className="flex text-sm font-medium text-gray-200 mb-2">
+                Contraseña <span className="text-red-500 ml-1">*</span>
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Lock className="absolute left-3 top-1/3 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -96,11 +96,19 @@ export const LoginPage: React.FC = () => {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/3 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
+                
+                {/* Recuperar contraseña */}
+                <div className="flex mt-2">
+                  <a href="/forgot-password"
+                    className="text-blue-500 hover:text-blue-600 text-sm font-medium transition-colors duration-200">
+                    ¿Olvidaste tu contraseña?
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -108,44 +116,18 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mb-2"
             >
               {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </button>
-
-            {/* Separador visual */}
-            <div className="relative flex items-center justify-center text-gray-400">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4 bg-none px-2">o</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            {/* Botón para continuar con Google */}
-            <button
-              type="button"
-              className="w-full bg-white text-gray-800 py-3 rounded-lg font-medium border border-gray-300 
-                        flex items-center justify-center gap-2 
-                      hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 
-                        transition-all duration-200 cursor-pointer 
-                        shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              <img src="/img/google.png" alt="Logo de Google" className="w-5 h-5" />
-              Continuar con Google
-            </button>
-
-            {/* Enlaces para registrarse y recuperar contraseña */}
-            <div className="flex justify-between mt-6">
-              <a
+            {/* Registro */}
+            <div className="flex">
+              <p className="text-gray-400 text-sm mr-2">¿Necesitas una cuenta?</p>
+                <a
                 href="/register"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200"
-              >
+                className="text-blue-500 hover:text-blue-600 text-sm font-medium transition-colors duration-200"
+                >
                 Registrarse
-              </a>
-              <a
-                href="/forgot-password"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200"
-              >
-                ¿Olvidaste tu contraseña?
               </a>
             </div>
           </form>

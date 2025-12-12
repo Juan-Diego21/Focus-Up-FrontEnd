@@ -139,7 +139,7 @@ export const RegisterPage: React.FC = () => {
           <img
             src="/img/Logo.png"
             alt="Logo de Focus Up"
-            className="w-72 mx-auto pb-10"
+            className="w-48 mx-auto pb-6"
           />
 
           {/* Formulario */}
@@ -157,7 +157,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Nombre de usuario */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="flex text-sm font-medium text-gray-200 mb-2">
                 Nombre de usuario <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -180,7 +180,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Email */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="flex text-sm font-medium text-gray-200 mb-2">
                 Correo electrónico <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -203,7 +203,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="flex text-sm font-medium text-gray-200 mb-2">
                 Contraseña <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -241,7 +241,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Confirmar Contraseña */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="flex text-sm font-medium text-gray-200 mb-2">
                 Confirmar Contraseña <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -273,22 +273,6 @@ export const RegisterPage: React.FC = () => {
               className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg"
             >
               {loading ? "Solicitando código..." : "Siguiente"}
-            </button>
-
-            {/* Separador */}
-            <div className="relative flex items-center justify-center text-gray-400">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4 bg-none px-2">o</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            {/* Botón Google */}
-            <button
-              type="button"
-              className="w-full bg-white text-gray-800 py-3 rounded-lg font-medium border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer shadow-md"
-            >
-              <img src="/img/google.png" alt="Logo de Google" className="w-5 h-5" />
-              Continuar con Google
             </button>
           </form>
         </div>
