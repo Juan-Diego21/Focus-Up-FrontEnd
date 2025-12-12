@@ -209,7 +209,6 @@ export const RegisterStep2: React.FC = () => {
               Hemos enviado un código de verificación a tu correo para completar el registro
             </p>
 
-
             <div className="flex justify-center gap-2 mb-8">
               {code.map((digit, index) => (
                 <input
