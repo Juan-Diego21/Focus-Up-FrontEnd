@@ -91,7 +91,7 @@ export const getSongsByAlbumId = async (albumId: number): Promise<Song[]> => {
     nombre_cancion: song.nombreCancion,
     artista_cancion: song.artistaCancion,
     categoria: song.categoriaMusica || song.generoCancion,
-    url_musica: song.urlMusica,
+    url_musica: song.urlMusica, // Usar URLs de Azure Blob Storage directamente
     id_album: song.idAlbum,
     duracion: song.duracion // May be undefined, will be handled by duration loading
   })) : [];

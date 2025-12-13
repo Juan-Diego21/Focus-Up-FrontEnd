@@ -317,10 +317,16 @@ export const MindMapsStepsPage: React.FC = () => {
     }
 
     // For resumed sessions, use the sessionId from URL, otherwise use activeMethodId
-    const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+    // If neither is available, try to use the ID from current session data
+    let sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+
+    // Fallback: use the ID from current session data if available
+    if (!sessionId && sessionData?.id_metodo_realizado) {
+      sessionId = sessionData.id_metodo_realizado.toString();
+    }
 
     if (!sessionId) {
-      console.error('No session ID found for progress update');
+      console.error('No session ID found for progress update. isResuming:', isResuming, 'urlSessionId:', urlSessionId, 'sessionData:', sessionData);
       return;
     }
 
@@ -383,8 +389,8 @@ export const MindMapsStepsPage: React.FC = () => {
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
-          navigate('/dashboard');
-        });
+           navigate('/reports');
+         });
       }
 
       setAlertQueue(null);
@@ -505,7 +511,9 @@ export const MindMapsStepsPage: React.FC = () => {
   // Usar únicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS['Mapas Mentales'];
   const methodColor = localAssets?.color || "#10b981";
-  const currentStepData = steps[currentStep];
+  // Asegurar que currentStep esté dentro de los límites válidos para prevenir errores de acceso a array
+  const clampedCurrentStep = Math.min(Math.max(currentStep, 0), steps.length - 1);
+  const currentStepData = steps[clampedCurrentStep];
 
 
   return (
@@ -537,8 +545,8 @@ export const MindMapsStepsPage: React.FC = () => {
         >
           {method.titulo}
         </h1>
-        {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) */}
-        {sessionData && currentStep >= 2 && (
+        {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) y si no está completado */}
+        {sessionData && currentStep >= 2 && progressPercentage < 100 && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"

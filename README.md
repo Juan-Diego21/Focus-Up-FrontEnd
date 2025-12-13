@@ -1,77 +1,123 @@
-# 🎵 Focus-Up Frontend
+# Focus-Up Frontend
 
 Una aplicación moderna de React TypeScript para la gestión de métodos de estudio con reproducción de música persistente global. Construida con Vite, React Router y Tailwind CSS.
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 src/
 ├── components/
-│   ├── ui/                    # Componentes de UI reutilizables
-│   │   ├── Button.tsx        # Componente genérico de botón
-│   │   ├── Card.tsx          # Componente de diseño de tarjeta
-│   │   ├── LoadingSpinner.tsx # Indicador de carga
-│   │   ├── MusicPlayer.tsx   # UI del reproductor de música global
-│   │   ├── ProgressCircle.tsx # Indicador de progreso circular
-│   │   ├── Sidebar.tsx       # Barra lateral de navegación
-│   │   ├── Timer.tsx         # Componente de temporizador de estudio
-│   │   ├── ConcentrationCard.tsx # UI del temporizador de concentración
-│   │   └── FinishLaterModal.tsx # Modal de pausa de sesión
-│   ├── auth/                 # Componentes de autenticación
-│   │   └── RequireAuth.tsx   # Wrapper de protección de rutas
-│   └── ConcentrationCard/    # Componentes de sesión de concentración
-│       ├── ContinueSessionModal.tsx # Modal de continuar sesión
-│       └── SessionFloatingButton.tsx # Botón flotante de sesión
-├── contexts/                 # Proveedores de contexto de React
-│   ├── AuthContext.tsx       # Estado de autenticación de usuario
-│   ├── MusicPlayerContext.tsx # Estado global del reproductor de música
-│   └── RequireAuth.tsx       # Contexto de protección de rutas
-├── hooks/                    # Hooks personalizados de React
-│   ├── useApi.ts            # Hook para llamadas API
-│   ├── useAuth.ts           # Hook para autenticación
-│   ├── useConcentrationSession.ts # Hook para sesiones de concentración
-│   └── useEvents.ts         # Hook para gestión de eventos
-├── pages/                    # Componentes de página (rutas)
-│   ├── DashboardPage.tsx     # Panel principal
-│   ├── StudyMethodsLibraryPage.tsx # Selección de métodos
-│   ├── MusicAlbumsPage.tsx   # Biblioteca de música
-│   ├── MusicSongsPage.tsx    # Vista de canciones del álbum
-│   ├── ProfilePage.tsx       # Perfil de usuario
-│   ├── ReportsPage.tsx       # Reportes de estudio
-│   ├── LoginPage.tsx         # Autenticación
-│   ├── RegisterPage.tsx      # Registro de usuario
-│   ├── ForgotPassword*.tsx   # Recuperación de contraseña
-│   ├── EventsPage.tsx        # Gestión de eventos
-│   ├── NotificationPage.tsx  # Notificaciones
-│   ├── StartSession.tsx      # Inicio de sesiones de concentración
-│   └── [Method]*.tsx         # Páginas de métodos de estudio
-├── providers/                # Proveedores de estado global
-│   └── ConcentrationSessionProvider.tsx # Estado de sesiones activas
-├── services/                 # Servicios de API
-│   ├── sessionService.ts     # API de sesiones
-│   ├── reportsService.ts     # API de reportes
-│   └── audioService.ts       # Servicio de audio
-├── types/                    # Definiciones de tipos TypeScript
-│   ├── api.ts               # Tipos de respuestas de API
-│   ├── user.ts              # Tipos de datos de usuario
-│   ├── events.ts            # Tipos de eventos
-│   └── sessionMappers.ts    # Utilidades de mapeo de sesiones
-├── utils/                   # Funciones de utilidad
-│   ├── apiClient.ts         # Cliente HTTP Axios
-│   ├── constants.ts         # Constantes de la aplicación
-│   ├── validationUtils.ts   # Utilidades de validación (nuevo)
-│   ├── methodAssets.ts      # Configuraciones de métodos de estudio
-│   ├── methodStatus.ts      # Utilidades de progreso de métodos
-│   ├── musicApi.ts          # Funciones de API de música
-│   ├── broadcastChannel.ts  # Comunicación multi-pestaña
-│   ├── offlineQueue.ts      # Cola de acciones offline
-│   └── sleepDetector.ts     # Detección de suspensión del sistema
-├── App.tsx                  # Componente principal con enrutamiento
-├── main.tsx                 # Punto de entrada de la aplicación
-└── index.css                # Estilos globales
+│   ├── ui/
+│   │   ├── BackButton.tsx
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   ├── CountdownOverlay.tsx
+│   │   ├── EventCard.tsx
+│   │   ├── FinishLaterModal.tsx
+│   │   ├── FormField.tsx
+│   │   ├── Input.tsx
+│   │   ├── LoadingSpinner.tsx
+│   │   ├── MusicPlayer.tsx
+│   │   ├── NotificationToggle.tsx
+│   │   ├── PageLayout.tsx
+│   │   ├── ProgressCircle.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── TimeInput.tsx
+│   │   ├── Timer.tsx
+│   │   └── UpcomingNotificationCard.tsx
+│   ├── auth/
+│   │   └── RequireAuth.tsx
+│   ├── ConcentrationCard/
+│   │   ├── ConcentrationCard.tsx
+│   │   ├── ContinueSessionModal.tsx
+│   │   ├── MiniSessionCard.tsx
+│   │   └── SessionFloatingButton.tsx
+│   ├── AlbumSelectionModal.tsx
+│   ├── FirstLoginModal.tsx
+│   ├── MethodSelectionModal.tsx
+│   ├── MiniSessionCard.tsx
+│   ├── MusicTest.tsx
+│   ├── SessionsUI.tsx
+│   └── StartSession.tsx
+├── contexts/
+│   ├── AuthContext.tsx
+│   ├── MusicPlayerContext.tsx
+│   └── RequireAuth.tsx
+├── hooks/
+│   ├── useApi.ts
+│   ├── useApiError.ts
+│   ├── useAuth.ts
+│   ├── useConcentrationSession.ts
+│   ├── useEvents.ts
+│   ├── useLoading.ts
+│   ├── useMethodExecution.ts
+│   └── useNotifications.ts
+├── pages/
+│   ├── ActiveRecallIntroView.tsx
+│   ├── ActiveRecallStepsView.tsx
+│   ├── CornellIntroView.tsx
+│   ├── CornellStepsView.tsx
+│   ├── CreateEventModal.tsx
+│   ├── DashboardPage.tsx
+│   ├── EditEventModal.tsx
+│   ├── EventsPage.tsx
+│   ├── FeynmanIntroView.tsx
+│   ├── FeynmanStepsView.tsx
+│   ├── ForgotPasswordCodePage.tsx
+│   ├── ForgotPasswordPage.tsx
+│   ├── ForgotPasswordResetPage.tsx
+│   ├── LoginPage.tsx
+│   ├── MindMapsInfoPage.tsx
+│   ├── MindMapsStepsPage.tsx
+│   ├── MusicAlbumsPage.tsx
+│   ├── MusicSongsPage.tsx
+│   ├── NotificationPage.tsx
+│   ├── PomodoroExecutionView.tsx
+│   ├── PomodoroIntroView.tsx
+│   ├── ProfilePage.tsx
+│   ├── RegisterPage.tsx
+│   ├── RegisterStep2.tsx
+│   ├── ReportsPage.tsx
+│   ├── SpacedRepetitionIntroView.tsx
+│   ├── SpacedRepetitionStepsView.tsx
+│   ├── StudyMethodsLibraryPage.tsx
+│   ├── SurveyPage.tsx
+│   ├── reports/
+│   │   └── SessionsReport.tsx
+│   └── sessions/
+│       └── StartSession.tsx
+├── providers/
+│   └── ConcentrationSessionProvider.tsx
+├── services/
+│   ├── audioService.ts
+│   ├── reportsService.ts
+│   └── sessionService.ts
+├── types/
+│   ├── api.ts
+│   ├── events.ts
+│   ├── sessionMappers.ts
+│   └── user.ts
+├── utils/
+│   ├── apiClient.ts
+│   ├── broadcastChannel.ts
+│   ├── constants.ts
+│   ├── dateUtils.ts
+│   ├── eventsApi.ts
+│   ├── methodAssets.ts
+│   ├── methodStatus.ts
+│   ├── musicApi.ts
+│   ├── musicUtils.ts
+│   ├── notificationsApi.ts
+│   ├── offlineQueue.ts
+│   ├── sessionMappers.ts
+│   ├── sleepDetector.ts
+│   └── validationUtils.ts
+├── App.tsx
+├── main.tsx
+└── index.css
 ```
 
-## 🏗️ Resumen de Arquitectura
+## Resumen de Arquitectura
 
 ### Proveedores Globales (main.tsx)
 
@@ -80,22 +126,22 @@ La aplicación utiliza una arquitectura de proveedores en capas para asegurar la
 ```typescript
 <MusicPlayerProvider>
   {" "}
-  // 🎵 Estado global de música (persistente)
+  // Estado global de música (persistente)
   <BrowserRouter>
     {" "}
-    // 🧭 Enrutamiento SPA
+    // Enrutamiento SPA
     <StrictMode>
       {" "}
-      // ⚛️ Verificaciones de desarrollo de React
+      // Verificaciones de desarrollo de React
       <AuthProvider>
         {" "}
-        // 👤 Autenticación de usuario
+        // Autenticación de usuario
         <ConcentrationSessionProvider>
           {" "}
-          // ⏱️ Estado global de sesiones de concentración
-          <App /> // 📱 Aplicación principal
-          <MusicPlayer /> // 🎵 UI de música global (condicional)
-          <ConcentrationCard /> // ⏱️ UI de temporizador (condicional)
+          // Estado global de sesiones de concentración
+          <App /> // Aplicación principal
+          <MusicPlayer /> // UI de música global (condicional)
+          <ConcentrationCard /> // UI de temporizador (condicional)
         </ConcentrationSessionProvider>
       </AuthProvider>
     </StrictMode>
@@ -137,7 +183,7 @@ La aplicación utiliza una arquitectura de proveedores en capas para asegurar la
    - **ConcentrationCard**: Overlay de temporizador centrado
    - Se renderizan condicionalmente basado en estado de autenticación y sesiones
 
-## 🎵 Arquitectura del Reproductor de Música
+## Arquitectura del Reproductor de Música
 
 ### Componentes Principales
 
@@ -157,12 +203,12 @@ La aplicación utiliza una arquitectura de proveedores en capas para asegurar la
 
 ### Características Principales
 
-- ✅ **Reproducción Persistente**: Continúa a través de toda la navegación de páginas
-- ✅ **Instancia Única de Audio**: Sin fugas de memoria o elementos duplicados
-- ✅ **Integración de Autenticación**: Solo visible para usuarios conectados
-- ✅ **Limpieza de Cierre de Sesión**: Detiene y limpia estado correctamente al cerrar sesión
-- ✅ **Manejo de Errores**: Retrocesos elegantes para formatos de audio no soportados
-- ✅ **Simulación de Desarrollo**: Soporte de audio placeholder para pruebas
+- **Reproducción Persistente**: Continúa a través de toda la navegación de páginas
+- **Instancia Única de Audio**: Sin fugas de memoria o elementos duplicados
+- **Integración de Autenticación**: Solo visible para usuarios conectados
+- **Limpieza de Cierre de Sesión**: Detiene y limpia estado correctamente al cerrar sesión
+- **Manejo de Errores**: Retrocesos elegantes para formatos de audio no soportados
+- **Simulación de Desarrollo**: Soporte de audio placeholder para pruebas
 
 ### Flujo de Datos
 
@@ -172,7 +218,7 @@ Interacción del Usuario → UI de MusicPlayer → MusicPlayerContext → HTMLAu
 LocalStorage ←─────────────────────── MusicPlayerContext
 ```
 
-## 🔐 Sistema de Autenticación
+## Sistema de Autenticación
 
 ### AuthContext (`src/contexts/AuthContext.tsx`)
 
@@ -204,9 +250,9 @@ Registro Paso 1 → Solicitar Código → Registro Paso 2 → Verificar Código 
 Formulario básico → API /auth/   → Formulario de → API /auth/   → API /auth/   → Modal de     → Navegación a
 (username, email, → request-     → código        → verify-code → register     → bienvenida   → ProfilePage
 password)        → verification- → (6 dígitos)  → (email +     → (email +     → opcional     → (campos de
-                → code          →              → código)      → username +   → para         → encuesta)
-                →               →              →              → password)    → completar
-                →               →              →              →              → perfil
+                 → code          →              → código)      → username +   → para         → encuesta)
+                 →               →              →              → password)    → completar
+                 →               →              →              → perfil
 ```
 
 #### Características del Nuevo Flujo
@@ -248,7 +294,7 @@ StudyMethodsLibraryPage → [Method]IntroView → [Method]StepsView
 - **Persistencia**: Capacidad de reanudación entre sesiones
 - **Validación**: Restricciones de progreso por tipo de método
 
-## ⏱️ Sistema de Sesiones de Concentración
+## Sistema de Sesiones de Concentración
 
 ### Arquitectura
 
@@ -281,13 +327,13 @@ StartSession → ConcentrationCard → [MethodExecution] → Reports
 
 ### Características Principales
 
-- ✅ **Temporizador Persistente**: Continúa corriendo a través de navegación
-- ✅ **Pausa/Resume**: Capacidad de pausar y reanudar sesiones
-- ✅ **Música Integrada**: Reproducción automática de álbumes asociados
-- ✅ **Métodos de Estudio**: Integración con Pomodoro, Mapas Mentales, etc.
-- ✅ **Reportes Automáticos**: Guardado de resultados al finalizar
-- ✅ **Multi-pestaña**: Una sesión activa por usuario, sincronizada
-- ✅ **Corrección de Sueño**: Ajuste automático por suspensión del sistema
+- **Temporizador Persistente**: Continúa corriendo a través de navegación
+- **Pausa/Resume**: Capacidad de pausar y reanudar sesiones
+- **Música Integrada**: Reproducción automática de álbumes asociados
+- **Métodos de Estudio**: Integración con Pomodoro, Mapas Mentales, etc.
+- **Reportes Automáticos**: Guardado de resultados al finalizar
+- **Multi-pestaña**: Una sesión activa por usuario, sincronizada
+- **Corrección de Sueño**: Ajuste automático por suspensión del sistema
 
 ### Flujo de Sesiones
 
@@ -312,7 +358,7 @@ de sesión  centrado   temporales      /sessions  /reports
 - **Reportes**: Actualización automática de estadísticas
 - **Eventos**: Creación desde eventos programados
 
-## 🧭 Navegación y Enrutamiento
+## Navegación y Enrutamiento
 
 ### Estructura de Rutas
 
@@ -349,10 +395,10 @@ de sesión  centrado   temporales      /sessions  /reports
 
 ### Principios de Navegación SPA
 
-- ✅ **Hook useNavigate**: Toda la navegación usa React Router
-- ✅ **Sin window.location.href**: Previene recargas de página que rompen la música
-- ✅ **Parámetros de Ruta**: Extracción apropiada de parámetros con `useParams`
-- ✅ **Rutas Protegidas**: Verificaciones de autenticación a nivel de ruta
+- **Hook useNavigate**: Toda la navegación usa React Router
+- **Sin window.location.href**: Previene recargas de página que rompen la música
+- **Parámetros de Ruta**: Extracción apropiada de parámetros con `useParams`
+- **Rutas Protegidas**: Verificaciones de autenticación a nivel de ruta
 
 ## 🔧 Configuración y Desarrollo
 
@@ -400,9 +446,11 @@ VITE_ENABLE_DEVTOOLS=true
 {
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   }
 }
 ```
@@ -522,7 +570,7 @@ Asegurar que el entorno de producción tenga:
 - Verificar errores de TypeScript
 - Verificar que todas las dependencias estén instaladas
 
-## 🧹 Plan "Código Limpio" - Optimización y Mantenimiento
+## Plan "Código Limpio" - Optimización y Mantenimiento
 
 ### Resumen del Plan
 
@@ -609,4 +657,4 @@ Si algo falla, los cambios son seguros y pueden revertirse:
 
 ---
 
-**🎵 ¡Feliz estudio con música persistente!**
+**¡Feliz estudio con música persistente!**

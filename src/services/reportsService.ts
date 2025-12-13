@@ -23,7 +23,7 @@ class ReportsService {
    */
   async getSessionReports(): Promise<SessionReport[]> {
     try {
-      console.log('[REPORTS] Obteniendo reportes de sesiones desde:', API_ENDPOINTS.SESSION_PROGRESS);
+      // Se eliminó console.log para mantener código limpio en producción
       const response = await apiClient.get(API_ENDPOINTS.SESSION_PROGRESS);
 
       // Determinar la estructura de la respuesta
@@ -36,7 +36,7 @@ class ReportsService {
         // Estructura: [...] (array directo)
         reportsArray = response.data;
       } else {
-        console.warn('Estructura de respuesta inesperada para sesiones:', response.data);
+        // Se eliminó console.warn para mantener código limpio en producción
         return [];
       }
 
@@ -62,10 +62,10 @@ class ReportsService {
         fechaCreacion: report.fecha_creacion
       }));
 
-      console.log('Reportes de sesiones obtenidos exitosamente:', mappedReports.length);
+      // Se eliminó console.log para mantener código limpio en producción
       return mappedReports;
     } catch (error) {
-      console.error('Error obteniendo reportes de sesiones:', error);
+      // Se eliminó console.error para mantener código limpio en producción
       throw error;
     }
   }
@@ -77,7 +77,7 @@ class ReportsService {
    */
   async getMethodReports(): Promise<MethodReport[]> {
     try {
-      console.log('Obteniendo reportes de métodos desde:', API_ENDPOINTS.METHOD_PROGRESS);
+      // Se eliminó console.log para mantener código limpio en producción
       const response = await apiClient.get(API_ENDPOINTS.METHOD_PROGRESS);
 
       // Determinar la estructura de la respuesta
@@ -90,7 +90,7 @@ class ReportsService {
         // Estructura: [...] (array directo)
         reportsArray = response.data;
       } else {
-        console.warn('Estructura de respuesta inesperada para métodos:', response.data);
+        // Se eliminó console.warn para mantener código limpio en producción
         return [];
       }
 
@@ -105,10 +105,10 @@ class ReportsService {
         fechaCreacion: report.fecha_creacion
       }));
 
-      console.log('Reportes de métodos obtenidos exitosamente:', mappedReports.length);
+      // Se eliminó console.log para mantener código limpio en producción
       return mappedReports;
     } catch (error) {
-      console.error('Error obteniendo reportes de métodos:', error);
+      // Se eliminó console.error para mantener código limpio en producción
       throw error;
     }
   }

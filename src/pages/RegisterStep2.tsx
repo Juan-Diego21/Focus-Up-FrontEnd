@@ -2,6 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
+// Importaciones dinámicas movidas al nivel superior para mejor optimización de bundle
+// Se eliminaron las importaciones dinámicas dentro de funciones para mejorar el rendimiento
+// y permitir una mejor separación de código por parte del bundler
+const apiClientPromise = import("../utils/apiClient");
+const constantsPromise = import("../utils/constants");
+
 // Componente para el segundo paso del registro: verificación del código y registro final
 // Este componente maneja la verificación del código enviado por email y el registro completo del usuario
 // según el nuevo flujo de dos pasos implementado para mejorar la seguridad del registro
@@ -56,8 +62,11 @@ export const RegisterStep2: React.FC = () => {
         throw new Error("Correo electrónico no encontrado");
       }
 
-      const { apiClient } = await import("../utils/apiClient");
-      const { API_ENDPOINTS } = await import("../utils/constants");
+      // Usar importaciones dinámicas movidas al nivel superior para mejor rendimiento
+      const [{ apiClient }, { API_ENDPOINTS }] = await Promise.all([
+        apiClientPromise,
+        constantsPromise
+      ]);
 
       await apiClient.post(API_ENDPOINTS.REQUEST_VERIFICATION_CODE, {
         email,
@@ -120,8 +129,11 @@ export const RegisterStep2: React.FC = () => {
         throw new Error("Datos de registro incompletos");
       }
 
-      const { apiClient } = await import("../utils/apiClient");
-      const { API_ENDPOINTS } = await import("../utils/constants");
+      // Usar importaciones dinámicas movidas al nivel superior para mejor rendimiento
+      const [{ apiClient }, { API_ENDPOINTS }] = await Promise.all([
+        apiClientPromise,
+        constantsPromise
+      ]);
 
       // Paso 1: Verificar código de verificación enviado por email
       await apiClient.post(API_ENDPOINTS.VERIFY_CODE, {

@@ -2,17 +2,20 @@ export const API_BASE_URL = "/api/v1";
 export const API_ENDPOINTS = {
   HEALTH: "/health",
   USERS: "/users",
-  LOGIN: "/users/login",
-  LOGOUT: "/users/logout",
-  PROFILE: "/users/profile",
+  // Updated authentication endpoints with /auth prefix for security
+  LOGIN: "/auth/login",
+  LOGOUT: "/auth/logout",
+  REGISTER: "/auth/register",
+  // Profile management - now uses /users for own profile only (secure)
+  PROFILE: "/users",
   DELETE_ACCOUNT: "/users/delete",
+  // Password management - secure endpoint for own password only
+  PASSWORD_CHANGE: "/users/:userId/password",
   REQUEST_PASSWORD_RESET: "/users/request-password-reset",
   RESET_PASSWORD_WITH_CODE: "/users/reset-password-with-code",
-  PASSWORD_CHANGE: "/users/:id/password",
-  // Nuevos endpoints para el flujo de registro de dos pasos según el contrato del backend
+  // Registration flow endpoints
   REQUEST_VERIFICATION_CODE: "/auth/request-verification-code",
   VERIFY_CODE: "/auth/verify-code",
-  REGISTER: "/auth/register",
   STUDY_METHODS: "/metodos-estudio",
   STUDY_METHODS_DETAILS: "/bibliotecametodosestudio",
   BENEFITS: "/beneficios",

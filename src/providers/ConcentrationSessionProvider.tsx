@@ -666,9 +666,12 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
           console.log('[PROVIDER] State updated, session restored. Checking if session gets paused automatically...');
 
-          // Check if session is paused immediately after restore
+          // Check if session is paused immediately after restore - usar callback para acceder al estado actualizado
           setTimeout(() => {
-            console.log('[PROVIDER] Checking session status 1 second after restore:', state.activeSession?.status, 'isRunning:', state.activeSession?.isRunning);
+            setState(currentState => {
+              console.log('[PROVIDER] Checking session status 1 second after restore:', currentState.activeSession?.status, 'isRunning:', currentState.activeSession?.isRunning);
+              return currentState; // No modificar estado, solo loggear
+            });
           }, 1000);
 
           localStorage.removeItem('focusup:directResume');

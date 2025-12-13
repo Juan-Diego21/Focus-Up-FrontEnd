@@ -16,6 +16,8 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <ConcentrationSessionProvider>
             <App />
+            {/* MusicPlayer y SessionsUI ahora tienen acceso completo a AuthProvider y ConcentrationSessionProvider */}
+            {/* Esto garantiza que puedan acceder al estado de autenticación y sesiones de concentración */}
             <MusicPlayer />
             <SessionsUI />
           </ConcentrationSessionProvider>

@@ -68,7 +68,7 @@ export const useMethodExecution = (
 
       // Si estamos dentro de una sesión, notificar al provider
       if (isInsideConcentrationSession) {
-        console.log('Iniciando método dentro de sesión de concentración');
+        // Se eliminó console.log para mantener código limpio en producción
 
         // Minimizar automáticamente la UI de sesión
         sessionContext.minimize();
@@ -124,13 +124,13 @@ export const useMethodExecution = (
         try {
           callback();
         } catch (err) {
-          console.error('Error en callback de completación de método:', err);
+          // Se eliminó console.error para mantener código limpio en producción
         }
       });
 
       // Si estamos dentro de una sesión, el provider manejará el resto
       if (isInsideConcentrationSession) {
-        console.log('Método completado dentro de sesión - notificando al provider');
+        // Se eliminó console.log para mantener código limpio en producción
       }
     } catch (err) {
       setState('error');

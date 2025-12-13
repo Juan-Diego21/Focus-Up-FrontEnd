@@ -7,13 +7,13 @@ import type { Song } from '../types/api';
  */
 export const getAlbumImage = (albumId: any): string => {
   if (!albumId) {
-    console.warn('Album ID is undefined, using fallback image');
+    // Se eliminó console.warn para mantener código limpio en producción
     return '/img/fondo-album.png';
   }
 
   const id = typeof albumId === 'string' ? parseInt(albumId, 10) : albumId;
 
-  console.log(`Resolving image for album ID: ${id}`);
+  // Se eliminó console.log para mantener código limpio en producción
 
   // Deterministic mapping based on album ID
   switch (id) {
@@ -24,7 +24,7 @@ export const getAlbumImage = (albumId: any): string => {
     case 3:
       return '/img/Album_Instrumental.png';
     default:
-      console.warn(`Unknown album ID: ${id}, using fallback image`);
+      // Se eliminó console.warn para mantener código limpio en producción
       return '/img/fondo-album.png';
   }
 };
@@ -76,7 +76,7 @@ export const preloadSongDurations = async (songsList: Song[]): Promise<Record<nu
     try {
       // Skip invalid URLs
       if (!song.url_musica || typeof song.url_musica !== 'string') {
-        console.warn(`Invalid URL for song ${song.id_cancion}, using database duration`);
+        // Se eliminó console.warn para mantener código limpio en producción
         durations[song.id_cancion] = song.duracion || 0;
         return;
       }
@@ -85,7 +85,7 @@ export const preloadSongDurations = async (songsList: Song[]): Promise<Record<nu
       if (song.url_musica.includes('placeholder') ||
           song.url_musica.includes('example.com') ||
           song.url_musica.includes('tu-proyecto.supabase.co')) {
-        console.log(`Skipping placeholder URL for song ${song.id_cancion}, using database duration`);
+        // Se eliminó console.log para mantener código limpio en producción
         durations[song.id_cancion] = song.duracion || 0;
         return;
       }
@@ -122,7 +122,7 @@ export const preloadSongDurations = async (songsList: Song[]): Promise<Record<nu
     } catch (error) {
       // Use database duration as fallback - don't log as error since it's expected for some URLs
       durations[song.id_cancion] = song.duracion || 0;
-      console.debug(`Uso de la duración de reserva para la canción ${song.id_cancion}:`);
+      // Se eliminó console.debug para mantener código limpio en producción
     }
   });
 

@@ -12,7 +12,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<{ isFirstLogin: boolean }>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [token]);
 
   // Función para iniciar sesión del usuario
-  const login = async (credentials: LoginRequest): Promise<void> => {
+  const login = async (credentials: LoginRequest): Promise<{ isFirstLogin: boolean }> => {
     try {
       // Transformar credenciales para coincidir con expectativas del backend
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.correo);
@@ -113,10 +113,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (isFirstLogin) {
           localStorage.removeItem("focusup:firstLogin");
           setShowFirstLoginModal(true);
-        } else {
-          // Redirigir al dashboard después del login exitoso
-          window.location.href = "/dashboard";
         }
+
+        return { isFirstLogin };
       } else {
         throw new Error(response.message || "Inicio de sesión fallido");
       }
@@ -177,12 +176,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const activeSession = JSON.parse(activeSessionData);
           if (activeSession && activeSession.sessionId) {
             // Intentar finalizar la sesión como "terminar más tarde"
-            console.log("Finalizando sesión activa antes del logout:", activeSession.sessionId);
+            // Se eliminó console.log para mantener código limpio en producción
             // Nota: No podemos usar el sessionService aquí porque requiere el contexto de sesión
             // La sesión se mantendrá en estado "pending" y podrá reanudarse después del login
           }
         } catch (sessionError) {
-          console.warn("Error al procesar sesión activa durante logout:", sessionError);
+          // Se eliminó console.warn para mantener código limpio en producción
         }
       }
 
@@ -204,7 +203,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       // En caso de error (token expirado o inválido), continuar con el logout local
-      console.warn("Error al hacer logout en el backend:", error);
+      // Se eliminó console.warn para mantener código limpio en producción
     } finally {
       // Limpiar datos locales independientemente del resultado de la API
       localStorage.removeItem("token");
@@ -214,8 +213,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setToken(null);
       setUser(null);
 
-      // Redirigir al login después del logout
-      window.location.href = "/login";
+      // La navegación se maneja en el componente que llama a logout()
+      // para mantener la separación de responsabilidades
     }
   };
 
