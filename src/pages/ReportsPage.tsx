@@ -238,7 +238,25 @@ export const ReportsPage: React.FC = () => {
   });
 
   // Filtrar sesiones según el estado seleccionado por el usuario
-  const filteredSessions = sessionReports.filter(session => {
+  // Primero filtrar sesiones duplicadas: ocultar sesiones de eventos con tiempo 0:00:00 si existe una versión con tiempo real
+  const deduplicatedSessions = sessionReports.filter(session => {
+    // Si la sesión tiene tiempo 0 y estado pendiente, verificar si existe otra sesión con el mismo nombre pero con tiempo
+    if (session.tiempoTotal === 0 && session.estado === 'pendiente') {
+      // Buscar si existe otra sesión con el mismo nombre pero con tiempo > 0
+      const duplicateWithTime = sessionReports.find(s =>
+        s.nombreSesion === session.nombreSesion &&
+        s.tiempoTotal > 0 &&
+        s.idSesion !== session.idSesion
+      );
+      // Si existe una versión con tiempo, ocultar esta versión con tiempo 0
+      if (duplicateWithTime) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const filteredSessions = deduplicatedSessions.filter(session => {
     if (sessionFilter === 'todos') return true;
     if (sessionFilter === 'pendiente') return session.estado === 'pendiente';
     if (sessionFilter === 'completado') return session.estado === 'completado';

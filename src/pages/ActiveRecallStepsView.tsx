@@ -345,10 +345,16 @@ export const ActiveRecallStepsView: React.FC = () => {
     }
 
     // Para sesiones reanudadas, usar sessionId de URL, de lo contrario usar activeMethodId
-    const sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+    // Si no hay ninguno, intentar usar el ID de la sesión actual si está disponible
+    let sessionId = isResuming && urlSessionId ? urlSessionId : localStorage.getItem('activeMethodId');
+
+    // Fallback: usar el ID de la sesión actual si está disponible
+    if (!sessionId && sessionData?.id_metodo_realizado) {
+      sessionId = sessionData.id_metodo_realizado.toString();
+    }
 
     if (!sessionId) {
-      console.error('No se encontró ID de sesión para actualización de progreso');
+      console.error('No se encontró ID de sesión para actualización de progreso. isResuming:', isResuming, 'urlSessionId:', urlSessionId, 'sessionData:', sessionData);
       return;
     }
 
@@ -412,8 +418,8 @@ export const ActiveRecallStepsView: React.FC = () => {
           color: '#ffffff',
           iconColor: '#22C55E',
         }).then(() => {
-          navigate('/dashboard');
-        });
+           navigate('/reports');
+         });
       }
 
       setAlertQueue(null);
@@ -515,7 +521,9 @@ export const ActiveRecallStepsView: React.FC = () => {
   // Usar únicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.titulo];
   const methodColor = localAssets?.color || "#43A047";
-  const currentStepData = steps[currentStep];
+  // Asegurar que currentStep esté dentro de los límites válidos para prevenir errores de acceso a array
+  const clampedCurrentStep = Math.min(Math.max(currentStep, 0), steps.length - 1);
+  const currentStepData = steps[clampedCurrentStep];
 
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
@@ -546,8 +554,8 @@ export const ActiveRecallStepsView: React.FC = () => {
         >
           {method.titulo}
         </h1>
-        {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) */}
-        {sessionData && currentStep >= 2 && (
+        {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) y si no está completado */}
+        {sessionData && currentStep >= 2 && progressPercentage < 100 && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"

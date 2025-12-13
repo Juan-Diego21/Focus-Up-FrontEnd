@@ -334,8 +334,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
                 aria-label="Marcar como completado"
                 title=""
                 onMouseEnter={(e) => {
+                  const target = e.currentTarget;
                   setTimeout(() => {
-                    e.currentTarget.title = "Marcar este evento como completado";
+                    if (target) {
+                      target.title = "Marcar este evento como completado";
+                    }
                   }, 500);
                 }}
                 onMouseLeave={(e) => {
@@ -356,8 +359,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
               aria-label="Editar evento"
               title=""
               onMouseEnter={(e) => {
+                const target = e.currentTarget;
                 setTimeout(() => {
-                  e.currentTarget.title = "Editar los detalles del evento";
+                  if (target) {
+                    target.title = "Editar los detalles del evento";
+                  }
                 }, 500);
               }}
               onMouseLeave={(e) => {
@@ -377,8 +383,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
               aria-label="Eliminar evento"
               title=""
               onMouseEnter={(e) => {
+                const target = e.currentTarget;
                 setTimeout(() => {
-                  e.currentTarget.title = "Eliminar este evento permanentemente";
+                  if (target) {
+                    target.title = "Eliminar este evento permanentemente";
+                  }
                 }, 500);
               }}
               onMouseLeave={(e) => {

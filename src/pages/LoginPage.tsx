@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import type { LoginRequest } from "../types/user";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginRequest>({
     correo: "",
     password: "",
@@ -28,7 +30,12 @@ export const LoginPage: React.FC = () => {
     setError("");
 
     try {
-      await login(formData);
+      const result = await login(formData);
+      // Si no es el primer login, navegar al dashboard
+      if (!result.isFirstLogin) {
+        navigate("/dashboard");
+      }
+      // Si es el primer login, el modal se mostrará automáticamente en App.tsx
     } catch (err: unknown) {
       const apiError = err as { response?: { data?: { error?: string } }; message?: string };
       const errorMessage = apiError?.response?.data?.error || apiError?.message || "Error al iniciar sesión";

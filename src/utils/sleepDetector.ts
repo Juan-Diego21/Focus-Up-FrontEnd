@@ -70,15 +70,15 @@ class SleepDetector {
     const delta = now - this.state.lastTimestamp;
 
     // Si el delta es mayor a 1 segundo, probablemente el sistema se suspendió
+    // Se eliminó console.log para mantener código limpio en producción
     if (delta > 1000) {
-      console.log(`Sistema suspendido detectado: ${delta}ms de diferencia`);
-
       // Notificar a todos los callbacks registrados
-      this.state.callbacks.forEach((callback, id) => {
+      this.state.callbacks.forEach((callback) => {
         try {
           callback(delta);
         } catch (error) {
-          console.error(`Error en callback de sleep detector (${id}):`, error);
+          // Se eliminó console.error para mantener código limpio en producción
+          // El error se maneja silenciosamente para evitar interrupciones
         }
       });
     }
@@ -151,12 +151,11 @@ export function useSleepDetector() {
  * @param sleptMs - Milisegundos que el sistema estuvo suspendido
  * @returns Sesión corregida
  */
-export function correctSessionAfterSleep(session: ActiveSession, sleptMs: number): ActiveSession {
+export function correctSessionAfterSleep(session: ActiveSession, _sleptMs: number): ActiveSession {
   // Si la sesión está corriendo, el timer ya se está actualizando correctamente
   // No necesitamos corrección adicional aquí porque getVisibleTime() usa Date.now()
   // La corrección real ocurre en el cálculo del tiempo visible
-
-  console.log(`Corrigiendo sesión ${session.sessionId} después de ${sleptMs}ms de suspensión`);
+  // Se eliminó console.log para mantener código limpio en producción
 
   return {
     ...session,

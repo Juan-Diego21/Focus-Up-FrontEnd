@@ -42,27 +42,27 @@ export async function replaceIfSessionAlbum(
   try {
     // Si no hay albumId, no hacer nada
     if (!albumId) {
-      console.log('No hay albumId especificado, no se cambia la reproducción');
+      // Se eliminó console.log para mantener código limpio en producción
       return;
     }
 
     if (albumSongs.length === 0) {
-      console.warn(`No se encontraron canciones para el álbum ${albumId}`);
+      // Se eliminó console.warn para mantener código limpio en producción
       return;
     }
 
     // Verificar si ya está reproduciendo el álbum correcto
     if (musicPlayerApi.currentAlbum && musicPlayerApi.currentAlbum.id_album === albumId) {
-      console.log('Álbum de sesión ya está reproduciendo');
+      // Se eliminó console.log para mantener código limpio en producción
       return;
     }
 
     // Iniciar reproducción con las canciones del álbum
-    console.log(`Reproduciendo ${albumSongs.length} canciones del álbum ${albumInfo?.nombre_album || albumId}`);
+    // Se eliminó console.log para mantener código limpio en producción
     musicPlayerApi.playPlaylist(albumSongs, 0, albumInfo);
 
   } catch (error) {
-    console.error('Error iniciando reproducción del álbum de sesión:', error);
+    // Se eliminó console.error para mantener código limpio en producción
     throw error;
   }
 }
@@ -76,7 +76,7 @@ export function pausePlayback(musicPlayerApi: MusicPlayerApi): void {
   try {
     musicPlayerApi.togglePlayPause();
   } catch (error) {
-    console.error('Error pausando reproducción:', error);
+    // Se eliminó console.error para mantener código limpio en producción
   }
 }
 
@@ -89,7 +89,7 @@ export function resumePlayback(musicPlayerApi: MusicPlayerApi): void {
   try {
     musicPlayerApi.togglePlayPause();
   } catch (error) {
-    console.error('Error reanudando reproducción:', error);
+    // Se eliminó console.error para mantener código limpio en producción
   }
 }
 
@@ -109,7 +109,7 @@ export function getCurrentAlbum(musicPlayerApi: MusicPlayerApi): { id: number; n
     }
     return null;
   } catch (error) {
-    console.error('Error obteniendo álbum actual:', error);
+    // Se eliminó console.error para mantener código limpio en producción
     return null;
   }
 }
@@ -143,7 +143,7 @@ export function shouldReplacePlayback(musicPlayerApi: MusicPlayerApi, sessionAlb
     // En cualquier otro caso, no reemplazar
     return false;
   } catch (error) {
-    console.error('Error determinando si reemplazar reproducción:', error);
+    // Se eliminó console.error para mantener código limpio en producción
     return false;
   }
 }

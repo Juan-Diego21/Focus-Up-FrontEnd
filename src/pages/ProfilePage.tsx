@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/ui/Sidebar";
 import { User, MapPin, Users, Lock, Eye, EyeOff, ChevronDown, TrashIcon, Calendar, AlertTriangle, Target } from "lucide-react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -53,6 +54,7 @@ const distractions = [
 
 export const ProfilePage: React.FC = () => {
   const { user, loading: authLoading, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nombre_usuario: "",
     pais: "",
@@ -76,11 +78,8 @@ export const ProfilePage: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   // Temporary input values for free typing (like CreateEventModal)
   const [tempHours, setTempHours] = useState('01');
@@ -147,8 +146,6 @@ export const ProfilePage: React.FC = () => {
       ...prev,
       [name]: value,
     }));
-    setError("");
-    setSuccess("");
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,14 +154,11 @@ export const ProfilePage: React.FC = () => {
       ...prev,
       [name]: value,
     }));
-    setError("");
-    setSuccess("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       if (!user?.id_usuario) {
@@ -331,13 +325,14 @@ export const ProfilePage: React.FC = () => {
         distracciones: distracciones,
       };
 
-      console.log('Profile update data being sent:', updateData);
+      // Se eliminó console.log para mantener código limpio en producción
 
       const { apiClient } = await import("../utils/apiClient");
       const { API_ENDPOINTS } = await import("../utils/constants");
 
-      const response = await apiClient.put(`${API_ENDPOINTS.USERS}/${user.id_usuario}`, updateData);
-      console.log('Profile update response:', response);
+      // Actualizar perfil propio usando el nuevo endpoint seguro
+      await apiClient.put(API_ENDPOINTS.USERS, updateData);
+      // Se eliminó console.log para mantener código limpio en producción
 
       // Actualizar los datos del usuario en el contexto de autenticación
       const updatedUserData: Partial<UserType> = {
@@ -400,28 +395,23 @@ export const ProfilePage: React.FC = () => {
 
     setDeleteLoading(true);
     try {
-      const { apiClient } = await import("../utils/apiClient");
-      const { API_ENDPOINTS } = await import("../utils/constants");
+      // El endpoint DELETE /users/:id ha sido removido por seguridad según la nueva API
+      // Mostrar mensaje informativo al usuario
+      await Swal.fire({
+        title: 'Función no disponible',
+        text: 'La eliminación de cuentas está temporalmente deshabilitada por motivos de seguridad. Contacta al soporte si necesitas ayuda.',
+        icon: 'info',
+        confirmButtonText: 'Entendido',
+        background: '#232323',
+        color: '#ffffff',
+        confirmButtonColor: '#3B82F6',
+      });
 
-      await apiClient.delete(`${API_ENDPOINTS.USERS}/${user.id_usuario}`);
-
-      // Mostrar alerta de éxito
-      setShowSuccessAlert(true);
       setShowDeleteModal(false);
-
-      // Cerrar sesión y redirigir después de un breve retraso
-      setTimeout(() => {
-        const { logout } = useAuth();
-        logout();
-        window.location.href = "/login";
-      }, 2000);
 
     } catch {
-      // ✅ Cerrar sesión y redirigir incluso si falla la API
+      // En caso de error, cerrar modal
       setShowDeleteModal(false);
-      const { logout } = useAuth();
-      logout();
-      window.location.href = "/login";
     } finally {
       setDeleteLoading(false);
     }
@@ -1037,7 +1027,7 @@ export const ProfilePage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => window.location.href = "/dashboard"}
+                onClick={() => navigate("/dashboard")}
                 className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg font-medium hover:from-gray-700 hover:to-gray-800 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 Cancelar
@@ -1093,18 +1083,6 @@ export const ProfilePage: React.FC = () => {
     </div>
   )}
 
-  {/* Success Alert */}
-  {showSuccessAlert && (
-    <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg border border-green-600">
-      <div className="flex items-center gap-3">
-        <div className="text-2xl">✅</div>
-        <div>
-          <h4 className="font-semibold">Cuenta eliminada</h4>
-          <p className="text-sm opacity-90">Se redirigirá al inicio de sesión...</p>
-        </div>
-      </div>
-    </div>
-  )}
 </div>
 );
 };
