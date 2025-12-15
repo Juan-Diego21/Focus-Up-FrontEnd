@@ -1,6 +1,17 @@
-# Focus-Up Frontend
+---
+title: "🎯 Focus Up Frontend — Aplicación React con Arquitectura Modular"
+description: "Aplicación moderna de React TypeScript para gestión de métodos de estudio con música persistente, arquitectura modular por dominios, type safety completo y mejores prácticas de desarrollo."
+features: "Arquitectura modular por dominios, type safety TypeScript, música persistente global, sesiones de concentración, métodos de estudio, notificaciones programadas, interfaces responsivas y testing completo"
+includes: "arquitectura modular con módulos funcionales, estructura de carpetas organizada, principios SOLID, patrones de diseño, mejores prácticas React, configuración Vite y documentación completa"
+---
 
-Una aplicación moderna de React TypeScript para la gestión de métodos de estudio con reproducción de música persistente global. Construida con Vite, React Router y Tailwind CSS.
+# 🎯 Focus Up Frontend — Aplicación React con Arquitectura Modular
+
+Aplicación moderna de **React TypeScript** para la gestión de métodos de estudio con **reproducción de música persistente global**. Construida con **arquitectura modular por dominios**, **type safety completo**, **mejores prácticas de desarrollo** y **interfaces responsivas** para la gestión del enfoque y la productividad personal.
+
+**🎨 ARQUITECTURA MODULAR + TYPE SAFETY**: Implementa arquitectura por dominios funcionales, type safety TypeScript completo, música persistente global, sesiones de concentración con temporizadores, métodos de estudio interactivos, notificaciones programadas y testing integral.
+
+Incluye detalles de **arquitectura modular con módulos funcionales, estructura de carpetas organizada, principios SOLID, patrones de diseño, mejores prácticas React** y **configuración de desarrollo**.
 
 ## Estructura del Proyecto
 
