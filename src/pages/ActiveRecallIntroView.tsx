@@ -233,15 +233,15 @@ export const ActiveRecallIntroView: React.FC = () => {
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-300 rounded-full border border-green-500/20">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>{""}
                 Memoria Mejorada
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-300 rounded-full border border-emerald-500/20">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>{""}
                 Comprensión Profunda
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 text-teal-300 rounded-full border border-teal-500/20">
-                <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></span>{""}
                 Retención Duradera
               </div>
             </div>

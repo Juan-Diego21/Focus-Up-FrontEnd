@@ -233,15 +233,15 @@ export const SpacedRepetitionIntroView: React.FC = () => {
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-300 rounded-full border border-purple-500/20">
-                <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>{""}
                 Retención Duradera
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20">
-                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>{""}
                 Intervalos Óptimos
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 text-violet-300 rounded-full border border-violet-500/20">
-                <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></span>{""}
                 Memoria Mejorada
               </div>
             </div>
