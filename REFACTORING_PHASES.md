@@ -132,4 +132,76 @@ La propuesta de refactorización es viable y bien estructurada. Promueve una arq
 - **Commits**: Haz commits por fase para facilitar rollback si es necesario.
 - **Equipo**: Si hay múltiples desarrolladores, asigna fases a diferentes personas.
 
+## Mejoras Futuras - Fases Adicionales
+
+### Fase 9: State Management Avanzado - Zustand (Prioridad Alta - Futuro)
+
+**Objetivo**: Reemplazar Context API con Zustand para mejor performance.
+**Tareas**:
+
+- Instalar Zustand.
+- Crear stores para música, autenticación y sesiones.
+- Migrar lógica de contextos a stores.
+- Implementar persistencia automática.
+- Actualizar componentes para usar stores.
+- Remover providers anidados.
+  **Tiempo estimado**: 3-4 días.
+  **Criterios de éxito**: State management más eficiente, menos re-renders.
+
+### Fase 10: Sistema de Caché - React Query (Prioridad Alta - Futuro)
+
+**Objetivo**: Implementar caché inteligente y gestión de datos.
+**Tareas**:
+
+- Instalar TanStack Query.
+- Configurar QueryClient con opciones óptimas.
+- Migrar llamadas API a useQuery y useMutation.
+- Implementar optimistic updates.
+- Configurar revalidación automática.
+- Agregar devtools para desarrollo.
+  **Tiempo estimado**: 4-5 días.
+  **Criterios de éxito**: Mejor performance, menos llamadas API innecesarias.
+
+### Fase 11: Form Management - React Hook Form + Zod (Prioridad Media-Alta - Futuro)
+
+**Objetivo**: Mejorar manejo de formularios con validación robusta.
+**Tareas**:
+
+- Instalar React Hook Form y @hookform/resolvers.
+- Crear schemas Zod para validación.
+- Migrar formularios existentes.
+- Implementar validación en tiempo real.
+- Agregar manejo de errores consistente.
+- Optimizar re-renders.
+  **Tiempo estimado**: 3-4 días.
+  **Criterios de éxito**: Formularios más performantes y confiables.
+
+### Fase 12: Testing Completo - Vitest + Testing Library (Prioridad Media - Futuro)
+
+**Objetivo**: Implementar suite de pruebas completa.
+**Tareas**:
+
+- Configurar Vitest y Testing Library.
+- Crear tests para componentes críticos.
+- Implementar tests de integración.
+- Configurar CI/CD con testing.
+- Agregar coverage reporting.
+- Crear tests para hooks y utilidades.
+  **Tiempo estimado**: 5-7 días.
+  **Criterios de éxito**: Cobertura >80%, confianza en refactorizaciones.
+
+### Fase 13: Monitoreo y Analytics - Sentry + PostHog (Prioridad Media - Futuro)
+
+**Objetivo**: Implementar monitoreo de errores y analytics.
+**Tareas**:
+
+- Configurar Sentry para error tracking.
+- Implementar PostHog para analytics.
+- Agregar tracking de eventos importantes.
+- Configurar performance monitoring.
+- Implementar user journey tracking.
+- Crear dashboards de métricas.
+  **Tiempo estimado**: 2-3 días.
+  **Criterios de éxito**: Visibilidad completa de errores y uso.
+
 Indícame por cuál fase deseas comenzar.
