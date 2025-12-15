@@ -155,7 +155,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
         // Después de cargar el método, verificar si hay reanudación
         if (urlSessionId && urlProgress) {
-          const progress = parseInt(urlProgress);
+          const progress = Number.parseInt(urlProgress);
 
           // Validar progreso para reanudar
           if (!isValidProgressForResume(progress, 'spacedrepetition')) {
@@ -172,7 +172,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           // Establecer datos de sesión para sesión existente
           setSessionData({
             id: urlSessionId,
-            methodId: parseInt(methodId),
+            methodId: Number.parseInt(methodId),
             id_metodo_realizado: 0, // Se establecerá cuando tengamos la sesión real
             startTime: new Date().toISOString(),
             progress: progress,
@@ -203,7 +203,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     if (resumeMethodId && resumeMethodId === methodId && resumeMethodType === 'spacedrepetition') {
       // Reanudando un método específico de Repaso Espaciado sin terminar
       console.log('Reanudando método de Repaso Espaciado con ID:', resumeMethodId, 'en progreso:', resumeProgress);
-      const progress = parseInt(resumeProgress || '0');
+      const progress = Number.parseInt(resumeProgress || '0');
 
       // Establecer paso basado en progreso actual del reporte
       // Pasos de Repaso Espaciado: 0=20%, 1=40%, 2=60%, 3=80%, 4=100%
@@ -266,7 +266,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     try {
       console.log('Iniciando nueva sesión de Repaso Espaciado con id:', methodId);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId),
+        id_metodo: Number.parseInt(methodId),
         estado: 'En_proceso',
         progreso: 20
       });
@@ -281,7 +281,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
       setSessionData({
         id: session.id,
-        methodId: parseInt(methodId),
+        methodId: Number.parseInt(methodId),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
         progress: 20,
@@ -296,7 +296,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Repaso Espaciado'} iniciada correctamente` });
 
       // Activar actualización de reportes
-      window.dispatchEvent(new Event('refreshReports'));
+      globalThis.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error al iniciar sesión de Repaso Espaciado:', error);
       setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Repaso Espaciado' });
@@ -337,7 +337,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       }
 
       // Activar actualización de reportes después de actualización exitosa de progreso
-      window.dispatchEvent(new Event('refreshReports'));
+      globalThis.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error al actualizar progreso de Repaso Espaciado:', error);
     }
@@ -608,9 +608,9 @@ export const SpacedRepetitionStepsView: React.FC = () => {
               }}
               onMouseEnter={(e) => {
                 const darkerColor = methodColor.replace('#', '');
-                const r = parseInt(darkerColor.substr(0, 2), 16);
-                const g = parseInt(darkerColor.substr(2, 2), 16);
-                const b = parseInt(darkerColor.substr(4, 2), 16);
+                const r = Number.parseInt(darkerColor.substring(0, 2), 16);
+                const g = Number.parseInt(darkerColor.substring(2, 2), 16);
+                const b = Number.parseInt(darkerColor.substring(4, 2), 16);
                 const darker = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
                 e.currentTarget.style.backgroundColor = darker;
               }}

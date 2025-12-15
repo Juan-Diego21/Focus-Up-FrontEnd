@@ -98,7 +98,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
     } else if (method.nombre_metodo.toLowerCase().includes('cornell')) {
       navigate(`/cornell/intro/${method.id_metodo}`);
     }
-    // TODO: Implementar navegación a vista paso a paso para otros métodos
+    //Implementar navegación a vista paso a paso para otros métodos
   };
 
 
@@ -149,7 +149,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-white mb-3">Error al cargar datos</h2>
             <p className="text-gray-400 mb-8 leading-relaxed">{error}</p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => globalThis.location.reload()}
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-500/25 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,15 +200,18 @@ export const StudyMethodsLibraryPage: React.FC = () => {
 
               <div className="flex flex-wrap justify-center gap-4 text-sm">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-300 rounded-full border border-blue-500/20">
-                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>{' '}
+
                   Técnicas Probadas
                 </div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-300 rounded-full border border-purple-500/20">
-                  <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                  <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>{' '}
+
                   Mejor Concentración
                 </div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20">
-                  <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
+                  <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>{' '}
+
                   Resultados Garantizados
                 </div>
               </div>
