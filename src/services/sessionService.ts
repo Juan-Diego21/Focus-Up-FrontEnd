@@ -18,6 +18,7 @@ import type {
   ActiveSession
 } from '../types/api';
 import { mapServerSession, mapClientToServerStatus } from '../utils/sessionMappers';
+import { getBroadcastChannel } from '../utils/broadcastChannel';
 
 /**
  * Servicio principal para operaciones de sesiones
@@ -62,7 +63,6 @@ class SessionService {
       });
 
       // Emitir broadcast para notificar a otras páginas sobre la actualización
-      const { getBroadcastChannel } = await import('../utils/broadcastChannel');
       getBroadcastChannel().broadcastSessionPaused();
     } catch (error) {
       console.error('Error pausando sesión con nuevo endpoint:', error);
@@ -113,7 +113,6 @@ class SessionService {
       await apiClient.patch(`/reports/sessions/${sessionId}/progress`, payload);
 
       // Emitir broadcast para notificar a otras páginas sobre la actualización
-      const { getBroadcastChannel } = await import('../utils/broadcastChannel');
       getBroadcastChannel().broadcastSessionPaused(); // Usar paused ya que es "pending"
     } catch (error) {
       console.error('Error marcando finish-later con nuevo endpoint:', error);
@@ -149,7 +148,6 @@ class SessionService {
       await apiClient.patch(`/reports/sessions/${sessionId}/progress`, payload);
 
       // Emitir broadcast para notificar a otras páginas sobre la actualización
-      const { getBroadcastChannel } = await import('../utils/broadcastChannel');
       getBroadcastChannel().broadcastSessionCompleted();
     } catch (error) {
       console.error('Error completando sesión con nuevo endpoint:', error);

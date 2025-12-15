@@ -19,12 +19,9 @@ import type { ReactNode } from 'react';
 import type { ActiveSession, SessionCreateDto } from '../types/api';
 import { sessionService } from '../services/sessionService';
 import { getBroadcastChannel, type BroadcastMessage } from '../utils/broadcastChannel';
-import { getOfflineQueue } from '../utils/offlineQueue';
-import { getSleepDetector } from '../utils/sleepDetector';
+import { getOfflineQueue } from '../shared/utils/offlineQueue';
+import { getSleepDetector } from '../shared/utils/sleepDetector';
 import { mapServerSession, isSessionExpired } from '../utils/sessionMappers';
-import { useMusicPlayer } from '../contexts/MusicPlayerContext';
-import { replaceIfSessionAlbum } from '../services/audioService';
-import { getSongsByAlbumId } from '../utils/musicApi';
 
 // Claves para localStorage
 const SESSION_STORAGE_KEY = 'focusup:activeSession';

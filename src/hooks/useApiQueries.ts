@@ -65,7 +65,7 @@ export const useUpdateProfile = () => {
       return { previousUser };
     },
     // En caso de error, hacer rollback
-    onError: (err, newUserData, context) => {
+    onError: (_err, _newUserData, context) => {
       if (context?.previousUser) {
         queryClient.setQueryData(queryKeys.user, context.previousUser);
       }

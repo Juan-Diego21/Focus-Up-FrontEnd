@@ -6,7 +6,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { StartSession } from '../pages/sessions/StartSession';
+import { StartSession } from '../modules/sessions/pages/StartSession';
 
 const meta: Meta<typeof StartSession> = {
   title: 'Pages/StartSession',
