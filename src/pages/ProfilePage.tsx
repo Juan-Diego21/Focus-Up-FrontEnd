@@ -315,12 +315,13 @@ export const ProfilePage: React.FC = () => {
         formData.distraction2 ? parseInt(formData.distraction2) : null
       ].filter((id): id is number => id !== null && !isNaN(id));
 
+      // Preparar datos filtrando valores null/undefined/vacíos
       const updateData: Record<string, unknown> = {
         nombre_usuario: formData.nombre_usuario,
-        pais: formData.pais,
-        genero: formData.genero,
+        ...(formData.pais && { pais: formData.pais }),
+        ...(formData.genero && { genero: formData.genero }),
         fecha_nacimiento: formData.fecha_nacimiento.toISOString().split('T')[0], // YYYY-MM-DD
-        horario_fav: horarioFav,
+        ...(horarioFav && { horario_fav: horarioFav }),
         intereses: formData.objective ? [parseInt(formData.objective)] : [],
         distracciones: distracciones,
       };
