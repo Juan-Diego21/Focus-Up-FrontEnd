@@ -11,6 +11,7 @@
  * interrumpirse por problemas de conectividad.
  */
 
+import { sessionService } from '../../services/sessionService';
 
 // Claves para localStorage
 const OFFLINE_QUEUE_KEY = 'focusup-offline-queue';
@@ -217,8 +218,7 @@ class OfflineActionQueue {
    * @param action - Acción a ejecutar
    */
   private async executeAction(action: OfflineAction): Promise<void> {
-    // Importar sessionService dinámicamente para evitar dependencias circulares
-    const { sessionService } = await import('../../services/sessionService');
+    // Usar sessionService importado estáticamente
 
     switch (action.type) {
       case 'pause':

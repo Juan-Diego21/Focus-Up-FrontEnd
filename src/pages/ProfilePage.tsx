@@ -8,6 +8,8 @@ import { Listbox } from "@headlessui/react";
 import Swal from "sweetalert2";
 import type { User as UserType } from "../types/user";
 import { validatePassword, validateDateOfBirth, validateUsername } from "../utils/validationUtils";
+import { apiClient } from "../shared/services/apiClient";
+import { API_ENDPOINTS } from "../utils/constants";
 
 const countries = [
   "Colombia", "México", "Argentina", "Estados Unidos", "Canadá", "España",
@@ -243,8 +245,6 @@ export const ProfilePage: React.FC = () => {
       // Cambiar contraseña si se solicitó - Nuevo flujo usando PATCH /users/:id/password
       if (showPasswordFields) {
         try {
-          const { apiClient } = await import("../utils/apiClient");
-          const { API_ENDPOINTS } = await import("../utils/constants");
 
           await apiClient.patch(`${API_ENDPOINTS.USERS}/${user.id_usuario}/password`, {
             currentPassword: passwordData.currentPassword,
@@ -327,9 +327,6 @@ export const ProfilePage: React.FC = () => {
       };
 
       // Se eliminó console.log para mantener código limpio en producción
-
-      const { apiClient } = await import("../utils/apiClient");
-      const { API_ENDPOINTS } = await import("../utils/constants");
 
       // Actualizar perfil propio usando el nuevo endpoint seguro
       await apiClient.put(API_ENDPOINTS.USERS, updateData);

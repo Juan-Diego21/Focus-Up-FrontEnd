@@ -10,35 +10,35 @@ import { Suspense, lazy } from 'react';
 // Se eliminaron las importaciones síncronas y se reemplazaron por lazy loading
 
 // Páginas públicas con lazy loading
-const LoginPage = lazy(() => import("./pages/LoginPage").then(module => ({ default: module.LoginPage })));
-const RegisterPage = lazy(() => import("./pages/RegisterPage").then(module => ({ default: module.RegisterPage })));
-const RegisterStep2 = lazy(() => import("./pages/RegisterStep2").then(module => ({ default: module.RegisterStep2 })));
-const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage").then(module => ({ default: module.ForgotPasswordPage })));
-const ForgotPasswordCodePage = lazy(() => import("./pages/ForgotPasswordCodePage").then(module => ({ default: module.ForgotPasswordCodePage })));
-const ForgotPasswordResetPage = lazy(() => import("./pages/ForgotPasswordResetPage").then(module => ({ default: module.ForgotPasswordResetPage })));
+const LoginPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.LoginPage })));
+const RegisterPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.RegisterPage })));
+const RegisterStep2 = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.RegisterStep2 })));
+const ForgotPasswordPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.ForgotPasswordPage })));
+const ForgotPasswordCodePage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.ForgotPasswordCodePage })));
+const ForgotPasswordResetPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.ForgotPasswordResetPage })));
 
 // Páginas protegidas con lazy loading
 const DashboardPage = lazy(() => import("./pages/DashboardPage").then(module => ({ default: module.DashboardPage })));
-const StudyMethodsLibraryPage = lazy(() => import("./pages/StudyMethodsLibraryPage").then(module => ({ default: module.StudyMethodsLibraryPage })));
+const StudyMethodsLibraryPage = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.StudyMethodsLibraryPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then(module => ({ default: module.ProfilePage })));
-const PomodoroIntroView = lazy(() => import("./pages/PomodoroIntroView").then(module => ({ default: module.PomodoroIntroView })));
-const PomodoroExecutionView = lazy(() => import("./pages/PomodoroExecutionView").then(module => ({ default: module.PomodoroExecutionView })));
-const MindMapsInfoPage = lazy(() => import("./pages/MindMapsInfoPage").then(module => ({ default: module.MindMapsInfoPage })));
-const MindMapsStepsPage = lazy(() => import("./pages/MindMapsStepsPage"));
-const SpacedRepetitionIntroView = lazy(() => import("./pages/SpacedRepetitionIntroView").then(module => ({ default: module.SpacedRepetitionIntroView })));
-const SpacedRepetitionStepsView = lazy(() => import("./pages/SpacedRepetitionStepsView").then(module => ({ default: module.SpacedRepetitionStepsView })));
-const ActiveRecallIntroView = lazy(() => import("./pages/ActiveRecallIntroView").then(module => ({ default: module.ActiveRecallIntroView })));
-const ActiveRecallStepsView = lazy(() => import("./pages/ActiveRecallStepsView").then(module => ({ default: module.ActiveRecallStepsView })));
-const FeynmanIntroView = lazy(() => import("./pages/FeynmanIntroView").then(module => ({ default: module.FeynmanIntroView })));
-const FeynmanStepsView = lazy(() => import("./pages/FeynmanStepsView").then(module => ({ default: module.FeynmanStepsView })));
-const CornellIntroView = lazy(() => import("./pages/CornellIntroView").then(module => ({ default: module.CornellIntroView })));
-const CornellStepsView = lazy(() => import("./pages/CornellStepsView").then(module => ({ default: module.CornellStepsView })));
+const PomodoroIntroView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.PomodoroIntroView })));
+const PomodoroExecutionView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.PomodoroExecutionView })));
+const MindMapsInfoPage = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.MindMapsInfoPage })));
+const MindMapsStepsPage = lazy(() => import("./modules/study-methods/pages"));
+const SpacedRepetitionIntroView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.SpacedRepetitionIntroView })));
+const SpacedRepetitionStepsView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.SpacedRepetitionStepsView })));
+const ActiveRecallIntroView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.ActiveRecallIntroView })));
+const ActiveRecallStepsView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.ActiveRecallStepsView })));
+const FeynmanIntroView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.FeynmanIntroView })));
+const FeynmanStepsView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.FeynmanStepsView })));
+const CornellIntroView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.CornellIntroView })));
+const CornellStepsView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.CornellStepsView })));
 const ReportsPage = lazy(() => import("./pages/ReportsPage").then(module => ({ default: module.ReportsPage })));
-const StartSession = lazy(() => import("./pages/sessions/StartSession").then(module => ({ default: module.StartSession })));
-const MusicAlbumsPage = lazy(() => import("./pages/MusicAlbumsPage").then(module => ({ default: module.MusicAlbumsPage })));
-const MusicSongsPage = lazy(() => import("./pages/MusicSongsPage").then(module => ({ default: module.MusicSongsPage })));
-const EventsPage = lazy(() => import("./pages/EventsPage").then(module => ({ default: module.EventsPage })));
-const NotificationPage = lazy(() => import("./pages/NotificationPage").then(module => ({ default: module.NotificationPage })));
+const StartSession = lazy(() => import("./modules/sessions/pages").then(module => ({ default: module.StartSession })));
+const MusicAlbumsPage = lazy(() => import("./modules/music/pages").then(module => ({ default: module.MusicAlbumsPage })));
+const MusicSongsPage = lazy(() => import("./modules/music/pages").then(module => ({ default: module.MusicSongsPage })));
+const EventsPage = lazy(() => import("./modules/events/pages").then(module => ({ default: module.EventsPage })));
+const NotificationPage = lazy(() => import("./modules/notifications/pages").then(module => ({ default: module.NotificationPage })));
 
 // Componente principal de la aplicación
 function App() {

@@ -16,7 +16,6 @@ import {
 import { useMusicPlayer, type PlaybackMode } from '../../contexts/MusicPlayerContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAlbumImage, getArtistName } from '../../utils/musicUtils';
-import { getSongsByAlbumId } from '../../utils/musicApi';
 
 export const MusicPlayer: React.FC = () => {
   const { isAuthenticated } = useAuth();
