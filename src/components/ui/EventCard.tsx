@@ -154,9 +154,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
    * Maneja el click en la tarjeta para mostrar/ocultar acciones
    */
   const handleCardClick = () => {
-    if (isPast) {
-      setShowActions(!showActions);
-    }
+    setShowActions(!showActions);
   };
 
   /**
@@ -185,7 +183,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
 
   return (
     <div
-      className={`relative bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 flex flex-col h-full border-2 ${borderColor} ${accentBorder} transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-2xl ring-1 ring-white/5 hover:ring-green-500/20 ${isPast ? 'cursor-pointer' : ''}`}
+      className={`relative bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 flex flex-col h-full border-2 ${borderColor} ${accentBorder} transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-2xl ring-1 ring-white/5 hover:ring-green-500/20 cursor-pointer hover:bg-gradient-to-br hover:from-[#282828]/95 hover:to-[#1f1f1f]/95`}
       onClick={handleCardClick}
     >
       {/* Card Content - fades when actions are shown */}
@@ -323,8 +321,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, o
 
           {/* Centered action buttons - smaller and no background */}
           <div className="flex gap-6 px-4">
-            {/* Mark as Completed - Only show if not completed */}
-            {getComputedStatus() !== "completado" && (
+            {/* Mark as Completed - Only show if not completed and time has passed */}
+            {getComputedStatus() !== "completado" && isPast && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
