@@ -4,117 +4,180 @@ Una aplicación moderna de React TypeScript para la gestión de métodos de estu
 
 ## Estructura del Proyecto
 
+La aplicación sigue una arquitectura modular organizada por dominios de negocio:
+
 ```
 src/
-├── components/
+├── modules/                          # Arquitectura modular por dominios
+│   ├── auth/                        # Módulo de autenticación
+│   │   ├── components/
+│   │   │   └── RequireAuth.tsx
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx
+│   │   ├── hooks/
+│   │   │   └── useAuth.ts
+│   │   └── index.ts
+│   ├── music/                       # Módulo de música
+│   │   ├── components/
+│   │   │   └── MusicPlayer.tsx
+│   │   └── index.ts
+│   ├── sessions/                    # Módulo de sesiones
+│   │   ├── components/
+│   │   │   └── ConcentrationCard.tsx
+│   │   └── index.ts
+│   └── study-methods/               # Módulo de métodos de estudio
+│       ├── components/
+│       │   └── MethodSelectionModal.tsx
+│       └── index.ts
+├── shared/                          # Recursos compartidos
+│   ├── components/
+│   │   └── ui/                      # Componentes UI reutilizables
+│   │       ├── Button.tsx
+│   │       ├── Input.tsx
+│   │       ├── LoadingSpinner.tsx
+│   │       └── FormField.tsx
+│   ├── hooks/                       # Hooks genéricos
+│   │   ├── useApi.ts
+│   │   └── useLoading.ts
+│   ├── services/                    # Servicios compartidos
+│   │   └── apiClient.ts
+│   ├── utils/                       # Utilidades compartidas
+│   │   ├── dateUtils.ts
+│   │   ├── validationUtils.ts
+│   │   ├── musicUtils.ts
+│   │   ├── sessionMappers.ts
+│   │   ├── broadcastChannel.ts
+│   │   ├── sleepDetector.ts
+│   │   └── offlineQueue.ts
+│   └── index.ts
+├── types/                           # Tipos organizados por dominio
+│   ├── api/
+│   │   ├── ApiResponse.ts
+│   │   ├── ApiError.ts
+│   │   └── index.ts
+│   ├── domain/
+│   │   ├── auth/
+│   │   │   ├── IUser.ts
+│   │   │   ├── ILoginRequest.ts
+│   │   │   ├── IRegisterRequest.ts
+│   │   │   └── index.ts
+│   │   ├── music/
+│   │   │   ├── IAlbum.ts
+│   │   │   ├── ISong.ts
+│   │   │   ├── IPlayerState.ts
+│   │   │   └── index.ts
+│   │   ├── sessions/
+│   │   │   ├── ISession.ts
+│   │   │   ├── IConcentrationSession.ts
+│   │   │   ├── ISessionReport.ts
+│   │   │   └── index.ts
+│   │   └── study-methods/
+│   │       ├── IMethod.ts
+│   │       ├── IPomodoroConfig.ts
+│   │       ├── IMethodExecution.ts
+│   │       └── index.ts
 │   ├── ui/
-│   │   ├── BackButton.tsx
-│   │   ├── Button.tsx
-│   │   ├── Card.tsx
-│   │   ├── CountdownOverlay.tsx
-│   │   ├── EventCard.tsx
-│   │   ├── FinishLaterModal.tsx
-│   │   ├── FormField.tsx
-│   │   ├── Input.tsx
-│   │   ├── LoadingSpinner.tsx
-│   │   ├── MusicPlayer.tsx
-│   │   ├── NotificationToggle.tsx
-│   │   ├── PageLayout.tsx
-│   │   ├── ProgressCircle.tsx
-│   │   ├── Sidebar.tsx
-│   │   ├── TimeInput.tsx
-│   │   ├── Timer.tsx
-│   │   └── UpcomingNotificationCard.tsx
-│   ├── auth/
-│   │   └── RequireAuth.tsx
-│   ├── ConcentrationCard/
-│   │   ├── ConcentrationCard.tsx
-│   │   ├── ContinueSessionModal.tsx
-│   │   ├── MiniSessionCard.tsx
-│   │   └── SessionFloatingButton.tsx
-│   ├── AlbumSelectionModal.tsx
-│   ├── FirstLoginModal.tsx
-│   ├── MethodSelectionModal.tsx
-│   ├── MiniSessionCard.tsx
-│   ├── MusicTest.tsx
-│   ├── SessionsUI.tsx
-│   └── StartSession.tsx
-├── contexts/
-│   ├── AuthContext.tsx
-│   ├── MusicPlayerContext.tsx
-│   └── RequireAuth.tsx
-├── hooks/
-│   ├── useApi.ts
-│   ├── useApiError.ts
-│   ├── useAuth.ts
-│   ├── useConcentrationSession.ts
-│   ├── useEvents.ts
-│   ├── useLoading.ts
-│   ├── useMethodExecution.ts
-│   └── useNotifications.ts
-├── pages/
-│   ├── ActiveRecallIntroView.tsx
-│   ├── ActiveRecallStepsView.tsx
-│   ├── CornellIntroView.tsx
-│   ├── CornellStepsView.tsx
-│   ├── CreateEventModal.tsx
-│   ├── DashboardPage.tsx
-│   ├── EditEventModal.tsx
-│   ├── EventsPage.tsx
-│   ├── FeynmanIntroView.tsx
-│   ├── FeynmanStepsView.tsx
-│   ├── ForgotPasswordCodePage.tsx
-│   ├── ForgotPasswordPage.tsx
-│   ├── ForgotPasswordResetPage.tsx
-│   ├── LoginPage.tsx
-│   ├── MindMapsInfoPage.tsx
-│   ├── MindMapsStepsPage.tsx
-│   ├── MusicAlbumsPage.tsx
-│   ├── MusicSongsPage.tsx
-│   ├── NotificationPage.tsx
-│   ├── PomodoroExecutionView.tsx
-│   ├── PomodoroIntroView.tsx
-│   ├── ProfilePage.tsx
-│   ├── RegisterPage.tsx
-│   ├── RegisterStep2.tsx
-│   ├── ReportsPage.tsx
-│   ├── SpacedRepetitionIntroView.tsx
-│   ├── SpacedRepetitionStepsView.tsx
-│   ├── StudyMethodsLibraryPage.tsx
-│   ├── SurveyPage.tsx
-│   ├── reports/
-│   │   └── SessionsReport.tsx
-│   └── sessions/
-│       └── StartSession.tsx
-├── providers/
-│   └── ConcentrationSessionProvider.tsx
-├── services/
-│   ├── audioService.ts
-│   ├── reportsService.ts
-│   └── sessionService.ts
-├── types/
-│   ├── api.ts
-│   ├── events.ts
-│   ├── sessionMappers.ts
-│   └── user.ts
-├── utils/
-│   ├── apiClient.ts
-│   ├── broadcastChannel.ts
-│   ├── constants.ts
-│   ├── dateUtils.ts
-│   ├── eventsApi.ts
-│   ├── methodAssets.ts
-│   ├── methodStatus.ts
-│   ├── musicApi.ts
-│   ├── musicUtils.ts
-│   ├── notificationsApi.ts
-│   ├── offlineQueue.ts
-│   ├── sessionMappers.ts
-│   ├── sleepDetector.ts
-│   └── validationUtils.ts
+│   │   ├── IComponentProps.ts
+│   │   ├── IFormFields.ts
+│   │   ├── IModalConfig.ts
+│   │   └── index.ts
+│   ├── shared/
+│   │   ├── IBaseEntity.ts
+│   │   ├── ITimestamps.ts
+│   │   └── index.ts
+│   └── index.ts
+├── components/                      # Componentes legacy (a migrar)
+├── contexts/                        # Contextos legacy (a migrar)
+├── hooks/                          # Hooks legacy (a migrar)
+├── pages/                          # Páginas de la aplicación
+├── providers/                      # Proveedores globales
+├── services/                       # Servicios legacy (a migrar)
+├── utils/                          # Utilidades legacy (a migrar)
 ├── App.tsx
 ├── main.tsx
 └── index.css
+```
+
+## Refactorización Modular Completada
+
+El proyecto ha sido refactorizado siguiendo una arquitectura modular por dominios de negocio, implementando mejores prácticas de desarrollo y organización del código.
+
+### Fases de Refactorización Ejecutadas
+
+#### Fase 1: Reorganización de Tipos
+
+- Creación de estructura jerárquica `src/types/` organizada por dominio
+- Migración de tipos existentes a carpetas `api/`, `domain/`, `ui/`, `shared/`
+- Creación de tipos basados en interfaces de API (`InterfacesAPI/`)
+- Implementación de barrel exports (`index.ts`) en todas las carpetas
+- Verificación de compatibilidad con TypeScript
+
+#### Fase 2: Creación de Shared/
+
+- Centralización de recursos reutilizables en `src/shared/`
+- Migración de componentes UI genéricos (`Button`, `Input`, `LoadingSpinner`, etc.)
+- Migración de hooks compartidos (`useApi`, `useLoading`)
+- Migración de servicios compartidos (`apiClient`)
+- Migración de utilidades comunes (`dateUtils`, `validationUtils`, `musicUtils`, etc.)
+- Actualización de imports en todo el proyecto
+
+#### Fase 3: Creación de Módulos - Auth
+
+- Estructura modular para autenticación en `src/modules/auth/`
+- Migración de componentes, contextos y hooks relacionados
+- Implementación de barrel exports
+- Verificación de funcionamiento sin errores
+
+#### Fase 4: Creación de Módulos - Music
+
+- Estructura modular para música en `src/modules/music/`
+- Migración del reproductor de música y utilidades relacionadas
+- Implementación de barrel exports
+- Verificación de funcionamiento
+
+#### Fase 5: Creación de Módulos - Sessions
+
+- Estructura modular para sesiones en `src/modules/sessions/`
+- Migración de componentes de temporizador y utilidades
+- Implementación de barrel exports
+- Verificación de funcionamiento
+
+#### Fase 6: Creación de Módulos - Study-Methods, Notifications, Events
+
+- Estructura modular para métodos de estudio en `src/modules/study-methods/`
+- Migración de componentes de selección de métodos
+- Preparación de estructuras para notifications y events
+
+#### Fase 7: Implementación de Mejores Prácticas
+
+- Configuración de aliases de rutas en `vite.config.ts` y `tsconfig.app.json`
+- Implementación de barrel exports en todos los módulos
+- Configuración de path mapping para TypeScript
+- Preparación para patrón Container/Presentational
+
+#### Fase 8: Limpieza y Optimización Final
+
+- Actualización de documentación (README.md)
+- Verificación final de TypeScript
+- Optimización de estructura de archivos
+
+### Beneficios de la Arquitectura Modular
+
+- **Separación de Responsabilidades**: Cada módulo maneja un dominio específico
+- **Mantenibilidad**: Código organizado y fácil de localizar
+- **Reutilización**: Componentes y utilidades compartidas centralizadas
+- **Escalabilidad**: Fácil adición de nuevos módulos y funcionalidades
+- **Type Safety**: Tipos organizados por dominio con barrel exports
+- **Developer Experience**: Aliases de rutas y estructura clara
+
+### Uso de Aliases de Ruta
+
+```typescript
+// Importaciones limpias con aliases
+import { Button } from "@shared/components/ui";
+import { useApi } from "@shared/hooks";
+import type { IUser } from "@types/domain/auth";
+import { MusicPlayer } from "@modules/music";
 ```
 
 ## Resumen de Arquitectura
