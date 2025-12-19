@@ -55,7 +55,7 @@ const distractions = [
 
 
 export const ProfilePage: React.FC = () => {
-  const { user, loading: authLoading, updateUser } = useAuth();
+  const { user, loading: authLoading, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nombre_usuario: "",
@@ -393,22 +393,43 @@ export const ProfilePage: React.FC = () => {
 
     setDeleteLoading(true);
     try {
-      // El endpoint DELETE /users/:id ha sido removido por seguridad según la nueva API
-      // Mostrar mensaje informativo al usuario
+      // Llamar al endpoint DELETE /api/v1/users/me para eliminar la cuenta
+      await apiClient.delete(`${API_ENDPOINTS.USERS}/me`);
+
+      // Mostrar mensaje de éxito
       await Swal.fire({
-        title: 'Función no disponible',
-        text: 'La eliminación de cuentas está temporalmente deshabilitada por motivos de seguridad. Contacta al soporte si necesitas ayuda.',
-        icon: 'info',
+        title: 'Cuenta eliminada',
+        text: 'Tu cuenta ha sido eliminada exitosamente.',
+        icon: 'success',
         confirmButtonText: 'Entendido',
         background: '#232323',
         color: '#ffffff',
-        confirmButtonColor: '#3B82F6',
+        confirmButtonColor: '#22C55E',
       });
 
+      // Cerrar modal y hacer logout
       setShowDeleteModal(false);
+      logout();
+      navigate('/landing');
 
-    } catch {
-      // En caso de error, cerrar modal
+    } catch (error: unknown) {
+      let errorMessage = "Error al eliminar la cuenta";
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        errorMessage = axiosError.response?.data?.error || errorMessage;
+      }
+
+      // Mostrar error
+      await Swal.fire({
+        title: 'Error al eliminar cuenta',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        background: '#232323',
+        color: '#ffffff',
+        confirmButtonColor: '#EF4444',
+      });
+
       setShowDeleteModal(false);
     } finally {
       setDeleteLoading(false);
