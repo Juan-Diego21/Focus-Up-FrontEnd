@@ -33,12 +33,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
     try {
       setIsLoggingOut(true);
       await logout();
-      // logout() handles the navigation internally
+      // Navigate to landing page after logout
+      navigate("/");
     } catch (error) {
       console.error('Logout failed:', error);
       setIsLoggingOut(false);
       // Fallback navigation in case logout fails
-      navigate("/login");
+      navigate("/");
     }
   };
 

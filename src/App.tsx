@@ -10,6 +10,7 @@ import { Suspense, lazy } from 'react';
 // Se eliminaron las importaciones síncronas y se reemplazaron por lazy loading
 
 // Páginas públicas con lazy loading
+const LandingPage = lazy(() => import("./pages/LandingPage").then(module => ({ default: module.default })));
 const LoginPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.RegisterPage })));
 const RegisterStep2 = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.RegisterStep2 })));
@@ -105,7 +106,7 @@ function App() {
           <Route path="/cornell/steps/:methodId" element={<RequireAuth><CornellStepsView /></RequireAuth>} />
 
           {/* Ruta por defecto */}
-          <Route path="/" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+          <Route path="/" element={<LandingPage />} />
         </Routes>
       </Suspense>
     </div>
