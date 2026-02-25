@@ -1,4 +1,12 @@
-export const API_BASE_URL = "/api/v1";
+const envApiUrl = import.meta.env.VITE_API_URL?.trim();
+
+// URL base de API configurable por entorno.
+// Si no está definida, mantiene fallback relativo para compatibilidad.
+export const API_BASE_URL = (envApiUrl || "/api/v1").replace(/\/+$/, "");
+
+export const APP_MODE = import.meta.env.MODE;
+export const IS_PRODUCTION = import.meta.env.PROD;
+
 export const API_ENDPOINTS = {
   HEALTH: "/health",
   USERS: "/users",

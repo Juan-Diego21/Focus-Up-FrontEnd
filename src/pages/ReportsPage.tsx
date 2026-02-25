@@ -3,17 +3,19 @@
  * Integra los nuevos endpoints separados para una mejor organización de datos
  * Incluye componentes reutilizables y manejo de errores consistente
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/ui/Sidebar";
 import { PageLayout } from "../components/ui/PageLayout";
 import { reportsService } from "../services/reportsService";
 import { sessionService } from "../services/sessionService";
+import { apiClient } from "../utils/apiClient";
 import { LOCAL_METHOD_ASSETS } from '../utils/methodAssets';
-import { formatTime, mapServerSession } from "../utils/sessionMappers";
+import { mapServerSession } from "../utils/sessionMappers";
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
 import { replaceIfSessionAlbum } from '../services/audioService';
 import { getSongsByAlbumId } from '../utils/musicApi';
+import { API_ENDPOINTS } from "../utils/constants";
 import { useConcentrationSession } from '../providers/ConcentrationSessionProvider';
 import Swal from 'sweetalert2';
 import {
@@ -40,6 +42,31 @@ import {
   getMethodType
 } from '../utils/methodStatus';
 import type { SessionReport, MethodReport } from '../types/api';
+
+/**
+ * IMPORTANTE SOBRE UNIDADES:
+ * En sesiones el backend expone el tiempo real como `elapsedMs` (milisegundos).
+ * El error original venía de mezclar segundos y milisegundos al formatear, lo que distorsionaba estadísticas.
+ */
+const normalizeDurationToMs = (rawDuration: number | null | undefined): number => {
+  if (!Number.isFinite(rawDuration) || !rawDuration || rawDuration < 0) {
+    return 0;
+  }
+  return rawDuration;
+};
+
+/**
+ * Formatea una duración real en milisegundos (no timestamp) a HH:MM:SS.
+ * Se evita usar `Date` porque aquí no hay fechas, solo duración acumulada.
+ */
+const formatDurationFromMs = (msInput: number): string => {
+  const totalSeconds = Math.max(0, Math.floor(msInput / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
 
 /**
  * Obtiene el color basado en el progreso para métodos Pomodoro
@@ -132,14 +159,8 @@ export const ReportsPage: React.FC = () => {
 
     if (result.isConfirmed) {
       try {
-        // Use the API endpoint to delete the report
-        await fetch(`http://localhost:3001/api/v1/reports/${reportId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        // Producción: usar cliente HTTP centralizado (base URL por entorno + JWT por interceptor).
+        await apiClient.delete(`${API_ENDPOINTS.REPORTS}/${reportId}`);
 
         Swal.fire({
           title: 'Eliminado',
@@ -195,6 +216,44 @@ export const ReportsPage: React.FC = () => {
     loadReports();
   }, []);
 
+  // useMemo evita recalcular filtros pesados en cada render cuando las dependencias no cambian.
+  const filteredMethods = useMemo(() => {
+    return methodReports.filter(method => {
+      if (statusFilter === 'todos') return true;
+      if (statusFilter === 'pendiente') return method.estado !== 'completed' && method.progreso < 100;
+      if (statusFilter === 'terminado') return method.estado === 'completed' || method.progreso === 100;
+      return true;
+    });
+  }, [methodReports, statusFilter]);
+
+  const deduplicatedSessions = useMemo(() => {
+    return sessionReports.filter(session => {
+      // Si la sesión tiene tiempo 0 y estado pendiente, verificar si existe otra sesión con el mismo nombre pero con tiempo
+      if (session.tiempoTotal === 0 && session.estado === 'pendiente') {
+        // Buscar si existe otra sesión con el mismo nombre pero con tiempo > 0
+        const duplicateWithTime = sessionReports.find(s =>
+          s.nombreSesion === session.nombreSesion &&
+          s.tiempoTotal > 0 &&
+          s.idSesion !== session.idSesion
+        );
+        // Si existe una versión con tiempo, ocultar esta versión con tiempo 0
+        if (duplicateWithTime) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [sessionReports]);
+
+  const filteredSessions = useMemo(() => {
+    return deduplicatedSessions.filter(session => {
+      if (sessionFilter === 'todos') return true;
+      if (sessionFilter === 'pendiente') return session.estado === 'pendiente';
+      if (sessionFilter === 'completado') return session.estado === 'completado';
+      return true;
+    });
+  }, [deduplicatedSessions, sessionFilter]);
+
 
 
   // Estados de carga y error
@@ -228,42 +287,6 @@ export const ReportsPage: React.FC = () => {
       </div>
     );
   }
-
-  // Filtrar métodos según el estado seleccionado por el usuario
-  const filteredMethods = methodReports.filter(method => {
-    if (statusFilter === 'todos') return true;
-    if (statusFilter === 'pendiente') return method.estado !== 'completed' && method.progreso < 100;
-    if (statusFilter === 'terminado') return method.estado === 'completed' || method.progreso === 100;
-    return true;
-  });
-
-  // Filtrar sesiones según el estado seleccionado por el usuario
-  // Primero filtrar sesiones duplicadas: ocultar sesiones de eventos con tiempo 0:00:00 si existe una versión con tiempo real
-  const deduplicatedSessions = sessionReports.filter(session => {
-    // Si la sesión tiene tiempo 0 y estado pendiente, verificar si existe otra sesión con el mismo nombre pero con tiempo
-    if (session.tiempoTotal === 0 && session.estado === 'pendiente') {
-      // Buscar si existe otra sesión con el mismo nombre pero con tiempo > 0
-      const duplicateWithTime = sessionReports.find(s =>
-        s.nombreSesion === session.nombreSesion &&
-        s.tiempoTotal > 0 &&
-        s.idSesion !== session.idSesion
-      );
-      // Si existe una versión con tiempo, ocultar esta versión con tiempo 0
-      if (duplicateWithTime) {
-        return false;
-      }
-    }
-    return true;
-  });
-
-  const filteredSessions = deduplicatedSessions.filter(session => {
-    if (sessionFilter === 'todos') return true;
-    if (sessionFilter === 'pendiente') return session.estado === 'pendiente';
-    if (sessionFilter === 'completado') return session.estado === 'completado';
-    // REMOVED REDUNDANCY: The 'programado' filter was redundant, mapping to 'pendiente'.
-    // if (sessionFilter === 'programado') return session.estado === 'pendiente'; // <--- Line removed
-    return true;
-  });
 
   return (
     <PageLayout
@@ -909,7 +932,7 @@ export const ReportsPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <ClockIcon className="w-4 h-4 text-gray-400" />
                       <span className="text-gray-300 font-medium">
-                        {formatTime(session.tiempoTotal)}
+                        {formatDurationFromMs(normalizeDurationToMs(session.tiempoTotal))}
                       </span>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -1042,13 +1065,46 @@ export const ReportsPage: React.FC = () => {
                 <div className="space-y-6">
                   {/* Session Statistics */}
                   {(() => {
-                    const totalSessions = sessionReports.length;
-                    const completedSessions = sessionReports.filter(s => s.estado === 'completado').length;
-                    const pendingSessions = sessionReports.filter(s => s.estado === 'pendiente').length;
-                    const totalHours = sessionReports.reduce((sum, s) => sum + (s.tiempoTotal || 0), 0) / 3600; // Convert to hours
-                    const averageSessionTime = totalSessions > 0 ? sessionReports.reduce((sum, s) => sum + (s.tiempoTotal || 0), 0) / totalSessions : 0;
-                    const sessionsWithMethods = sessionReports.filter(s => s.metodoAsociado).length;
-                    const sessionsWithMusic = sessionReports.filter(s => s.albumAsociado).length;
+                    // CORRECCIÓN:
+                    // El modal debe usar el mismo dataset que ve el usuario en la grilla (filtrado + sin duplicados).
+                    // Antes usaba `sessionReports` crudo, generando discrepancias en estadísticas.
+                    const statsSessions = filteredSessions;
+                    const totalSessions = statsSessions.length;
+                    const completedSessions = statsSessions.filter(s => s.estado === 'completado').length;
+                    const pendingSessions = statsSessions.filter(s => s.estado === 'pendiente').length;
+                    const sessionDurationsMs = statsSessions.map(s => normalizeDurationToMs(s.tiempoTotal));
+                    const totalDurationMs = sessionDurationsMs.reduce((sum, duration) => sum + duration, 0);
+
+                    // CORRECCIÓN:
+                    // Antes se mezclaban conversiones al mostrar/operar tiempos.
+                    // Ahora todos los cálculos parten de milisegundos y luego se convierten explícitamente.
+                    const totalHours = totalDurationMs / (1000 * 3600);
+
+                    // CORRECCIÓN:
+                    // Promedio correcto = duración total / cantidad total de sesiones (en ms).
+                    const averageSessionDurationMs = totalSessions > 0
+                      ? totalDurationMs / totalSessions
+                      : 0;
+
+                    // CORRECCIÓN:
+                    // Máximo y mínimo se calculan sobre duraciones reales.
+                    // Para mínima se excluyen ceros para evitar que una sesión vacía "gane" como más corta.
+                    const longestSessionMs = sessionDurationsMs.length > 0
+                      ? Math.max(...sessionDurationsMs)
+                      : 0;
+                    const nonZeroSessionDurations = sessionDurationsMs.filter(duration => duration > 0);
+                    const shortestSessionMs = nonZeroSessionDurations.length > 0
+                      ? Math.min(...nonZeroSessionDurations)
+                      : 0;
+                    const sessionsWithMethods = statsSessions.filter(s => s.metodoAsociado).length;
+                    const sessionsWithMusic = statsSessions.filter(s => s.albumAsociado).length;
+
+                    // CORRECCIÓN:
+                    // "Sin elementos" no se debe calcular por resta, porque una sesión puede tener método y música
+                    // al mismo tiempo y eso duplicaba el descuento (resultado negativo).
+                    const sessionsWithoutElements = statsSessions.filter(
+                      s => !s.metodoAsociado && !s.albumAsociado
+                    ).length;
 
                     return (
                       <>
@@ -1079,18 +1135,18 @@ export const ReportsPage: React.FC = () => {
                             <div className="space-y-3">
                               <div className="flex justify-between">
                                 <span className="text-gray-400">Tiempo Promedio por Sesión:</span>
-                                <span className="text-white">{averageSessionTime > 0 ? formatTime(averageSessionTime * 1000) : '0:00:00'}</span>
+                                <span className="text-white">{formatDurationFromMs(averageSessionDurationMs)}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-400">Sesión Más Larga:</span>
                                 <span className="text-white">
-                                  {sessionReports.length > 0 ? formatTime(Math.max(...sessionReports.map(s => s.tiempoTotal || 0)) * 1000) : '0:00:00'}
+                                  {formatDurationFromMs(longestSessionMs)}
                                 </span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-400">Sesión Más Corta:</span>
                                 <span className="text-white">
-                                  {sessionReports.length > 0 ? formatTime(Math.min(...sessionReports.filter(s => s.tiempoTotal && s.tiempoTotal > 0).map(s => s.tiempoTotal || 0)) * 1000) : '0:00:00'}
+                                  {formatDurationFromMs(shortestSessionMs)}
                                 </span>
                               </div>
                             </div>
@@ -1109,7 +1165,7 @@ export const ReportsPage: React.FC = () => {
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-400">Sesiones Sin Elementos:</span>
-                                <span className="text-gray-400">{totalSessions - sessionsWithMethods - sessionsWithMusic}</span>
+                                <span className="text-gray-400">{sessionsWithoutElements}</span>
                               </div>
                             </div>
                           </div>

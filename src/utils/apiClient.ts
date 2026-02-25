@@ -3,6 +3,15 @@ import type { AxiosInstance, AxiosResponse } from "axios";
 import { API_BASE_URL } from "./constants";
 import type { ApiError } from "../types/api";
 
+const getSafeApiMessage = (statusCode: number): string => {
+  if (statusCode >= 500) return "Ocurrió un problema del servidor. Inténtalo nuevamente.";
+  if (statusCode === 401) return "Tu sesión expiró. Inicia sesión nuevamente.";
+  if (statusCode === 403) return "No tienes permisos para realizar esta acción.";
+  if (statusCode === 404) return "No se encontró el recurso solicitado.";
+  if (statusCode === 429) return "Demasiadas solicitudes. Intenta más tarde.";
+  return "No se pudo completar la solicitud.";
+};
+
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -27,9 +36,15 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error) => {
+    const statusCode = error.response?.status || 500;
+    const backendMessage = error.response?.data?.message;
     const apiError: ApiError = {
-      message: error.response?.data?.message || "Error de servidor",
-      statusCode: error.response?.status || 500,
+      // En desarrollo se conserva detalle del backend para depuración;
+      // en producción se abstrae para no filtrar información interna.
+      message: import.meta.env.DEV && backendMessage
+        ? backendMessage
+        : getSafeApiMessage(statusCode),
+      statusCode,
       error: error.response?.data?.error || "Unknown error",
     };
     return Promise.reject(apiError);

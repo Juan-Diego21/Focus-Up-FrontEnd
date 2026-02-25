@@ -471,7 +471,7 @@ npm run dev
 Crear archivo `.env`:
 
 ```env
-VITE_API_BASE_URL=http://localhost:3001/api/v1
+VITE_API_URL=https://api.example.com/api/v1
 VITE_ENABLE_DEVTOOLS=true
 ```
 
@@ -592,7 +592,7 @@ Crear archivo `.env` en la ra铆z del proyecto:
 
 ```env
 # Configuraci贸n de API
-VITE_API_BASE_URL=http://localhost:3001/api/v1
+VITE_API_URL=https://api.example.com/api/v1
 
 # Opcional: Configuraciones de desarrollo
 VITE_ENABLE_DEVTOOLS=true
@@ -649,7 +649,7 @@ npm run build
 
 Asegurar que el entorno de producci贸n tenga:
 
-- `VITE_API_BASE_URL` apuntando a la API de producci贸n
+- `VITE_API_URL` apuntando a la API de producci贸n
 - Configuraci贸n CORS apropiada
 - HTTPS habilitado para reproducci贸n de audio
 
@@ -816,3 +816,12 @@ Si algo falla, los cambios son seguros y pueden revertirse:
 ---
 
 **隆Feliz estudio con m煤sica persistente!**
+
+## Variables de entorno
+
+Este frontend usa `VITE_API_URL` para definir la URL base del backend en cada entorno.
+
+1. Copia `.env.example` a `.env`.
+2. Define `VITE_API_URL` seg鷑 el entorno:
+   `VITE_API_URL=https://api.tu-dominio.com/api/v1`
+

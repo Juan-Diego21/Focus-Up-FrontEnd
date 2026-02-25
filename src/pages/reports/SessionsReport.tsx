@@ -145,7 +145,10 @@ export const SessionsReport: React.FC = () => {
     let thisWeekCount = 0;
 
     sessionsData.forEach(session => {
-      totalTime += session.tiempoTotal * 1000; // Convertir segundos a milisegundos
+      // CORRECCIÓN:
+      // El backend de sesiones reporta duración como elapsedMs (milisegundos).
+      // Antes se multiplicaba por 1000 asumiendo segundos y eso inflaba las estadísticas.
+      totalTime += session.tiempoTotal;
 
       if (session.estado === 'completado') {
         completedCount++;
@@ -261,7 +264,9 @@ export const SessionsReport: React.FC = () => {
   const handleCompleteSession = async (session: SessionReport) => {
     try {
       // Para completar desde reportes, usar el tiempo total ya registrado
-      const elapsedMs = session.tiempoTotal * 1000; // Convertir segundos a ms
+      // CORRECCIÓN:
+      // `tiempoTotal` ya viene en milisegundos; no se debe volver a convertir.
+      const elapsedMs = session.tiempoTotal;
       await sessionService.completeSession(session.idSesion.toString(), elapsedMs);
       // Recargar sesiones
       loadSessions();
@@ -417,7 +422,7 @@ export const SessionsReport: React.FC = () => {
                         <div>
                           <div className="text-xs text-gray-400 mb-1">Tiempo total</div>
                           <div className="text-white font-medium">
-                            {session.tiempoTotal > 0 ? formatTime(session.tiempoTotal * 1000) : '0:00:00'}
+                            {session.tiempoTotal > 0 ? formatTime(session.tiempoTotal) : '0:00:00'}
                           </div>
                         </div>
                         <div>
