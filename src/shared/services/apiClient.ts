@@ -2,7 +2,6 @@
 // Maneja autenticación JWT y errores de API de manera centralizada
 import axios from "axios";
 import type { AxiosInstance, AxiosResponse } from "axios";
-import { API_BASE_URL } from "../../utils/constants";
 import type { ApiError } from "../../types/api";
 
 const getSafeApiMessage = (statusCode: number): string => {
@@ -13,6 +12,11 @@ const getSafeApiMessage = (statusCode: number): string => {
   if (statusCode === 429) return "Demasiadas solicitudes. Intenta más tarde.";
   return "No se pudo completar la solicitud.";
 };
+
+const envApiUrl = import.meta.env.VITE_API_URL?.trim();
+
+// Evita dependencia transversal a src/utils/constants que puede formar ciclos de chunks en build.
+const API_BASE_URL = (envApiUrl || "/api/v1").replace(/\/+$/, "");
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
