@@ -2,6 +2,47 @@
 
 Aplicacion web en React + TypeScript para gestion de estudio, sesiones de concentracion y musica de fondo durante la navegacion.
 
+## Refactor Mobile-First (Marzo 2026)
+
+Se realizo un refactor por modulos y vistas para priorizar experiencia movil sin degradar escritorio.
+
+### Modulos ajustados
+
+- Sesiones de concentracion
+- Biblioteca de metodos de estudio
+- Musica (albumes y canciones)
+- Eventos y recordatorios
+- Reportes y analiticas
+- Perfil de usuario
+- Landing page
+- Navegacion base (sidebar y layout compartido)
+
+### Decisiones de arquitectura responsive
+
+- Se eliminaron restricciones globales heredadas (`#root` con `max-width` y `padding`) que forzaban comportamientos no responsivos.
+- Se normalizo la base para prevenir overflow horizontal con reglas globales en `html`, `body` y `#root`.
+- Se ajustaron layouts a `mobile-first` usando `px`/`py` fluidos y escalado tipografico por breakpoints.
+- Se redujo el uso de offsets rigidos en desktop (`ml-64`) que provocaban recortes en movil.
+- Se mejoro el sidebar para movil con area tactil mayor, cierre por overlay y cierre automatico al navegar.
+
+### Accesibilidad y contraste
+
+- Se subio contraste en textos secundarios y subtitulos para mejorar lectura en exteriores.
+- Se ajusto jerarquia visual de titulos en pantallas pequenas (evitando escalas excesivas).
+- Se incrementaron alturas minimas en botones clave para interaccion tactil (`min-h`).
+
+### Correccion funcional incluida
+
+- Eliminacion de cuenta:
+  - primero limpia estado de autenticacion (`logout`)
+  - luego redirige estrictamente a `/` con `replace: true`
+  - evita rutas anidadas y reduce riesgo de bucles de navegacion
+
+### Integridad de escritorio preservada
+
+- Se mantuvo comportamiento funcional y visual en desktop.
+- Los cambios se enfocaron en responsive y accesibilidad sin remover features ni alterar logica de backend.
+
 ## Stack
 
 - React 19

@@ -307,12 +307,12 @@ export const FeynmanStepsView: React.FC = () => {
    * Actualiza el progreso de la sesión en el backend
    * Valida el progreso antes de enviar y maneja sesiones reanudadas
    */
-  const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
+  const updateSessionProgress = async (progress: number, status: string = 'En_proceso'): Promise<boolean> => {
     // Validar progreso para actualización
     if (!isValidProgressForUpdate(progress, 'feynman')) {
       console.error('Valor de progreso inválido para actualización:', progress);
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
-      return;
+      return false;
     }
 
     // Para sesiones reanudadas, usar sessionId de URL, de lo contrario usar activeMethodId
@@ -326,7 +326,7 @@ export const FeynmanStepsView: React.FC = () => {
 
     if (!sessionId) {
       console.error('No se encontró ID de sesión para actualización de progreso. isResuming:', isResuming, 'urlSessionId:', urlSessionId, 'sessionData:', sessionData);
-      return;
+      return false;
     }
 
     try {
@@ -344,8 +344,11 @@ export const FeynmanStepsView: React.FC = () => {
 
       // Activar actualización de reportes después de actualización exitosa de progreso
       window.dispatchEvent(new Event('refreshReports'));
+      return true;
     } catch (error) {
       console.error('Error al actualizar progreso del Método Feynman:', error);
+      // Se retorna false para prevenir falsas confirmaciones de finalización.
+      return false;
     }
   };
 
@@ -465,8 +468,21 @@ export const FeynmanStepsView: React.FC = () => {
 
   // Finalizar método
   const finishMethod = async () => {
+    // Se utiliza el estado de finalización definido por utilidades compartidas.
+    const completionStatus = getFeynmanStatusByProgress(100);
     setProgressPercentage(100);
-    await updateSessionProgress(100, 'Terminado');
+    let isUpdated = await updateSessionProgress(100, completionStatus);
+
+    // Fallback de compatibilidad con posibles normalizaciones de estado.
+    if (!isUpdated) {
+      isUpdated = await updateSessionProgress(100, 'completado');
+    }
+
+    if (!isUpdated) {
+      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del método. Intenta nuevamente.' });
+      return;
+    }
+
     localStorage.removeItem('feynman-session');
     localStorage.removeItem('activeMethodId');
 
@@ -512,6 +528,8 @@ export const FeynmanStepsView: React.FC = () => {
   // Asegurar que currentStep esté dentro de los límites válidos para prevenir errores de acceso a array
   const clampedCurrentStep = Math.min(Math.max(currentStep, 0), steps.length - 1);
   const currentStepData = steps[clampedCurrentStep];
+  // Se alinea la visibilidad del botón con el ciclo activo/reanudado de la sesión.
+  const canShowFinishLater = Boolean((sessionData || (isResuming && urlSessionId)) && progressPercentage >= 20 && progressPercentage < 100);
 
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
@@ -543,7 +561,7 @@ export const FeynmanStepsView: React.FC = () => {
           {method.titulo}
         </h1>
         {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) y si no está completado */}
-        {sessionData && currentStep >= 1 && progressPercentage < 100 && (
+        {canShowFinishLater && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"

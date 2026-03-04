@@ -131,7 +131,7 @@ export const AlbumSelectionModal: React.FC<AlbumSelectionModalProps> = ({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-1 md:inset-2 lg:inset-4 bg-[#232323] rounded-2xl shadow-2xl z-50 overflow-hidden max-w-4xl mx-auto my-2 md:my-4 lg:my-8"
+            className="fixed inset-2 md:inset-4 bg-[#232323] rounded-2xl shadow-2xl z-50 overflow-hidden max-w-4xl mx-auto my-2 md:my-4 lg:my-8 flex flex-col h-[calc(100vh-1rem)] md:h-[calc(100vh-2rem)] lg:h-[calc(100vh-4rem)]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="album-modal-title"
@@ -157,7 +157,8 @@ export const AlbumSelectionModal: React.FC<AlbumSelectionModalProps> = ({
             </div>
 
             {/* Contenido - Grid de álbumes */}
-            <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+            {/* Scroll táctil explícito para evitar bloqueo de desplazamiento en móviles */}
+            <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 touch-pan-y overscroll-y-contain">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-4xl mx-auto">
                 {albums.map((album, index) => {
                   const isSelected = selectedAlbum?.id_album === album.id_album;

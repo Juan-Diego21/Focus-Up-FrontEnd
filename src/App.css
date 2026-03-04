@@ -1,8 +1,10 @@
+/* Ajuste global para evitar desbordes y restricciones heredadas de Vite */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: initial;
 }
 
 .logo {
@@ -33,10 +35,7 @@
   }
 }
 
+/* Se mantienen clases legacy por compatibilidad visual */
 .card {
   padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

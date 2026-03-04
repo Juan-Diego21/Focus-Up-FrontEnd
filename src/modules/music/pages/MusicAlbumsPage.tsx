@@ -38,7 +38,7 @@ export const MusicAlbumsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-10 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl"></div>
@@ -62,7 +62,7 @@ export const MusicAlbumsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-10 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl"></div>
@@ -98,7 +98,7 @@ export const MusicAlbumsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-20 left-10 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl"></div>
@@ -108,18 +108,18 @@ export const MusicAlbumsPage: React.FC = () => {
       <Sidebar currentPage="music" />
 
       {/* Header */}
-      <div className="relative z-10 text-center mx-8 px-4 pt-12 pb-8">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent mb-4">
+      <div className="relative z-10 text-center mx-auto px-4 sm:px-6 pt-20 md:pt-12 pb-8 max-w-6xl">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent mb-4">
           Álbumes de Música
         </h1>
-        <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+        <p className="text-gray-200 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Explora nuestra colección curada de álbumes diseñados para potenciar tu concentración y productividad
         </p>
       </div>
 
       {/* Main content */}
       <div className="relative z-10 flex justify-center min-h-screen pb-32">
-        <main className="w-full max-w-7xl px-6 transition-all ml-64">
+        <main className="w-full max-w-7xl px-4 sm:px-6 transition-all">
 
           {/* Albums Grid */}
           {albums.length === 0 ? (
@@ -141,7 +141,7 @@ export const MusicAlbumsPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 md:gap-8">
               {albums.map((album, index) => (
                 <div
                   key={album.id_album}

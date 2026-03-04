@@ -563,7 +563,7 @@ export const StartSession: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden font-inter">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
@@ -575,7 +575,7 @@ export const StartSession: React.FC = () => {
         showSidebar={true}
         sidebar={<Sidebar currentPage="sessions" />}
       >
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6">
 
           {/* Hero Section */}
           <div className="relative mb-12">
@@ -583,11 +583,11 @@ export const StartSession: React.FC = () => {
             <div className="absolute -inset-6 bg-gradient-to-r from-blue-600/20 via-cyan-600/20 to-indigo-600/20 rounded-3xl blur-2xl opacity-50"></div>
 
             <div className="relative text-center">
-              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent mb-6 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent mb-6 leading-tight">
                 {routeSessionId ? 'Continuar Sesión' : 'Sesiones De Concentración'}
               </h2>
 
-              <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
+              <p className="text-gray-200 text-base sm:text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-8">
                 Configura tu sesión de concentración con las herramientas perfectas para maximizar tu productividad
               </p>
 
@@ -611,7 +611,7 @@ export const StartSession: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Columna izquierda: Formulario */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-blue-500/20">
+            <div className="bg-gradient-to-br from-[#232323]/90 to-[#1a1a1a]/90 backdrop-blur-md rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl border border-blue-500/20">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
                   {routeSessionId ? 'Continuar Sesión' : 'Configurar Sesión'}
@@ -780,7 +780,7 @@ export const StartSession: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full px-8 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-lg hover:transform hover:-translate-y-1"
+                    className="w-full px-6 sm:px-8 py-3.5 min-h-[50px] bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-[#232323] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-base sm:text-lg hover:transform hover:-translate-y-1"
                   >
                     {isLoading ? (
                       <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
