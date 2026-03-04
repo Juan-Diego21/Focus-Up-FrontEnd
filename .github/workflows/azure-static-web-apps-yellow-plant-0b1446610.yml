@@ -17,6 +17,8 @@ jobs:
     permissions:
        id-token: write
        contents: read
+    env:
+      VITE_API_URL: https://focusup-api-ercxbzf8b6e8gcbk.brazilsouth-01.azurewebsites.net/api/v1
     steps:
       - uses: actions/checkout@v3
         with:
@@ -56,3 +58,4 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
