@@ -407,10 +407,10 @@ export const ProfilePage: React.FC = () => {
         confirmButtonColor: '#22C55E',
       });
 
-      // Cerrar modal y hacer logout
+      // Cerrar modal y limpiar autenticación antes de redirigir
       setShowDeleteModal(false);
-      logout();
-      navigate('/landing');
+      await logout();
+      navigate('/', { replace: true });
 
     } catch (error: unknown) {
       let errorMessage = "Error al eliminar la cuenta";
@@ -446,19 +446,19 @@ export const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter overflow-x-hidden">
       <Sidebar currentPage="profile" />
 
       {/* Main content */}
-      <div className="flex justify-center items-center min-h-screen">
-        <main className="w-full max-w-lg p-8 transition-all">
+      <div className="flex justify-center items-start min-h-screen py-6 md:py-8">
+        <main className="w-full max-w-lg px-4 sm:px-6 md:px-8 transition-all">
           <div className="mb-10">
             {/* Título principal */}
-            <h1 className="text-3xl font-bold text-white mb-8 tracking-tight text-center bg-gradient-to-r from-white to-gray-300 bg-clip-text">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-8 tracking-tight text-center bg-gradient-to-r from-white to-gray-300 bg-clip-text">
               Ajustes de Perfil
             </h1>
 
-            <div className="bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md p-8 rounded-xl shadow-2xl border border-[#333]/50 hover:shadow-3xl transition-shadow duration-300">
+            <div className="bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md p-5 sm:p-6 md:p-8 rounded-xl shadow-2xl border border-[#333]/50 hover:shadow-3xl transition-shadow duration-300">
 
           {/* Formulario */}
           <form className="space-y-6" onSubmit={handleSubmit}>

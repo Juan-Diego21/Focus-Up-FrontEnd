@@ -302,12 +302,12 @@ export const PomodoroExecutionView: React.FC = () => {
    * Actualiza el progreso de la sesión en el backend
    * Valida el progreso antes de enviar y maneja sesiones reanudadas
    */
-  const updateSessionProgress = async (progress: number, status: 'en_progreso' | 'completado' = 'en_progreso') => {
+  const updateSessionProgress = async (progress: number, status: 'en_progreso' | 'completado' = 'en_progreso'): Promise<boolean> => {
     // Validate progress for update
     if (!isValidProgressForUpdate(progress, 'pomodoro')) {
       console.error('Invalid progress value for update:', progress);
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
-      return;
+      return false;
     }
 
     // For resumed sessions, use the sessionId from URL, otherwise use activeMethodId
@@ -315,7 +315,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
     if (!sessionId) {
       console.error('No session ID found for progress update');
-      return;
+      return false;
     }
 
     try {
@@ -333,8 +333,11 @@ export const PomodoroExecutionView: React.FC = () => {
 
       // Trigger reports refresh after successful progress update
       window.dispatchEvent(new Event('refreshReports'));
+      return true;
     } catch (error) {
       console.error('Error updating Pomodoro progress:', error);
+      // Se retorna false para controlar la persistencia al finalizar.
+      return false;
     }
   };
 
@@ -398,8 +401,16 @@ export const PomodoroExecutionView: React.FC = () => {
 
   // Finalizar método
   const finishMethod = async () => {
+    // Se usa estado "completado" para cierre definitivo de Pomodoro.
+    const completionStatus: 'completado' = 'completado';
     setProgressPercentage(100);
-    await updateSessionProgress(100, 'completado');
+    const isUpdated = await updateSessionProgress(100, completionStatus);
+
+    if (!isUpdated) {
+      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del método. Intenta nuevamente.' });
+      return;
+    }
+
     localStorage.removeItem('pomodoro-session');
     localStorage.removeItem('activeMethodId');
 
@@ -512,6 +523,8 @@ export const PomodoroExecutionView: React.FC = () => {
 
   const methodColor = method.color_hexa || "#ef4444";
   const currentStepData = steps[currentStep];
+  // Criterio unificado: permitir "Terminar más tarde" desde que la sesión está iniciada o reanudada.
+  const canShowFinishLater = Boolean((sessionData || (isResuming && urlSessionId)) && progressPercentage >= 20 && progressPercentage < 100);
 
   // Custom color function for Pomodoro: blue at 60%, green at 100%
   const getPomodoroColorByPercentage = (pct: number): string => {
@@ -551,7 +564,7 @@ export const PomodoroExecutionView: React.FC = () => {
           {method.titulo}
         </h1>
         {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) */}
-        {sessionData && currentStep >= 2 && (
+        {canShowFinishLater && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"

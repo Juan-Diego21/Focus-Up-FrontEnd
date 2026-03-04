@@ -181,15 +181,15 @@ export const MusicPlayer: React.FC = () => {
       <div
         className={`fixed bottom-0 z-40 transition-all duration-300 ${
           isExpanded
-            ? 'left-1/2 transform -translate-x-1/2 w-11/12 max-w-4xl h-24 bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 backdrop-blur-xl rounded-3xl p-6 shadow-2xl'
-            : 'right-4 bottom-4 w-20 h-20'
+            ? 'left-0 right-0 mx-auto w-[calc(100%-1rem)] sm:w-[calc(100%-1.5rem)] md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:w-11/12 md:max-w-4xl min-h-[112px] md:h-24 bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 backdrop-blur-xl rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 shadow-2xl overflow-x-hidden'
+            : 'right-3 bottom-3 w-16 h-16 md:right-4 md:bottom-4 md:w-20 md:h-20'
         }`}
       >
         {/* Toggle Button - Positioned on left edge when expanded, right edge when collapsed */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className={`absolute top-1/2 transform -translate-y-1/2 z-50 bg-gradient-to-br from-[#232323] to-[#1a1a1a] rounded-full p-2 border border-[#333]/60 hover:border-violet-500/50 backdrop-blur-md transition-all duration-300 cursor-pointer shadow-xl hover:shadow-violet-500/25 ${
-            isExpanded ? '-left-4' : 'right-2'
+            isExpanded ? '-left-3 md:-left-4' : 'right-1 md:right-2'
           }`}
           title={isExpanded ? 'Ocultar reproductor' : 'Mostrar reproductor'}
         >
@@ -202,11 +202,12 @@ export const MusicPlayer: React.FC = () => {
 
         {/* Player Controls - Only visible when expanded */}
         {isExpanded && (
-          <div className="flex items-center justify-between h-full">
+          // Diseño móvil primero para mantener controles legibles en pantallas pequeñas.
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between h-full gap-3 md:gap-0">
           {/* Song Info */}
-          <div className="flex items-center space-x-4 min-w-0 flex-1">
+          <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 w-full md:flex-1">
             <div className="relative flex-shrink-0">
-              <div className="w-14 h-14 rounded-xl overflow-hidden shadow-lg ring-2 ring-violet-500/20">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-lg ring-2 ring-violet-500/20">
                 <img
                   src={getAlbumImage(currentAlbum?.id_album || currentSong?.id_album)}
                   alt="Portada del álbum"
@@ -221,31 +222,31 @@ export const MusicPlayer: React.FC = () => {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="text-white font-semibold truncate text-base hover:text-violet-300 transition-colors cursor-pointer">
+              <h4 className="text-white font-semibold truncate text-sm sm:text-base hover:text-violet-300 transition-colors cursor-pointer">
                 {currentSong.nombre_cancion}
               </h4>
-              <p className="text-gray-400 text-sm truncate hover:text-gray-300 transition-colors cursor-pointer">
+              <p className="text-gray-400 text-xs sm:text-sm truncate hover:text-gray-300 transition-colors cursor-pointer">
                 {getArtistName(currentSong)}
               </p>
             </div>
           </div>
 
           {/* Main Controls */}
-          <div className="flex flex-col items-center space-y-3 flex-1 max-w-md">
+          <div className="flex flex-col items-center space-y-2 sm:space-y-3 w-full md:flex-1 md:max-w-md">
             {/* Playback Controls */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <button
                 onClick={previousSong}
-                className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-violet-400  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:scale-110"
+                className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-gray-400 hover:text-violet-400  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:scale-110"
                 disabled={!hasPreviousSong}
               >
-                <BackwardIcon className="w-6 h-6" />
+                <BackwardIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
               <button
                 onClick={togglePlayPause}
                 disabled={isLoading}
-                className="w-11 h-11 mt-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-full flex items-center justify-center hover:scale-105 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-lg hover:shadow-violet-500/25"
+                className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-full flex items-center justify-center hover:scale-105 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-lg hover:shadow-violet-500/25"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -258,16 +259,16 @@ export const MusicPlayer: React.FC = () => {
 
               <button
                 onClick={nextSong}
-                className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-violet-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:scale-110"
+                className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-gray-400 hover:text-violet-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:scale-110"
                 disabled={!hasNextSong}
               >
-                <ForwardIcon className="w-6 h-6" />
+                <ForwardIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
 
             {/* Progress Bar */}
-            <div className="flex items-center space-x-3 w-full mb-1">
-              <span className="text-sm text-gray-400 font-medium min-w-[40px] text-right">
+            <div className="flex items-center space-x-2 sm:space-x-3 w-full mb-1">
+              <span className="text-xs sm:text-sm text-gray-400 font-medium min-w-[34px] sm:min-w-[40px] text-right">
                 {formatTime(currentTime)}
               </span>
               <div className="flex-1 relative">
@@ -284,14 +285,14 @@ export const MusicPlayer: React.FC = () => {
                 />
     
               </div>
-              <span className="text-sm text-gray-400 font-medium min-w-[40px]">
+              <span className="text-xs sm:text-sm text-gray-400 font-medium min-w-[34px] sm:min-w-[40px]">
                 {formatTime(duration)}
               </span>
             </div>
           </div>
 
           {/* Right Controls */}
-          <div className="flex items-center space-x-4 flex-1 justify-end">
+          <div className="flex items-center justify-between md:justify-end gap-1 sm:gap-2 md:space-x-4 w-full md:flex-1">
             {/* Shuffle */}
             <button
               onClick={() => setShuffle(!isShuffling)}
@@ -315,7 +316,7 @@ export const MusicPlayer: React.FC = () => {
             </button>
 
             {/* Volume */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <button
                 onClick={() => setVolume(volume > 0 ? 0 : 0.7)}
                 className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-violet-400 transition-all duration-200 cursor-pointer hover:scale-110"
@@ -334,7 +335,7 @@ export const MusicPlayer: React.FC = () => {
                   step="0.01"
                   value={volume}
                   onChange={handleVolumeChange}
-                  className="w-24 h-2 bg-gray-700/50 rounded-full appearance-none cursor-pointer slider-thumb-purple hover:bg-gray-600/50 transition-colors"
+                  className="w-16 sm:w-20 md:w-24 h-2 bg-gray-700/50 rounded-full appearance-none cursor-pointer slider-thumb-purple hover:bg-gray-600/50 transition-colors"
                   style={{
                     background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${volume * 100}%, #374151 ${volume * 100}%, #374151 100%)`
                   }}
@@ -359,8 +360,8 @@ export const MusicPlayer: React.FC = () => {
      {/* Queue Modal */}
      {showQueue && (
        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end animate-in fade-in duration-300">
-         <div className="bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 w-full max-h-[75vh] rounded-t-3xl border-t border-[#333]/60 shadow-2xl overflow-hidden">
-           <div className="p-8">
+         <div className="bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 w-full max-h-[80vh] rounded-t-3xl border-t border-[#333]/60 shadow-2xl overflow-hidden">
+           <div className="p-4 sm:p-6 md:p-8">
              <div className="flex items-center justify-between mb-6">
                <div>
                  <h3 className="text-white text-2xl font-bold mb-1">
@@ -378,7 +379,8 @@ export const MusicPlayer: React.FC = () => {
                </button>
              </div>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            {/* Se habilita scroll táctil explícito en la cola para uso móvil */}
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto touch-pan-y overscroll-y-contain">
               {playlist.map((song, index) => (
                 <div
                   key={`${song.id_cancion}-${index}`}

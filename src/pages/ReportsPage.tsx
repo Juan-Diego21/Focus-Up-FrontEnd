@@ -295,14 +295,15 @@ export const ReportsPage: React.FC = () => {
     >
       <div className="w-full max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-8 text-center">Reportes de Sesiones</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-8 text-center">Reportes de Sesiones</h1>
 
           {/* Pestañas */}
           <div className="flex justify-center mb-8">
-            <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
+            {/* Se usa layout envolvente para evitar barra/línea visual de overflow en móvil */}
+            <div className="bg-[#232323] p-1 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-1 max-w-full">
               <button
                 onClick={() => setActiveTab('methods')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                   activeTab === 'methods'
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -312,7 +313,7 @@ export const ReportsPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('sessions')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                   activeTab === 'sessions'
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -325,11 +326,11 @@ export const ReportsPage: React.FC = () => {
 
           {/* Filtro de estado y botón de estadísticas */}
           {activeTab === 'methods' && (
-            <div className="flex justify-center items-center mb-8 gap-14">
-              <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
+            <div className="flex justify-center items-center mb-8 gap-3 sm:gap-6 flex-wrap sm:flex-nowrap">
+              <div className="bg-[#232323] p-1 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-1 max-w-full">
                 <button
                   onClick={() => setStatusFilter('todos')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     statusFilter === 'todos'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -339,7 +340,7 @@ export const ReportsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setStatusFilter('pendiente')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     statusFilter === 'pendiente'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -349,7 +350,7 @@ export const ReportsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setStatusFilter('terminado')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     statusFilter === 'terminado'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -370,11 +371,11 @@ export const ReportsPage: React.FC = () => {
 
           {/* Filtro de sesiones */}
           {activeTab === 'sessions' && (
-            <div className="flex justify-center items-center mb-8 gap-11">
-              <div className="bg-[#232323] p-1 rounded-2xl shadow-lg">
+            <div className="flex justify-center items-center mb-8 gap-3 sm:gap-6 flex-wrap sm:flex-nowrap">
+              <div className="bg-[#232323] p-1 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-1 max-w-full">
                 <button
                   onClick={() => setSessionFilter('todos')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     sessionFilter === 'todos'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -384,7 +385,7 @@ export const ReportsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setSessionFilter('pendiente')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     sessionFilter === 'pendiente'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'
@@ -394,7 +395,7 @@ export const ReportsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setSessionFilter('completado')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-semibold transition-all duration-200 cursor-pointer ${
                     sessionFilter === 'completado'
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-[#2a2a2a]'

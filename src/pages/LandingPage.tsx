@@ -114,7 +114,7 @@ const LandingPage: React.FC = () => {
 
   return (
     <div
-      className="h-screen overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-gradient-to-br from-[#0a0a0a] via-[#0c0c0c] to-[#0a0a0a] text-white"
+      className="min-h-screen overflow-y-auto md:h-screen md:overflow-y-scroll md:snap-y md:snap-mandatory scroll-smooth bg-gradient-to-br from-[#0a0a0a] via-[#0c0c0c] to-[#0a0a0a] text-white"
       style={{ 
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
         scrollBehavior: 'smooth'
@@ -122,7 +122,7 @@ const LandingPage: React.FC = () => {
     >
       {/* Navegación oculta con línea vertical */}
       <div
-        className="fixed right-0 top-0 bottom-0 w-16 z-40"
+        className="fixed right-0 top-0 bottom-0 w-16 z-40 hidden md:block"
         onPointerEnter={() => setIsNavVisible(true)}
         onPointerLeave={() => setIsNavVisible(false)}
       >
@@ -165,18 +165,18 @@ const LandingPage: React.FC = () => {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         headerVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}>
-        <div className="relative max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <img
             src="/img/Logo.png"
             alt="Focus-Up Logo"
-            className="w-20 h-20 md:w-30 md:h-30 object-contain"
+            className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain"
           />
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate('/login')}
-              className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
+              className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-3 sm:px-4 py-2 min-h-[40px]"
             >
               Iniciar sesión
             </Button>
@@ -184,7 +184,7 @@ const LandingPage: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={() => navigate('/register')}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg px-3 sm:px-4 py-2 min-h-[40px]"
             >
               Registrarse
             </Button>
@@ -195,7 +195,7 @@ const LandingPage: React.FC = () => {
       {/* Sección Hero - Fullscreen */}
       <section
         id="hero"
-        className="min-h-screen snap-start relative flex items-start justify-center px-6 overflow-hidden pt-24"
+        className="min-h-screen snap-start relative flex items-start justify-center px-4 sm:px-6 overflow-hidden pt-24"
         style={{ scrollSnapAlign: 'start' }}
       >
         {/* Fondo dinámico */}
@@ -209,7 +209,7 @@ const LandingPage: React.FC = () => {
         {/* Contenido principal */}
         <div className="relative max-w-6xl mx-auto text-center z-10">
           {/* Título principal */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-none tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-none tracking-tight">
             <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
               ENFOQUE
             </span>
@@ -220,7 +220,7 @@ const LandingPage: React.FC = () => {
           </h1>
 
           {/* Subtítulo */}
-          <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed font-light tracking-wide">
+          <p className="text-base sm:text-lg md:text-xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed font-light tracking-wide">
             Un ecosistema completo que combina{' '}
             <span className="text-blue-300 font-medium">música funcional</span>,{' '}
             <span className="text-purple-300 font-medium">métodos científicos</span> y{' '}

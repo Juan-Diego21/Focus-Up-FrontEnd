@@ -308,12 +308,12 @@ export const MindMapsStepsPage: React.FC = () => {
    * Actualiza el progreso de la sesión en el backend
    * Valida el progreso antes de enviar y maneja sesiones reanudadas
    */
-  const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
+  const updateSessionProgress = async (progress: number, status: string = 'En_proceso'): Promise<boolean> => {
     // Validate progress for update
     if (!isValidProgressForUpdate(progress, 'mindmaps')) {
       console.error('Invalid progress value for update:', progress);
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
-      return;
+      return false;
     }
 
     // For resumed sessions, use the sessionId from URL, otherwise use activeMethodId
@@ -327,7 +327,7 @@ export const MindMapsStepsPage: React.FC = () => {
 
     if (!sessionId) {
       console.error('No session ID found for progress update. isResuming:', isResuming, 'urlSessionId:', urlSessionId, 'sessionData:', sessionData);
-      return;
+      return false;
     }
 
     try {
@@ -345,8 +345,11 @@ export const MindMapsStepsPage: React.FC = () => {
 
       // Trigger reports refresh after successful progress update
       window.dispatchEvent(new Event('refreshReports'));
+      return true;
     } catch (error) {
       console.error('Error updating Mind Maps progress:', error);
+      // Se retorna false para que el flujo de finalización pueda reaccionar al fallo.
+      return false;
     }
   };
 
@@ -466,8 +469,21 @@ export const MindMapsStepsPage: React.FC = () => {
 
   // Finalizar método
   const finishMethod = async () => {
+    // Se usa el estado de finalización canónico para evitar inconsistencias entre métodos.
+    const completionStatus = getMindMapsStatusByProgress(100);
     setProgressPercentage(100);
-    await updateSessionProgress(100, 'Terminado');
+    let isUpdated = await updateSessionProgress(100, completionStatus);
+
+    // Fallback de compatibilidad si el backend espera estado "completado".
+    if (!isUpdated) {
+      isUpdated = await updateSessionProgress(100, 'completado');
+    }
+
+    if (!isUpdated) {
+      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del método. Intenta nuevamente.' });
+      return;
+    }
+
     localStorage.removeItem('mindmaps-session');
     localStorage.removeItem('activeMethodId');
 
@@ -514,6 +530,8 @@ export const MindMapsStepsPage: React.FC = () => {
   // Asegurar que currentStep esté dentro de los límites válidos para prevenir errores de acceso a array
   const clampedCurrentStep = Math.min(Math.max(currentStep, 0), steps.length - 1);
   const currentStepData = steps[clampedCurrentStep];
+  // Se usa un criterio único para evitar que el botón desaparezca en algunos flujos.
+  const canShowFinishLater = Boolean((sessionData || (isResuming && urlSessionId)) && progressPercentage >= 20 && progressPercentage < 100);
 
 
   return (
@@ -546,7 +564,7 @@ export const MindMapsStepsPage: React.FC = () => {
           {method.titulo}
         </h1>
         {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) y si no está completado */}
-        {sessionData && currentStep >= 2 && progressPercentage < 100 && (
+        {canShowFinishLater && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"

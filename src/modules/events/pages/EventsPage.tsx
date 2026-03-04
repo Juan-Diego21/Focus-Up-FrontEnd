@@ -191,7 +191,7 @@ export const EventsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden font-inter">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-20 left-10 w-80 h-80 bg-green-500/8 rounded-full blur-3xl"></div>
@@ -201,7 +201,7 @@ export const EventsPage: React.FC = () => {
 
       <Sidebar currentPage="events" />
 
-      <div className="relative z-10 flex justify-center items-start min-h-screen py-8 pt-16">
+      <div className="relative z-10 flex justify-center items-start min-h-screen py-6 md:py-8 pt-16">
         <main className="w-full max-w-7xl px-4 md:px-6 lg:px-8 transition-all">
           {/* Header Section */}
           <div className="relative mb-16">
@@ -212,10 +212,10 @@ export const EventsPage: React.FC = () => {
 
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
                 <div className="flex-1">
-                  <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-green-100 to-emerald-100 bg-clip-text text-transparent mb-6 leading-tight">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-green-100 to-emerald-100 bg-clip-text text-transparent mb-6 leading-tight">
                     Mis Eventos
                   </h1>
-                  <p className="text-gray-300 text-xl leading-relaxed max-w-2xl">
+                  <p className="text-gray-200 text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl">
                     Programa sesiones de concentración y mantén tu rutina de estudio organizada
                     con eventos personalizados.
                   </p>
@@ -236,7 +236,7 @@ export const EventsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
                   {/* Filter Button */}
                   <div className="relative">
                     <button
@@ -289,7 +289,7 @@ export const EventsPage: React.FC = () => {
                   {/* Create Event Button */}
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="inline-flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-2xl shadow-lg hover:shadow-green-500/25 transition-all duration-300 cursor-pointer hover:transform hover:-translate-y-1"
+                    className="inline-flex items-center gap-3 px-5 sm:px-6 py-3.5 min-h-[48px] bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-2xl shadow-lg hover:shadow-green-500/25 transition-all duration-300 cursor-pointer hover:transform hover:-translate-y-1"
                     aria-label="Crear nuevo evento"
                   >
                     <PlusIcon className="w-6 h-6" />
@@ -378,7 +378,7 @@ export const EventsPage: React.FC = () => {
                 /* Events Grid */
                 <div className="relative">
                   <div className="absolute -inset-4 bg-gradient-to-r from-green-500/5 via-emerald-500/5 to-teal-500/5 rounded-3xl blur-xl"></div>
-                  <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {getFilteredEvents()
                     .filter((event) => {
                       const isValid = event && typeof event === 'object' &&

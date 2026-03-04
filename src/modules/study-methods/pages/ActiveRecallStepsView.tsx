@@ -336,12 +336,12 @@ export const ActiveRecallStepsView: React.FC = () => {
    * Actualiza el progreso de la sesión en el backend
    * Valida el progreso antes de enviar y maneja sesiones reanudadas
    */
-  const updateSessionProgress = async (progress: number, status: string = 'En_proceso') => {
+  const updateSessionProgress = async (progress: number, status: string = 'En_proceso'): Promise<boolean> => {
     // Validar progreso para actualización
     if (!isValidProgressForUpdate(progress, 'activerecall')) {
       console.error('Valor de progreso inválido para actualización:', progress);
       setAlertQueue({ type: 'error', message: 'Valor de progreso inválido para este método' });
-      return;
+      return false;
     }
 
     // Para sesiones reanudadas, usar sessionId de URL, de lo contrario usar activeMethodId
@@ -355,7 +355,7 @@ export const ActiveRecallStepsView: React.FC = () => {
 
     if (!sessionId) {
       console.error('No se encontró ID de sesión para actualización de progreso. isResuming:', isResuming, 'urlSessionId:', urlSessionId, 'sessionData:', sessionData);
-      return;
+      return false;
     }
 
     try {
@@ -373,8 +373,11 @@ export const ActiveRecallStepsView: React.FC = () => {
 
       // Activar actualización de reportes después de actualización exitosa de progreso
       window.dispatchEvent(new Event('refreshReports'));
+      return true;
     } catch (error) {
       console.error('Error al actualizar progreso de Práctica Activa:', error);
+      // Se retorna false para manejar correctamente errores de persistencia final.
+      return false;
     }
   };
 
@@ -477,8 +480,21 @@ export const ActiveRecallStepsView: React.FC = () => {
 
   // Finalizar método
   const finishMethod = async () => {
+    // Estado de cierre obtenido desde utilidades compartidas.
+    const completionStatus = getActiveRecallStatusByProgress(100);
     setProgressPercentage(100);
-    await updateSessionProgress(100, 'Terminado');
+    let isUpdated = await updateSessionProgress(100, completionStatus);
+
+    // Fallback para compatibilidad con normalización de estado en backend.
+    if (!isUpdated) {
+      isUpdated = await updateSessionProgress(100, 'completado');
+    }
+
+    if (!isUpdated) {
+      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del método. Intenta nuevamente.' });
+      return;
+    }
+
     localStorage.removeItem('active-recall-session');
     localStorage.removeItem('activeMethodId');
 
@@ -524,6 +540,8 @@ export const ActiveRecallStepsView: React.FC = () => {
   // Asegurar que currentStep esté dentro de los límites válidos para prevenir errores de acceso a array
   const clampedCurrentStep = Math.min(Math.max(currentStep, 0), steps.length - 1);
   const currentStepData = steps[clampedCurrentStep];
+  // Criterio unificado para que el botón aparezca desde el inicio de la sesión.
+  const canShowFinishLater = Boolean((sessionData || (isResuming && urlSessionId)) && progressPercentage >= 20 && progressPercentage < 100);
 
   return (
     <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex flex-col items-center justify-start p-5">
@@ -555,7 +573,7 @@ export const ActiveRecallStepsView: React.FC = () => {
           {method.titulo}
         </h1>
         {/* Botón "Terminar más tarde" solo visible después de pasar el paso 2 (pasos seguros para guardar) y si no está completado */}
-        {sessionData && currentStep >= 2 && progressPercentage < 100 && (
+        {canShowFinishLater && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"

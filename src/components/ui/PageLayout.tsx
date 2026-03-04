@@ -17,13 +17,13 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   sidebar,
 }) => {
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter ${className}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] font-inter overflow-x-hidden ${className}`}>
       {showSidebar && sidebar}
-      <div className="flex justify-center items-center min-h-screen">
-        <main className="w-full max-w-7xl p-6 md:p-10 transition-all">
+      <div className="flex justify-center items-start min-h-screen py-6 md:py-8">
+        <main className="w-full max-w-7xl px-4 py-4 sm:px-6 md:px-10 md:py-8 transition-all">
           {title && (
-            <div className="mb-10">
-              <h1 className="text-4xl font-bold text-white mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
+            <div className="mb-8 md:mb-10">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4 tracking-tight text-center bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text">
                 {title}
               </h1>
             </div>

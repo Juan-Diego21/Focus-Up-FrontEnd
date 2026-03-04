@@ -95,7 +95,7 @@ export const MusicSongsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-32 right-16 w-80 h-80 bg-violet-500/8 rounded-full blur-3xl"></div>
@@ -119,7 +119,7 @@ export const MusicSongsPage: React.FC = () => {
 
   if (error || !album) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-32 right-16 w-80 h-80 bg-violet-500/8 rounded-full blur-3xl"></div>
@@ -156,7 +156,7 @@ export const MusicSongsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-32 right-16 w-80 h-80 bg-violet-500/8 rounded-full blur-3xl"></div>
@@ -166,8 +166,8 @@ export const MusicSongsPage: React.FC = () => {
       <Sidebar currentPage="music" />
 
       {/* Main content */}
-      <div className="relative z-10 flex justify-center items-center min-h-screen py-8">
-        <main className="w-full max-w-6xl px-6 transition-all">
+      <div className="relative z-10 flex justify-center items-start min-h-screen py-6 md:py-8">
+        <main className="w-full max-w-6xl px-4 sm:px-6 transition-all">
 
           {/* Back button */}
           <div className="mb-8">
@@ -212,7 +212,7 @@ export const MusicSongsPage: React.FC = () => {
                       Álbum
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent mb-3">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent mb-3">
                       {album.nombre_album}
                     </h1>
 
@@ -226,13 +226,13 @@ export const MusicSongsPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-2xl">
+                    <p className="text-gray-200 text-base sm:text-lg leading-relaxed mb-8 max-w-2xl">
                       {album.descripcion}
                     </p>
 
                     <button
                       onClick={handlePlayAlbum}
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-600 to-violet-700 text-white text-lg font-semibold rounded-2xl hover:from-violet-700 hover:to-violet-800 transition-all duration-300 shadow-xl hover:shadow-violet-500/25 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] cursor-pointer group"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-4 min-h-[52px] bg-gradient-to-r from-violet-600 to-violet-700 text-white text-base sm:text-lg font-semibold rounded-2xl hover:from-violet-700 hover:to-violet-800 transition-all duration-300 shadow-xl hover:shadow-violet-500/25 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] cursor-pointer group"
                     >
                       <PlayIcon className="w-6 h-6 transition-transform duration-200 group-hover:scale-110" />
                       <span>Reproducir álbum</span>
@@ -277,7 +277,7 @@ export const MusicSongsPage: React.FC = () => {
                     className="group relative hover:bg-gradient-to-r hover:from-violet-500/5 hover:to-purple-500/5 transition-all duration-300"
                   >
                     {/* Song item */}
-                    <div className="flex items-center gap-6 p-6">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-6 p-4 sm:p-6">
                       {/* Track number / Play button */}
                       <div className="flex-shrink-0 w-12 flex items-center justify-center">
                         <div className="relative">
@@ -317,7 +317,7 @@ export const MusicSongsPage: React.FC = () => {
                       </div>
 
                       {/* Duration */}
-                      <div className="flex-shrink-0 text-right">
+                      <div className="flex-shrink-0 text-right ml-auto">
                         <span className="text-gray-400 text-sm font-medium px-3 py-1 bg-white/5 rounded-full">
                           {formatDuration(song, songDurations[song.id_cancion])}
                         </span>

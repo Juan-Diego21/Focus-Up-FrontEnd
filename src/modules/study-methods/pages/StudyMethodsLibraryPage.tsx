@@ -164,7 +164,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden font-inter">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
@@ -175,8 +175,8 @@ export const StudyMethodsLibraryPage: React.FC = () => {
       <Sidebar currentPage="study-methods" />
 
       {/* Main content */}
-      <div className="relative z-10 flex justify-center items-center min-h-screen py-8">
-        <main className="w-full max-w-7xl px-6 transition-all">
+      <div className="relative z-10 flex justify-center items-start min-h-screen py-6 md:py-8">
+        <main className="w-full max-w-7xl px-4 sm:px-6 transition-all">
 
           {/* Header */}
           <div className="relative mb-16">
@@ -185,15 +185,15 @@ export const StudyMethodsLibraryPage: React.FC = () => {
 
             <div className="relative text-center">
 
-              <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
                 Biblioteca de Métodos
                 <br />
-                <span className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
+                <span className="text-3xl sm:text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
                   de Estudio
                 </span>
               </h1>
 
-              <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
+              <p className="text-gray-200 text-base sm:text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-8">
                 Descubre técnicas probadas científicamente para potenciar tu concentración,
                 mejorar la retención de información y optimizar tu tiempo de estudio
               </p>
@@ -235,7 +235,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
               {studyMethods.map((method, index) => (
                 <div
                   key={method.id_metodo}

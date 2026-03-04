@@ -42,7 +42,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-hidden font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] relative overflow-x-hidden font-inter">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-20 left-10 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl"></div>
@@ -53,8 +53,8 @@ export const DashboardPage: React.FC = () => {
       <Sidebar currentPage="dashboard" />
 
       {/* Main content */}
-      <div className="relative z-10 flex justify-center items-center min-h-screen py-4">
-        <main className="w-full max-w-6xl px-4 transition-all">
+      <div className="relative z-10 flex justify-center items-start min-h-screen py-6 md:py-8">
+        <main className="w-full max-w-6xl px-4 sm:px-6 transition-all">
           <div className="mb-12">
             {/* Hero Section */}
             <div className="text-center mb-12">
@@ -84,10 +84,10 @@ export const DashboardPage: React.FC = () => {
 
                 {/* Welcome message */}
                 <div className="max-w-2xl mx-auto">
-                  <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-4">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-4">
                     Potencia tu Aprendizaje
                   </h1>
-                  <p className="text-gray-300 text-lg leading-relaxed">
+                  <p className="text-gray-200 text-base sm:text-lg leading-relaxed">
                     Descubre métodos científicos, playlists especializadas y herramientas para maximizar
                     tu concentración y productividad.
                   </p>
@@ -137,7 +137,7 @@ export const DashboardPage: React.FC = () => {
 
                 <button
                   onClick={navigateToMusic}
-                  className="w-full mt-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-purple-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
+                  className="w-full mt-auto px-6 py-3.5 min-h-[48px] bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-purple-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <Music className="w-5 h-5" />
                   <span>Explorar Música</span>
@@ -186,7 +186,7 @@ export const DashboardPage: React.FC = () => {
 
                 <button
                   onClick={navigateToStudyMethods}
-                  className="w-full mt-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
+                  className="w-full mt-auto px-6 py-3.5 min-h-[48px] bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <BookOpen className="w-5 h-5" />
                   <span>Explorar Métodos</span>
@@ -233,7 +233,7 @@ export const DashboardPage: React.FC = () => {
 
                 <button
                   onClick={navigateToEvents}
-                  className="w-full mt-auto px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-green-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
+                  className="w-full mt-auto px-6 py-3.5 min-h-[48px] bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-green-500/25 cursor-pointer hover:transform hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <Calendar className="w-5 h-5" />
                   <span>Programar Evento</span>
@@ -248,7 +248,7 @@ export const DashboardPage: React.FC = () => {
           {/* Quick Session Section */}
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-3xl blur-xl"></div>
-            <div className="relative bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-10 flex flex-col items-center border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 overflow-hidden ring-1 ring-white/5">
+            <div className="relative bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 flex flex-col items-center border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 overflow-hidden ring-1 ring-white/5">
               {/* Enhanced decorative background */}
               <div className="absolute top-4 right-6 opacity-10">
                 <svg width="60" height="60" viewBox="0 0 100 100">
@@ -277,11 +277,11 @@ export const DashboardPage: React.FC = () => {
                 <div className="absolute -inset-6 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-3xl blur-2xl -z-10"></div>
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-center">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-center">
                 Sesión de Concentración Rápida
               </h2>
 
-              <p className="text-gray-400 text-center mb-8 max-w-lg leading-relaxed text-base px-4">
+              <p className="text-gray-200 text-center mb-8 max-w-lg leading-relaxed text-sm sm:text-base px-2 sm:px-4">
                 Inicia una sesión completa de estudio con música especializada y métodos científicos
                 para maximizar tu productividad y concentración
               </p>
@@ -304,7 +304,7 @@ export const DashboardPage: React.FC = () => {
 
               <button
                 onClick={navigateToStartSession}
-                className="px-8 py-4 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-700 hover:via-blue-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-cyan-500/25 cursor-pointer hover:transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 text-lg"
+                className="w-full sm:w-auto px-6 sm:px-8 py-4 min-h-[52px] bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-700 hover:via-blue-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-cyan-500/25 cursor-pointer hover:transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 text-base sm:text-lg"
               >
                 <Zap className="w-6 h-6" />
                 <span>Empezar Sesión de Concentración</span>
