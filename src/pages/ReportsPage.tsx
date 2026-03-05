@@ -87,6 +87,19 @@ const getMethodImage = (methodName: string): string => {
   return LOCAL_METHOD_ASSETS[methodName]?.image || '';
 };
 
+const COMPLETED_METHOD_STATUSES = new Set([
+  'completado',
+  'completed',
+  'terminado',
+  'finalizado',
+]);
+
+const shouldResumeMethodExecution = (report?: MethodReport): boolean => {
+  if (!report) return false;
+  const status = String(report.estado || '').toLowerCase();
+  return report.progreso < 100 && !COMPLETED_METHOD_STATUSES.has(status);
+};
+
 
 /**
  * Página principal de reportes
@@ -753,33 +766,43 @@ export const ReportsPage: React.FC = () => {
                                 const methodType = getMethodType(methodTypeInput);
                                 console.log('[RESUME] Detected method type:', methodType);
 
-                                const methodReport = methodReports.find(m => m.idMetodo === session.metodoAsociado!.idMetodo);
+                                const relatedMethodReports = methodReports
+                                  .filter(m => m.idMetodo === session.metodoAsociado!.idMetodo)
+                                  .sort((a, b) => {
+                                    const aTime = new Date(a.fechaCreacion).getTime();
+                                    const bTime = new Date(b.fechaCreacion).getTime();
+                                    return bTime - aTime;
+                                  });
+                                const methodReport = relatedMethodReports[0];
                                 const progress = methodReport ? methodReport.progreso : 0;
                                 console.log('[RESUME] Method report and progress:', methodReport, progress);
+                                const resumeMethod = shouldResumeMethodExecution(methodReport);
+                                console.log('[RESUME] Should resume method execution:', resumeMethod);
 
-                                // Navigate to method steps
-                                if (methodType === 'mindmaps') {
-                                  console.log('[RESUME] Navigating to mindmaps');
-                                  navigate(`/mind-maps/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                                } else if (methodType === 'spacedrepetition') {
-                                  console.log('[RESUME] Navigating to spacedrepetition');
-                                  navigate(`/spaced-repetition/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                                } else if (methodType === 'activerecall') {
-                                  console.log('[RESUME] Navigating to activerecall');
-                                  navigate(`/active-re-call/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                                } else if (methodType === 'feynman') {
-                                  console.log('[RESUME] Navigating to feynman');
-                                  navigate(`/feynman/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                                } else if (methodType === 'cornell') {
-                                  console.log('[RESUME] Navigating to cornell');
-                                  navigate(`/cornell/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
-                                } else if (methodType === 'pomodoro') {
-                                  console.log('[RESUME] Navigating to pomodoro');
-                                  navigate(`/pomodoro/execute/${session.metodoAsociado.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
-                                } else {
-                                  console.error('[RESUME] Unknown method type:', methodType, 'for method:', session.metodoAsociado.nombreMetodo);
-                                  // Fallback to pomodoro if method type is unknown
-                                  navigate(`/pomodoro/execute/${session.metodoAsociado.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                // Navigate to method steps only when method is still pending.
+                                if (resumeMethod) {
+                                  if (methodType === 'mindmaps') {
+                                    console.log('[RESUME] Navigating to mindmaps');
+                                    navigate(`/mind-maps/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                  } else if (methodType === 'spacedrepetition') {
+                                    console.log('[RESUME] Navigating to spacedrepetition');
+                                    navigate(`/spaced-repetition/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                  } else if (methodType === 'activerecall') {
+                                    console.log('[RESUME] Navigating to activerecall');
+                                    navigate(`/active-recall/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                  } else if (methodType === 'feynman') {
+                                    console.log('[RESUME] Navigating to feynman');
+                                    navigate(`/feynman/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                  } else if (methodType === 'cornell') {
+                                    console.log('[RESUME] Navigating to cornell');
+                                    navigate(`/cornell/steps/${session.metodoAsociado.idMetodo}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                  } else if (methodType === 'pomodoro') {
+                                    console.log('[RESUME] Navigating to pomodoro');
+                                    navigate(`/pomodoro/execute/${session.metodoAsociado.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                  } else {
+                                    console.error('[RESUME] Unknown method type:', methodType, 'for method:', session.metodoAsociado.nombreMetodo);
+                                    navigate(`/pomodoro/execute/${session.metodoAsociado.idMetodo || 1}?progreso=${progress}&sessionId=${session.idSesion}`);
+                                  }
                                 }
 
                                 // Show success alert for method session
@@ -789,7 +812,9 @@ export const ReportsPage: React.FC = () => {
                                       toast: true,
                                       position: 'top-end',
                                       icon: 'success',
-                                      title: `Sesión de ${session.metodoAsociado!.nombreMetodo} retomada correctamente`,
+                                      title: resumeMethod
+                                        ? `Sesión de ${session.metodoAsociado!.nombreMetodo} retomada correctamente`
+                                        : `Sesión retomada. El método ${session.metodoAsociado!.nombreMetodo} ya estaba finalizado`,
                                       showConfirmButton: false,
                                       timer: 3000,
                                       background: '#232323',

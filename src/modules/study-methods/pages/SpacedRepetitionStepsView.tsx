@@ -19,6 +19,7 @@ import {
 } from "../../../utils/methodStatus";
 import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
+import { ensureMethodSession } from "../services/methodSessionService";
 
 interface StudyMethod {
   id_metodo: number;
@@ -264,15 +265,13 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     }
 
     try {
-      console.log('Iniciando nueva sesión de Repaso Espaciado con id:', methodId);
-      const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId, 10),
-        estado: 'En_proceso',
-        progreso: 20
+      console.log('Iniciando o reanudando sesión de Repaso Espaciado con id:', methodId);
+      const session = await ensureMethodSession({
+        methodId: parseInt(methodId, 10),
+        initialProgress: 20,
+        initialStatus: 'En_proceso',
       });
-      console.log('Sesión de Repaso Espaciado iniciada respuesta:', response.data);
-      const session = (response as any)?.data ?? response;
-      const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
+      const id_metodo_realizado = session.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
         console.error('No se recibió id_metodo_realizado del backend');
@@ -280,26 +279,39 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       }
 
       setSessionData({
-        id: session.id,
-        methodId: parseInt(methodId),
+        id: id_metodo_realizado.toString(),
+        methodId: parseInt(methodId, 10),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
-        progress: 20,
-        status: 'En_proceso'
+        progress: session.progreso || 20,
+        status: session.estado || 'En_proceso'
       });
+
+      if (session.source === 'resumed') {
+        setIsResuming(true);
+        const resumedProgress = session.progreso || 20;
+        setCurrentStep(getStepFromProgress(resumedProgress));
+        setProgressPercentage(resumedProgress);
+      }
 
       // Almacenar el ID del método activo por separado para actualizaciones de progreso
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
       localStorage.setItem('spaced-repetition-session', JSON.stringify(session));
 
       // Poner en cola notificación de éxito
-      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Repaso Espaciado'} iniciada correctamente` });
+      setAlertQueue({
+        type: session.source === 'resumed' ? 'resumed' : 'started',
+        message: session.source === 'resumed'
+          ? `Sesión de ${method?.titulo || 'Repaso Espaciado'} reanudada correctamente`
+          : `Sesión de ${method?.titulo || 'Repaso Espaciado'} iniciada correctamente`
+      });
 
       // Activar actualización de reportes
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error al iniciar sesión de Repaso Espaciado:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Repaso Espaciado' });
+      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesión de Repaso Espaciado';
+      setAlertQueue({ type: 'error', message: apiMessage });
     }
   };
 

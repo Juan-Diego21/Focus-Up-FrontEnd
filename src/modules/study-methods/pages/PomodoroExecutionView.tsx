@@ -16,6 +16,7 @@ import {
   isValidProgressForResume
 } from "../../../utils/methodStatus";
 import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
+import { ensureMethodSession } from "../services/methodSessionService";
 
 // Preload SweetAlert2 for instant alerts
 Swal.mixin({
@@ -256,15 +257,13 @@ export const PomodoroExecutionView: React.FC = () => {
     }
 
     try {
-      console.log('Starting new Pomodoro session with id:', methodId, 'parsed:', parseInt(methodId!));
-      const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId!, 10),
-        estado: 'en_progreso',
-        progreso: 20
+      console.log('Starting or resuming Pomodoro session with id:', methodId, 'parsed:', parseInt(methodId!, 10));
+      const session = await ensureMethodSession({
+        methodId: parseInt(methodId!, 10),
+        initialProgress: 20,
+        initialStatus: 'en_progreso',
       });
-      console.log('Pomodoro session started response:', response.data);
-      const session = (response as any)?.data ?? response;
-      const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
+      const id_metodo_realizado = session.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
         console.error('No id_metodo_realizado received from backend');
@@ -272,29 +271,35 @@ export const PomodoroExecutionView: React.FC = () => {
       }
 
       setSessionData({
-        id: session.id,
-        methodId: parseInt(methodId!),
+        id: id_metodo_realizado.toString(),
+        methodId: parseInt(methodId!, 10),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
-        progress: 20,
-        status: 'en_progreso'
+        progress: session.progreso || 20,
+        status: (session.estado || 'en_progreso') as 'en_progreso' | 'completado'
       });
 
       // Store the active method ID separately for progress updates
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
       localStorage.setItem('pomodoro-session', JSON.stringify(session));
 
-      // Update visual progress to match session creation
-      setProgressPercentage(20);
+      // Update visual progress to match created or resumed session
+      setProgressPercentage(session.progreso || 20);
 
       // Queue success notification
-      setAlertQueue({ type: 'started', message: 'Sesión de Pomodoro iniciada correctamente' });
+      setAlertQueue({
+        type: session.source === 'resumed' ? 'resumed' : 'started',
+        message: session.source === 'resumed'
+          ? 'Sesión de Pomodoro reanudada correctamente'
+          : 'Sesión de Pomodoro iniciada correctamente'
+      });
 
       // Trigger reports refresh
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error starting Pomodoro session:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Pomodoro' });
+      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesión de Pomodoro';
+      setAlertQueue({ type: 'error', message: apiMessage });
     }
   };
 

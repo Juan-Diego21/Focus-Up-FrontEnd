@@ -19,6 +19,7 @@ import {
 } from "../../../utils/methodStatus";
 import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
+import { ensureMethodSession } from "../services/methodSessionService";
 
 interface StudyMethod {
   id_metodo: number;
@@ -265,15 +266,13 @@ export const MindMapsStepsPage: React.FC = () => {
     }
 
     try {
-      console.log('Starting new Mind Maps session with id:', methodId);
-      const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId, 10),
-        estado: 'En_proceso',
-        progreso: 20
+      console.log('Starting or resuming Mind Maps session with id:', methodId);
+      const session = await ensureMethodSession({
+        methodId: parseInt(methodId, 10),
+        initialProgress: 20,
+        initialStatus: 'En_proceso',
       });
-      console.log('Mind Maps session started response:', response.data);
-      const session = (response as any)?.data ?? response;
-      const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
+      const id_metodo_realizado = session.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
         console.error('No id_metodo_realizado received from backend');
@@ -281,26 +280,39 @@ export const MindMapsStepsPage: React.FC = () => {
       }
 
       setSessionData({
-        id: session.id,
-        methodId: parseInt(methodId),
+        id: id_metodo_realizado.toString(),
+        methodId: parseInt(methodId, 10),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
-        progress: 20,
-        status: 'En_proceso'
+        progress: session.progreso || 20,
+        status: session.estado || 'En_proceso'
       });
+
+      if (session.source === 'resumed') {
+        setIsResuming(true);
+        const resumedProgress = session.progreso || 20;
+        setCurrentStep(getStepFromProgress(resumedProgress));
+        setProgressPercentage(resumedProgress);
+      }
 
       // Store the active method ID separately for progress updates
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
       localStorage.setItem('mindmaps-session', JSON.stringify(session));
 
       // Queue success notification
-      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Mapas Mentales'} iniciada correctamente` });
+      setAlertQueue({
+        type: session.source === 'resumed' ? 'resumed' : 'started',
+        message: session.source === 'resumed'
+          ? `Sesión de ${method?.titulo || 'Mapas Mentales'} reanudada correctamente`
+          : `Sesión de ${method?.titulo || 'Mapas Mentales'} iniciada correctamente`
+      });
 
       // Trigger reports refresh
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error starting Mind Maps session:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Mapas Mentales' });
+      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesión de Mapas Mentales';
+      setAlertQueue({ type: 'error', message: apiMessage });
     }
   };
 

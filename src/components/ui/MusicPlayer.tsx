@@ -181,7 +181,7 @@ export const MusicPlayer: React.FC = () => {
       <div
         className={`fixed bottom-0 z-40 transition-all duration-300 ${
           isExpanded
-            ? 'left-0 right-0 mx-auto w-[calc(100%-1rem)] sm:w-[calc(100%-1.5rem)] md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:w-11/12 md:max-w-4xl min-h-[112px] md:h-24 bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 backdrop-blur-xl rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 shadow-2xl overflow-x-hidden'
+            ? 'left-0 right-0 mx-auto w-[calc(100%-1rem)] sm:w-[calc(100%-1.5rem)] md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 md:w-11/12 md:max-w-4xl min-h-[112px] md:h-24 bg-gradient-to-br from-[#232323]/98 to-[#1a1a1a]/98 backdrop-blur-xl rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 shadow-2xl overflow-visible'
             : 'right-3 bottom-3 w-16 h-16 md:right-4 md:bottom-4 md:w-20 md:h-20'
         }`}
       >
