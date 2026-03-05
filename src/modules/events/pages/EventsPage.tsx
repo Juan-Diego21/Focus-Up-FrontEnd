@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, CalendarIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sidebar } from '../../../shared/components/ui/Sidebar';
+import { Sidebar } from '../../../components/ui/Sidebar';
 import { EventCard } from '../../../components/ui/EventCard';
 import { CreateEventModal } from './CreateEventModal';
 import { EditEventModal } from './EditEventModal';

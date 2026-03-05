@@ -1,8 +1,9 @@
 import React from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
-import { Sidebar } from '../../../shared/components/ui/Sidebar';
+import { Sidebar } from '../../../components/ui/Sidebar';
 import { NotificationToggle } from '../../../components/ui/NotificationToggle';
 import { useNotifications } from '../../../hooks/useNotifications';
+import type { NotificationConfigUpdate } from '../../../types/api';
 
 /**
  * Componente principal de la página de notificaciones
@@ -16,7 +17,7 @@ export const NotificationPage: React.FC = () => {
     updateSetting,
   } = useNotifications();
 
-  const handleToggle = async (tipo: keyof typeof settings) => {
+  const handleToggle = async (tipo: NotificationConfigUpdate['tipo']) => {
     try {
       await updateSetting({
         tipo,

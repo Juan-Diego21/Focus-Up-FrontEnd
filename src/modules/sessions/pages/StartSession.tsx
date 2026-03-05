@@ -23,9 +23,9 @@ import { getSongsByAlbumId } from '../../../utils/musicApi';
 import { MethodSelectionModal } from '../../../components/MethodSelectionModal';
 import { AlbumSelectionModal } from '../../../components/AlbumSelectionModal';
 import { LOCAL_METHOD_ASSETS, overrideMethodWithLocalAssets } from '../../../utils/methodAssets';
-import { CountdownOverlay } from '@shared/components/ui/CountdownOverlay';
-import { PageLayout } from '@shared/components/ui/PageLayout';
-import { Sidebar } from '../../../shared/components/ui/Sidebar';
+import { CountdownOverlay } from '@components/ui/CountdownOverlay';
+import { PageLayout } from '@components/ui/PageLayout';
+import { Sidebar } from '../../../components/ui/Sidebar';
 import type { SessionCreateDto, SessionDto, Song } from '../../../types/api';
 
 /**

@@ -1,13 +1,13 @@
-/**
+﻿/**
  * Componente principal para la ejecución del método Práctica Activa
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Timer } from "../../../shared/components/ui/Timer";
-import { apiClient } from "../../../shared/services/apiClient";
+import { Timer } from "../../../components/ui/Timer";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
-import { ProgressCircle } from "../../../shared/components/ui/ProgressCircle";
+import { ProgressCircle } from "../../../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
 import { Clock as ClockIcon, Settings } from 'lucide-react';
 import {
@@ -18,7 +18,7 @@ import {
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../shared/components/ui/FinishLaterModal";
+import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
 
 interface StudyMethod {
@@ -85,7 +85,7 @@ export const ActiveRecallStepsView: React.FC = () => {
 
   /**
    * Función pura que convierte el porcentaje de progreso al número de paso correspondiente
-   * Mapea: 20%→0, 40%→1, 60%→2, 80%→3, 100%→4
+   * Mapea: 20%?0, 40%?1, 60%?2, 80%?3, 100%?4
    */
   const getStepFromProgress = (progress: number): number => {
     if (progress === 20) return 0;
@@ -295,12 +295,12 @@ export const ActiveRecallStepsView: React.FC = () => {
     try {
       console.log('Iniciando nueva sesión de Práctica Activa con id:', methodId);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId),
-        estado: 'En_proceso',
+        id_metodo: parseInt(methodId, 10),
+        estado: 'en_progreso',
         progreso: 20
       });
       console.log('Sesión de Práctica Activa iniciada respuesta:', response.data);
-      const session = response.data;
+      const session = (response as any)?.data ?? response;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
@@ -360,10 +360,11 @@ export const ActiveRecallStepsView: React.FC = () => {
 
     try {
       console.log('Actualizando progreso de Práctica Activa para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
-        progreso: progress,
-        estado: status
-      });
+      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
+      if (progress === 100) {
+        updatePayload.finalizar = true;
+      }
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
       console.log('Progreso de Práctica Activa actualizado exitosamente');
 
       if (sessionData) {
@@ -439,8 +440,7 @@ export const ActiveRecallStepsView: React.FC = () => {
           // Actualizar progreso de forma síncrona antes de salir de la página
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
-              progreso: progressPercentage,
-              estado: getActiveRecallStatusByProgress(progressPercentage)
+              progreso: progressPercentage
             })
           );
         } else {
@@ -463,6 +463,10 @@ export const ActiveRecallStepsView: React.FC = () => {
     if (currentStep === 0 && !isResuming && !sessionData) {
       // Crear una nueva sesión solo si no se está reanudando una existente y no hay sesión activa
       await startSession();
+      const hasActiveMethod = Boolean(localStorage.getItem('activeMethodId') || sessionData?.id_metodo_realizado);
+      if (!hasActiveMethod) {
+        return;
+      }
     }
 
     if (currentStep < steps.length - 1) {
@@ -520,7 +524,7 @@ export const ActiveRecallStepsView: React.FC = () => {
     return (
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-red-500 text-6xl mb-4"></div>
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
@@ -624,8 +628,7 @@ export const ActiveRecallStepsView: React.FC = () => {
           {/* Mensaje adicional para pasos 3 y 4 con temporizador */}
           {(currentStep === 2 || currentStep === 3) && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                ⏱️ <strong>Nota:</strong> El temporizador puede usarse como tiempo de memorización dedicado.
+              <p className="text-gray-300 text-sm"><strong>Nota:</strong> El temporizador puede usarse como tiempo de memorización dedicado.
               </p>
             </div>
           )}
@@ -633,24 +636,21 @@ export const ActiveRecallStepsView: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Evita mirar tus notas durante los intentos de recuerdo.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Evita mirar tus notas durante los intentos de recuerdo.
               </p>
             </div>
           )}
 
           {currentStep === 1 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> Explica conceptos verbalmente para reforzar la retención.
+              <p className="text-gray-300 text-sm"><strong>Recuerda:</strong> Explica conceptos verbalmente para reforzar la retención.
               </p>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Repite el recuerdo incluso si te sientes confiado.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Repite el recuerdo incluso si te sientes confiado.
               </p>
             </div>
           )}
@@ -700,7 +700,7 @@ export const ActiveRecallStepsView: React.FC = () => {
             disabled={currentStep === 0}
             className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
-            ← Anterior
+            Anterior
           </button>
 
           <div className="flex gap-2">
@@ -754,7 +754,7 @@ export const ActiveRecallStepsView: React.FC = () => {
                 e.currentTarget.style.backgroundColor = methodColor;
               }}
             >
-              Siguiente →
+              Siguiente
             </button>
           )}
         </div>
@@ -883,3 +883,10 @@ export const ActiveRecallStepsView: React.FC = () => {
 };
 
 export default ActiveRecallStepsView;
+
+
+
+
+
+
+

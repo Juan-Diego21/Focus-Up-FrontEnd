@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Sidebar } from '../../../shared/components/ui/Sidebar';
+import { Sidebar } from '../../../components/ui/Sidebar';
 import { MusicPlayer } from '../../../components/ui/MusicPlayer';
 import { getSongsByAlbumId, getAlbumById } from '../../../utils/musicApi';
 import { useMusicPlayer } from '../../../contexts/MusicPlayerContext';

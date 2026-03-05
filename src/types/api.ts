@@ -49,7 +49,7 @@ export interface UpcomingNotification {
 }
 
 export interface NotificationConfigUpdate {
-  tipo: keyof NotificationSettings;
+  tipo: Exclude<keyof NotificationSettings, 'idUsuario'>;
   enabled: boolean;
 }
 

@@ -89,3 +89,28 @@ body {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #6B7280;
 }
+
+/* Sidebar scrollbar aligned with project dark/orange style */
+.custom-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #ff9f1a #202020;
+}
+
+.custom-sidebar-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-sidebar-scroll::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, #232323 0%, #1a1a1a 100%);
+  border-radius: 999px;
+}
+
+.custom-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffb347 0%, #ff8c1a 100%);
+  border: 2px solid #1f1f1f;
+  border-radius: 999px;
+}
+
+.custom-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffc266 0%, #ffa53d 100%);
+}

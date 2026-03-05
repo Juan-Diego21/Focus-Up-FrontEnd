@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Componente principal para la ejecución del método Mapas Mentales
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { apiClient } from "../../../shared/services/apiClient";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
-import { ProgressCircle } from "../../../shared/components/ui/ProgressCircle";
+import { ProgressCircle } from "../../../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
 import { Clock as ClockIcon } from "lucide-react";
 import {
@@ -17,7 +17,7 @@ import {
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../shared/components/ui/FinishLaterModal";
+import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
 
 interface StudyMethod {
@@ -66,7 +66,7 @@ export const MindMapsStepsPage: React.FC = () => {
 
   /**
    * Función pura que convierte el porcentaje de progreso al número de paso correspondiente
-   * Mapea: 20%→0, 40%→1, 60%→2, 80%→3, 100%→4
+   * Mapea: 20%?0, 40%?1, 60%?2, 80%?3, 100%?4
    */
   const getStepFromProgress = (progress: number): number => {
     if (progress === 20) return 0;
@@ -86,35 +86,35 @@ export const MindMapsStepsPage: React.FC = () => {
   const steps = [
     {
       id: 0,
-      title: "1. Elige un tema central 🗺️",
+      title: "1. Elige un tema central ",
       description: "Selecciona el tema principal que quieres estudiar y escríbelo en el centro de tu hoja o lienzo digital.",
       instruction: "Elige un tema específico y escribe la palabra o frase principal en el centro de tu mapa.",
       hasTimer: false,
     },
     {
       id: 1,
-      title: "2. Crea ramas principales 🌿",
+      title: "2. Crea ramas principales ",
       description: "Dibuja líneas desde el centro hacia afuera para las ideas principales relacionadas con el tema.",
       instruction: "Identifica 3-5 ideas principales y dibuja ramas desde el centro hacia afuera.",
       hasTimer: false,
     },
     {
       id: 2,
-      title: "3. Añade colores y símbolos 🎨",
+      title: "3. Añade colores y símbolos ",
       description: "Utiliza colores, símbolos, dibujos e imágenes para conectar conceptos y hacer el mapa más memorable.",
       instruction: "Asigna colores diferentes a cada rama y añade símbolos o dibujos relacionados con cada idea.",
       hasTimer: false,
     },
     {
       id: 3,
-      title: "4. Revisa y conecta conceptos 🔗",
+      title: "4. Revisa y conecta conceptos ",
       description: "Revisa tu mapa, añade conexiones entre ideas relacionadas y completa cualquier rama faltante.",
       instruction: "Busca conexiones entre diferentes ramas y añade líneas o flechas para mostrar relaciones.",
       hasTimer: false,
     },
     {
       id: 4,
-      title: "5. Herramientas digitales 💻",
+      title: "5. Herramientas digitales ",
       description: "Si prefieres trabajar digitalmente, prueba aplicaciones especializadas en mapas mentales.",
       instruction: "Considera usar MindMeister, Coggle, Miro o XMind para crear mapas mentales digitales.",
       hasTimer: false,
@@ -267,12 +267,12 @@ export const MindMapsStepsPage: React.FC = () => {
     try {
       console.log('Starting new Mind Maps session with id:', methodId);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId),
+        id_metodo: parseInt(methodId, 10),
         estado: 'En_proceso',
         progreso: 20
       });
       console.log('Mind Maps session started response:', response.data);
-      const session = response.data;
+      const session = (response as any)?.data ?? response;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
@@ -332,10 +332,11 @@ export const MindMapsStepsPage: React.FC = () => {
 
     try {
       console.log('Updating Mind Maps progress for session ID:', sessionId, 'progress:', progress, 'status:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
-        progreso: progress,
-        estado: status
-      });
+      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
+      if (progress === 100) {
+        updatePayload.finalizar = true;
+      }
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
       console.log('Mind Maps progress updated successfully');
 
       if (sessionData) {
@@ -410,8 +411,7 @@ export const MindMapsStepsPage: React.FC = () => {
           // Update progress synchronously before page unload
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
-              progreso: progressPercentage,
-              estado: getMindMapsStatusByProgress(progressPercentage)
+              progreso: progressPercentage
             })
           );
         } else {
@@ -433,6 +433,10 @@ export const MindMapsStepsPage: React.FC = () => {
     if (currentStep === 0 && !isResuming && !sessionData) {
       // Crear una nueva sesión solo si no se está reanudando una existente y no hay sesión activa
       await startSession();
+      const hasActiveMethod = Boolean(localStorage.getItem('activeMethodId') || sessionData?.id_metodo_realizado);
+      if (!hasActiveMethod) {
+        return;
+      }
     }
 
     if (currentStep < steps.length - 1) {
@@ -510,7 +514,7 @@ export const MindMapsStepsPage: React.FC = () => {
     return (
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-red-500 text-6xl mb-4"></div>
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
@@ -614,16 +618,14 @@ export const MindMapsStepsPage: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Usa colores para categorizar información. Por ejemplo: azul para conceptos, verde para ejemplos, rojo para ideas importantes.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Usa colores para categorizar información. Por ejemplo: azul para conceptos, verde para ejemplos, rojo para ideas importantes.
               </p>
             </div>
           )}
 
           {currentStep === 4 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Herramientas recomendadas:</strong> MindMeister, Coggle, Miro, XMind, FreeMind
+              <p className="text-gray-300 text-sm"><strong>Herramientas recomendadas:</strong> MindMeister, Coggle, Miro, XMind, FreeMind
               </p>
             </div>
           )}
@@ -636,7 +638,7 @@ export const MindMapsStepsPage: React.FC = () => {
             disabled={currentStep === 0}
             className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
-            ← Anterior
+            Anterior
           </button>
 
           <div className="flex gap-2">
@@ -690,7 +692,7 @@ export const MindMapsStepsPage: React.FC = () => {
                 e.currentTarget.style.backgroundColor = methodColor;
               }}
             >
-              Siguiente →
+              Siguiente
             </button>
           )}
         </div>
@@ -698,8 +700,7 @@ export const MindMapsStepsPage: React.FC = () => {
         {/* Recordatorio final */}
         <div className="text-center mt-8">
           <div className="bg-[#232323]/90 p-4 rounded-xl border" style={{ borderColor: `${methodColor}20` }}>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              ✏️ <strong>Recuerda:</strong> Crear el mapa mental manualmente mejora significativamente la retención de información.
+            <p className="text-gray-300 text-sm leading-relaxed"><strong>Recuerda:</strong> Crear el mapa mental manualmente mejora significativamente la retención de información.
               El proceso de dibujar y organizar ideas fortalece las conexiones neuronales en tu cerebro.
             </p>
           </div>
@@ -724,3 +725,10 @@ export const MindMapsStepsPage: React.FC = () => {
 };
 
 export default MindMapsStepsPage;
+
+
+
+
+
+
+

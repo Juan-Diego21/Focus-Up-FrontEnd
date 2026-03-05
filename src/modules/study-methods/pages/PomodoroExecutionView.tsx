@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Componente principal para la ejecución del método Pomodoro
  * Maneja la lógica de temporización, progreso y navegación entre pasos
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Timer } from "../../../shared/components/ui/Timer";
-import { ProgressCircle } from "../../../shared/components/ui/ProgressCircle";
-import { apiClient } from "../../../shared/services/apiClient";
+import { Timer } from "../../../components/ui/Timer";
+import { ProgressCircle } from "../../../components/ui/ProgressCircle";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
 import Swal from 'sweetalert2';
 import { CheckCircle, Clock, Coffee, SkipForward, Clock as ClockIcon } from 'lucide-react';
@@ -15,7 +15,7 @@ import {
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../shared/components/ui/FinishLaterModal";
+import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 
 // Preload SweetAlert2 for instant alerts
 Swal.mixin({
@@ -258,12 +258,12 @@ export const PomodoroExecutionView: React.FC = () => {
     try {
       console.log('Starting new Pomodoro session with id:', methodId, 'parsed:', parseInt(methodId!));
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId!),
+        id_metodo: parseInt(methodId!, 10),
         estado: 'en_progreso',
         progreso: 20
       });
       console.log('Pomodoro session started response:', response.data);
-      const session = response.data;
+      const session = (response as any)?.data ?? response;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
@@ -320,10 +320,11 @@ export const PomodoroExecutionView: React.FC = () => {
 
     try {
       console.log('Updating Pomodoro progress for session ID:', sessionId, 'progress:', progress, 'status:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
-        progreso: progress,
-        estado: status
-      });
+      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
+      if (progress === 100) {
+        updatePayload.finalizar = true;
+      }
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
       console.log('Pomodoro progress updated successfully');
 
       if (sessionData) {
@@ -478,8 +479,7 @@ export const PomodoroExecutionView: React.FC = () => {
           // Update progress synchronously before page unload
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
-              progreso: progressPercentage,
-              estado: 'en_progreso'
+              progreso: progressPercentage
             })
           );
         } else {
@@ -507,7 +507,7 @@ export const PomodoroExecutionView: React.FC = () => {
     return (
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-red-500 text-6xl mb-4"></div>
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
@@ -611,8 +611,7 @@ export const PomodoroExecutionView: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Elige una tarea específica y medible. En lugar de "estudiar matemáticas",
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Elige una tarea específica y medible. En lugar de "estudiar matemáticas",
                 opta por "resolver 10 ejercicios de álgebra lineal".
               </p>
             </div>
@@ -620,8 +619,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
           {currentStep === 1 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> Durante el tiempo de trabajo, evita distracciones como redes sociales,
+              <p className="text-gray-300 text-sm"><strong>Recuerda:</strong> Durante el tiempo de trabajo, evita distracciones como redes sociales,
                 notificaciones y conversaciones. Tu foco debe ser total.
               </p>
             </div>
@@ -758,3 +756,10 @@ export const PomodoroExecutionView: React.FC = () => {
 };
 
 export default PomodoroExecutionView;
+
+
+
+
+
+
+

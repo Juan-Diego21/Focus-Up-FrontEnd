@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from "../../../shared/services/apiClient";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
 import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
 import { BookOpen, MessageSquare, Search, Lightbulb } from 'lucide-react';
@@ -373,7 +373,7 @@ export const FeynmanIntroView: React.FC = () => {
         )}
 
         {/* Action button */}
-        <div className="text-center space-y-6 mb-6">
+        <div className="text-center space-y-6 pb-16 md:pb-20">
           <button
             onClick={handleStartMethod}
             className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-yellow-500/25 cursor-pointer hover:transform hover:-translate-y-1"
@@ -393,3 +393,6 @@ export const FeynmanIntroView: React.FC = () => {
 };
 
 export default FeynmanIntroView;
+
+
+

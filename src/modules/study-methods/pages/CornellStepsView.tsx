@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Componente principal para la ejecución del método Cornell
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { apiClient } from "../../../shared/services/apiClient";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
-import { ProgressCircle } from "../../../shared/components/ui/ProgressCircle";
+import { ProgressCircle } from "../../../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
 import { Clock as ClockIcon } from 'lucide-react';
 import {
@@ -17,7 +17,7 @@ import {
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../shared/components/ui/FinishLaterModal";
+import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
 
 interface StudyMethod {
@@ -72,7 +72,7 @@ export const CornellStepsView: React.FC = () => {
 
   /**
    * Función pura que convierte el porcentaje de progreso al número de paso correspondiente
-   * Mapea: 20%→0, 40%→1, 60%→2, 80%→3, 100%→4
+   * Mapea: 20%?0, 40%?1, 60%?2, 80%?3, 100%?4
    */
   const getStepFromProgress = (progress: number): number => {
     if (progress === 20) return 0;
@@ -266,12 +266,12 @@ export const CornellStepsView: React.FC = () => {
     try {
       console.log('Iniciando nueva sesión del Método Cornell con id:', methodId);
       const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId),
+        id_metodo: parseInt(methodId, 10),
         estado: 'En_proceso',
         progreso: 20
       });
       console.log('Sesión del Método Cornell iniciada respuesta:', response.data);
-      const session = response.data;
+      const session = (response as any)?.data ?? response;
       const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
@@ -331,10 +331,11 @@ export const CornellStepsView: React.FC = () => {
 
     try {
       console.log('Actualizando progreso del Método Cornell para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
-        progreso: progress,
-        estado: status
-      });
+      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
+      if (progress === 100) {
+        updatePayload.finalizar = true;
+      }
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
       console.log('Progreso del Método Cornell actualizado exitosamente');
 
       if (sessionData) {
@@ -409,8 +410,7 @@ export const CornellStepsView: React.FC = () => {
           // Actualizar progreso de forma síncrona antes de salir de la página
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
-              progreso: progressPercentage,
-              estado: getCornellStatusByProgress(progressPercentage)
+              progreso: progressPercentage
             })
           );
         } else {
@@ -432,6 +432,10 @@ export const CornellStepsView: React.FC = () => {
     if (currentStep === 0 && !isResuming && !sessionData) {
       // Crear una nueva sesión solo si no se está reanudando una existente y no hay sesión activa
       await startSession();
+      const hasActiveMethod = Boolean(localStorage.getItem('activeMethodId') || sessionData?.id_metodo_realizado);
+      if (!hasActiveMethod) {
+        return;
+      }
     }
 
     if (currentStep < steps.length - 1) {
@@ -508,7 +512,7 @@ export const CornellStepsView: React.FC = () => {
     return (
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-red-500 text-6xl mb-4"></div>
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
@@ -611,32 +615,28 @@ export const CornellStepsView: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Reserva aproximadamente 1/3 de la página para palabras clave y 1/4 para el resumen.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Reserva aproximadamente 1/3 de la página para palabras clave y 1/4 para el resumen.
               </p>
             </div>
           )}
 
           {currentStep === 1 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> Las palabras clave deben ser preguntas o conceptos que te permitan recordar la información principal.
+              <p className="text-gray-300 text-sm"><strong>Recuerda:</strong> Las palabras clave deben ser preguntas o conceptos que te permitan recordar la información principal.
               </p>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> El resumen debe ser conciso pero completo. Escribe como si explicaras el tema a alguien más.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> El resumen debe ser conciso pero completo. Escribe como si explicaras el tema a alguien más.
               </p>
             </div>
           )}
 
           {currentStep === 3 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> Cubre tus notas y usa solo las palabras clave para recordar. Esto fortalece la memoria a largo plazo.
+              <p className="text-gray-300 text-sm"><strong>Recuerda:</strong> Cubre tus notas y usa solo las palabras clave para recordar. Esto fortalece la memoria a largo plazo.
               </p>
             </div>
           )}
@@ -649,7 +649,7 @@ export const CornellStepsView: React.FC = () => {
             disabled={currentStep === 0}
             className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
-            ← Anterior
+            Anterior
           </button>
 
           <div className="flex gap-2">
@@ -704,7 +704,7 @@ export const CornellStepsView: React.FC = () => {
               }}
             >
               {/* Cambiar texto del botón según el paso actual */}
-              {currentStep === 0 ? 'Comenzar' : 'Siguiente'} →
+              {currentStep === 0 ? 'Comenzar' : 'Siguiente'} ?
             </button>
           )}
         </div>
@@ -728,3 +728,10 @@ export const CornellStepsView: React.FC = () => {
 };
 
 export default CornellStepsView;
+
+
+
+
+
+
+

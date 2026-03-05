@@ -1,6 +1,37 @@
 import { API_BASE_URL, API_ENDPOINTS } from './constants';
 import type { NotificationSettings, UpcomingNotification, NotificationConfigUpdate } from '../types/api';
 
+const EMPTY_NOTIFICATION_SETTINGS: NotificationSettings = {
+  eventos: false,
+  metodosPendientes: false,
+  sesionesPendientes: false,
+  motivacion: false,
+};
+
+const normalizeNotificationSettings = (
+  payload: unknown,
+  fallback: NotificationSettings = EMPTY_NOTIFICATION_SETTINGS
+): NotificationSettings => {
+  if (!payload || typeof payload !== 'object') {
+    return fallback;
+  }
+
+  const settingsSource = payload as Partial<NotificationSettings>;
+
+  return {
+    eventos: typeof settingsSource.eventos === 'boolean' ? settingsSource.eventos : fallback.eventos,
+    metodosPendientes:
+      typeof settingsSource.metodosPendientes === 'boolean'
+        ? settingsSource.metodosPendientes
+        : fallback.metodosPendientes,
+    sesionesPendientes:
+      typeof settingsSource.sesionesPendientes === 'boolean'
+        ? settingsSource.sesionesPendientes
+        : fallback.sesionesPendientes,
+    motivacion: typeof settingsSource.motivacion === 'boolean' ? settingsSource.motivacion : fallback.motivacion,
+  };
+};
+
 /**
  * API integration layer for notifications operations
  * Handles all HTTP requests to the notifications endpoints
@@ -37,18 +68,10 @@ export const notificationsApi = {
 
     // Handle both wrapped and direct response formats
     if (responseData.data) {
-      return responseData.data;
-    } else if (typeof responseData === 'object' && responseData !== null) {
-      // Assume direct response format
-      return responseData as NotificationSettings;
-    } else {
-      return {
-        eventos: false,
-        metodosPendientes: false,
-        sesionesPendientes: false,
-        motivacion: false,
-      };
+      return normalizeNotificationSettings(responseData.data);
     }
+
+    return normalizeNotificationSettings(responseData);
   },
 
   /**
@@ -62,14 +85,39 @@ export const notificationsApi = {
       throw new Error('No authentication token or user ID found');
     }
 
-    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.NOTIFICATIONS_PREFERENCES}/${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(config),
+    const url = `${API_BASE_URL}${API_ENDPOINTS.NOTIFICATIONS_PREFERENCES}/${userId}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+    const payload = JSON.stringify({
+      ...config,
+      [config.tipo]: config.enabled,
     });
+
+    const sendUpdate = (method: 'PATCH' | 'PUT') =>
+      fetch(url, {
+        method,
+        headers,
+        body: payload,
+      });
+
+    let response: Response;
+
+    try {
+      response = await sendUpdate('PATCH');
+    } catch (error) {
+      // In dev, fallback to PUT if PATCH is blocked by CORS/preflight.
+      if (import.meta.env.DEV) {
+        response = await sendUpdate('PUT');
+      } else {
+        throw error;
+      }
+    }
+
+    if (!response.ok && response.status === 405 && import.meta.env.DEV) {
+      response = await sendUpdate('PUT');
+    }
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -83,12 +131,10 @@ export const notificationsApi = {
 
     // Handle both wrapped and direct response formats
     if (responseData.data) {
-      return responseData.data;
-    } else if (typeof responseData === 'object' && responseData !== null) {
-      return responseData as NotificationSettings;
-    } else {
-      throw new Error('Invalid response format from update API');
+      return normalizeNotificationSettings(responseData.data);
     }
+
+    return normalizeNotificationSettings(responseData);
   },
 
   /**

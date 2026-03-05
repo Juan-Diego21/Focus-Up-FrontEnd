@@ -39,13 +39,19 @@ export const useNotifications = () => {
    * Update a specific notification setting
    */
   const updateSetting = async (config: NotificationConfigUpdate) => {
+    setError(null);
+
     // Optimistic update
     const previousSettings = { ...settings };
     setSettings(prev => ({ ...prev, [config.tipo]: config.enabled }));
 
     try {
       const updatedSettings = await notificationsApi.updateNotificationSetting(config);
-      setSettings(updatedSettings);
+      setSettings(prev => ({
+        ...prev,
+        ...updatedSettings,
+        [config.tipo]: config.enabled,
+      }));
     } catch (err) {
       // Rollback on error
       setSettings(previousSettings);

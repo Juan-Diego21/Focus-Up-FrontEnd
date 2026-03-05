@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-screen w-64 max-w-[85vw] bg-gradient-to-b from-[#232323] to-[#1a1a1a] shadow-2xl flex flex-col p-6 z-40 border-r border-[#333] transition-transform duration-300 overflow-y-auto ${
+        className={`custom-sidebar-scroll fixed top-0 left-0 h-screen w-70 max-w-[85vw] bg-gradient-to-b from-[#232323] to-[#1a1a1a] shadow-2xl flex flex-col p-6 z-40 border-r border-[#333] transition-transform duration-300 overflow-y-auto ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage = "dashboard" }) =
                     <span className="font-medium text-left hover:text-[#ffa200]">Herramientas</span>
                   </div>
                   <ChevronDownIcon
-                    className={`w-4 h-4 text-gray-300 transition-transform duration-200 ${
+                    className={`ml-3 w-4 h-4 text-gray-300 transition-transform duration-200 ${
                       focusToolsMenuOpen ? "rotate-180" : ""
                     }`}
                   />
