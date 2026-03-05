@@ -2,7 +2,6 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import storybook from "eslint-plugin-storybook";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -24,9 +23,9 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      // Prohibir console.log en código de producción
+      // Prohibir console.log en cÃ³digo de producciÃ³n
       "no-console": ["error", { allow: ["warn", "error"] }],
-      // Reglas adicionales para calidad de código
+      // Reglas adicionales para calidad de cÃ³digo
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_" },
@@ -34,20 +33,10 @@ export default tseslint.config(
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-explicit-any": "warn",
     },
-  },
-  // Configuración específica para archivos de Storybook
-  {
-    files: ["**/*.stories.{ts,tsx}"],
-    plugins: {
-      storybook: storybook,
-    },
-    rules: {
-      ...storybook.configs.recommended.rules,
-    },
   }
 );
 
-// Configuración moderna de ESLint usando flat config
-// Esta configuración reemplaza el archivo .eslintrc.* obsoleto
-// Incluye reglas para TypeScript, React Hooks, y Storybook
-// Prohíbe console.log para mantener código limpio en producción
+// ConfiguraciÃ³n moderna de ESLint usando flat config
+// Esta configuraciÃ³n reemplaza el archivo .eslintrc.* obsoleto
+// Incluye reglas para TypeScript y React Hooks
+// ProhÃ­be console.log para mantener cÃ³digo limpio en producciÃ³n

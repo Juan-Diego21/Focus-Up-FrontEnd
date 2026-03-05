@@ -52,7 +52,6 @@ Se realizo un refactor por modulos y vistas para priorizar experiencia movil sin
 - Zustand
 - React Query
 - Tailwind CSS
-- Storybook
 
 ## Requisitos
 
@@ -87,8 +86,6 @@ npm run dev              # Servidor de desarrollo
 npm run build            # Build de produccion
 npm run preview          # Preview del build
 npm run lint             # Lint del proyecto
-npm run storybook        # Storybook en local
-npm run build-storybook  # Build estatico de Storybook
 ```
 
 ## Estructura principal

@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 import type { AxiosInstance, AxiosResponse } from "axios";
 import { API_BASE_URL } from "./constants";
 import type { ApiError } from "../types/api";
@@ -22,7 +22,6 @@ const apiClient: AxiosInstance = axios.create({
 // Interceptor de solicitud para JWT
 apiClient.interceptors.request.use(
   (config) => {
-    // Get token from localStorage
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -39,8 +38,6 @@ apiClient.interceptors.response.use(
     const statusCode = error.response?.status || 500;
     const backendMessage = error.response?.data?.message;
     const apiError: ApiError = {
-      // En desarrollo se conserva detalle del backend para depuración;
-      // en producción se abstrae para no filtrar información interna.
       message: import.meta.env.DEV && backendMessage
         ? backendMessage
         : getSafeApiMessage(statusCode),

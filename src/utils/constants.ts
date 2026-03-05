@@ -1,8 +1,10 @@
 const envApiUrl = import.meta.env.VITE_API_URL?.trim();
+const isDev = import.meta.env.DEV;
+const useDevProxy = isDev && !!envApiUrl && envApiUrl.startsWith("http");
 
 // URL base de API configurable por entorno.
 // Si no está definida, mantiene fallback relativo para compatibilidad.
-export const API_BASE_URL = (envApiUrl || "/api/v1").replace(/\/+$/, "");
+export const API_BASE_URL = (useDevProxy ? "/api/v1" : envApiUrl || "/api/v1").replace(/\/+$/, "");
 
 export const APP_MODE = import.meta.env.MODE;
 export const IS_PRODUCTION = import.meta.env.PROD;

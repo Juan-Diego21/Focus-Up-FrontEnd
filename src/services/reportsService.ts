@@ -16,6 +16,12 @@ import type { SessionReport, MethodReport } from '../types/api';
  * Servicio principal para operaciones de reportes
  */
 class ReportsService {
+  private unwrapApiData<T>(response: any): T {
+    if (response?.data?.data !== undefined) return response.data.data as T;
+    if (response?.data !== undefined) return response.data as T;
+    if (response?.data === undefined && response !== undefined) return response as T;
+    return [] as unknown as T;
+  }
   /**
    * Obtiene reportes de sesiones de concentración del usuario
    *
@@ -28,13 +34,10 @@ class ReportsService {
 
       // Determinar la estructura de la respuesta
       let reportsArray: any[] = [];
+      const data = this.unwrapApiData<any>(response);
 
-      if (response.data?.data && Array.isArray(response.data.data)) {
-        // Estructura: {success: true, data: [...]}
-        reportsArray = response.data.data;
-      } else if (response.data && Array.isArray(response.data)) {
-        // Estructura: [...] (array directo)
-        reportsArray = response.data;
+      if (Array.isArray(data)) {
+        reportsArray = data;
       } else {
         // Se eliminó console.warn para mantener código limpio en producción
         return [];
@@ -82,13 +85,10 @@ class ReportsService {
 
       // Determinar la estructura de la respuesta
       let reportsArray: any[] = [];
+      const data = this.unwrapApiData<any>(response);
 
-      if (response.data?.data && Array.isArray(response.data.data)) {
-        // Estructura: {success: true, data: [...]}
-        reportsArray = response.data.data;
-      } else if (response.data && Array.isArray(response.data)) {
-        // Estructura: [...] (array directo)
-        reportsArray = response.data;
+      if (Array.isArray(data)) {
+        reportsArray = data;
       } else {
         // Se eliminó console.warn para mantener código limpio en producción
         return [];

@@ -1,7 +1,7 @@
 // Componente que requiere autenticación para acceder al contenido
 import React from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { LoadingSpinner } from "../../../shared/components/ui/LoadingSpinner";
+import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 
 interface RequireAuthProps {
   children: React.ReactNode;

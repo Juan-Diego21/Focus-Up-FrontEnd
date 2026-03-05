@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from "../../../shared/services/apiClient";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
 import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
 import { CheckCircle, Clock, Coffee, Settings } from 'lucide-react';
@@ -395,7 +395,7 @@ export const PomodoroIntroView: React.FC = () => {
         )}
 
         {/* Action buttons */}
-        <div className="text-center space-y-6 mb-6">
+        <div className="text-center space-y-6 pb-16 md:pb-20">
           <div className="flex justify-center gap-4 flex-wrap">
             <button
               onClick={handleOpenConfig}
@@ -491,3 +491,6 @@ export const PomodoroIntroView: React.FC = () => {
 };
 
 export default PomodoroIntroView;
+
+
+

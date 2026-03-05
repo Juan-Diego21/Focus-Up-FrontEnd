@@ -24,6 +24,11 @@ import { getBroadcastChannel } from '../utils/broadcastChannel';
  * Servicio principal para operaciones de sesiones
  */
 class SessionService {
+  private unwrapApiData<T>(response: any): T {
+    if (response?.data?.data !== undefined) return response.data.data as T;
+    if (response?.data !== undefined) return response.data as T;
+    return response as T;
+  }
   /**
    * Crea una nueva sesión de concentración
    *
@@ -33,7 +38,7 @@ class SessionService {
   async startSession(payload: SessionCreateDto): Promise<SessionDto> {
     try {
       const response = await apiClient.post(API_ENDPOINTS.SESSIONS, payload);
-      return response.data.data || response.data;
+      return this.unwrapApiData<SessionDto>(response);
     } catch (error) {
       console.error('Error creando sesión:', error);
       throw error;
@@ -164,7 +169,7 @@ class SessionService {
   async getSession(sessionId: string): Promise<SessionDto> {
     try {
       const response = await apiClient.get(`${API_ENDPOINTS.SESSIONS}/${sessionId}`);
-      return response.data.data || response.data;
+      return this.unwrapApiData<SessionDto>(response);
     } catch (error) {
       console.error('Error obteniendo sesión:', error);
       throw error;
@@ -184,7 +189,7 @@ class SessionService {
   async getSessionFromEvent(eventId: string): Promise<SessionDto> {
     try {
       const response = await apiClient.get(`${API_ENDPOINTS.SESSIONS}/from-event/${eventId}`);
-      return response.data.data || response.data;
+      return this.unwrapApiData<SessionDto>(response);
     } catch (error) {
       console.error('Error obteniendo sesión desde evento:', error);
       throw error;
@@ -212,7 +217,8 @@ class SessionService {
         : API_ENDPOINTS.SESSIONS;
 
       const response = await apiClient.get(url);
-      return response.data.data || response.data || [];
+      const data = this.unwrapApiData<any>(response);
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error listando sesiones:', error);
       throw error;
@@ -229,7 +235,8 @@ class SessionService {
   async getPendingAged(days: number): Promise<SessionDto[]> {
     try {
       const response = await apiClient.get(`${API_ENDPOINTS.SESSIONS}/pending-aged?days=${days}`);
-      return response.data.data || response.data || [];
+      const data = this.unwrapApiData<any>(response);
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error obteniendo sesiones pendientes antiguas:', error);
       throw error;

@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Componente principal para la ejecución del método Repaso Espaciado
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { apiClient } from "../../../shared/services/apiClient";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
-import { ProgressCircle } from "../../../shared/components/ui/ProgressCircle";
+import { ProgressCircle } from "../../../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
 import { Clock as ClockIcon } from 'lucide-react';
 import {
@@ -17,8 +17,9 @@ import {
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../shared/components/ui/FinishLaterModal";
+import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
+import { ensureMethodSession } from "../services/methodSessionService";
 
 interface StudyMethod {
   id_metodo: number;
@@ -72,7 +73,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
   /**
    * Función pura que convierte el porcentaje de progreso al número de paso correspondiente
-   * Mapea: 20%→0, 40%→1, 60%→2, 80%→3, 100%→4
+   * Mapea: 20%?0, 40%?1, 60%?2, 80%?3, 100%?4
    */
   const getStepFromProgress = (progress: number): number => {
     if (progress === 20) return 0;
@@ -92,28 +93,28 @@ export const SpacedRepetitionStepsView: React.FC = () => {
   const steps = [
     {
       id: 0,
-      title: "1. Revisión inmediata 📖",
+      title: "1. Revisión inmediata ",
       description: "Revisa el material justo ahora para establecer el primer rastro de memoria.",
       instruction: "Toma 10-15 minutos para revisar activamente el material por primera vez.",
       hasTimer: false,
     },
     {
       id: 1,
-      title: "2. Después de unas horas ⏰",
+      title: "2. Después de unas horas ?",
       description: "Revisa el material más tarde hoy para reforzar las conexiones.",
       instruction: "Espera al menos 2-3 horas antes de esta segunda revisión. Una vez lo hayas hecho da click al botón Siguiente",
       hasTimer: false,
     },
     {
       id: 2,
-      title: "3. Al día siguiente 📅",
+      title: "3. Al día siguiente ",
       description: "Revisa el contenido mañana para fortalecer la codificación a largo plazo.",
       instruction: "Realiza esta revisión al día siguiente de la primera sesión.",
       hasTimer: false,
     },
     {
       id: 3,
-      title: "4. Revisión final ✅",
+      title: "4. Revisión final ?",
       description: "Realiza la revisión final espaciada para consolidar la información.",
       instruction: "Esta última revisión asegura la retención a largo plazo del material.",
       hasTimer: false,
@@ -264,15 +265,13 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     }
 
     try {
-      console.log('Iniciando nueva sesión de Repaso Espaciado con id:', methodId);
-      const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId),
-        estado: 'En_proceso',
-        progreso: 20
+      console.log('Iniciando o reanudando sesión de Repaso Espaciado con id:', methodId);
+      const session = await ensureMethodSession({
+        methodId: parseInt(methodId, 10),
+        initialProgress: 20,
+        initialStatus: 'En_proceso',
       });
-      console.log('Sesión de Repaso Espaciado iniciada respuesta:', response.data);
-      const session = response.data;
-      const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
+      const id_metodo_realizado = session.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
         console.error('No se recibió id_metodo_realizado del backend');
@@ -280,26 +279,39 @@ export const SpacedRepetitionStepsView: React.FC = () => {
       }
 
       setSessionData({
-        id: session.id,
-        methodId: parseInt(methodId),
+        id: id_metodo_realizado.toString(),
+        methodId: parseInt(methodId, 10),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
-        progress: 20,
-        status: 'En_proceso'
+        progress: session.progreso || 20,
+        status: session.estado || 'En_proceso'
       });
+
+      if (session.source === 'resumed') {
+        setIsResuming(true);
+        const resumedProgress = session.progreso || 20;
+        setCurrentStep(getStepFromProgress(resumedProgress));
+        setProgressPercentage(resumedProgress);
+      }
 
       // Almacenar el ID del método activo por separado para actualizaciones de progreso
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
       localStorage.setItem('spaced-repetition-session', JSON.stringify(session));
 
       // Poner en cola notificación de éxito
-      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Repaso Espaciado'} iniciada correctamente` });
+      setAlertQueue({
+        type: session.source === 'resumed' ? 'resumed' : 'started',
+        message: session.source === 'resumed'
+          ? `Sesión de ${method?.titulo || 'Repaso Espaciado'} reanudada correctamente`
+          : `Sesión de ${method?.titulo || 'Repaso Espaciado'} iniciada correctamente`
+      });
 
       // Activar actualización de reportes
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error al iniciar sesión de Repaso Espaciado:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión de Repaso Espaciado' });
+      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesión de Repaso Espaciado';
+      setAlertQueue({ type: 'error', message: apiMessage });
     }
   };
 
@@ -331,10 +343,11 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 
     try {
       console.log('Actualizando progreso de Repaso Espaciado para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
-        progreso: progress,
-        estado: status
-      });
+      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
+      if (progress === 100) {
+        updatePayload.finalizar = true;
+      }
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
       console.log('Progreso de Repaso Espaciado actualizado exitosamente');
 
       if (sessionData) {
@@ -409,8 +422,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           // Actualizar progreso de forma síncrona antes de salir de la página
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
-              progreso: progressPercentage,
-              estado: getSpacedRepetitionStatusByProgress(progressPercentage)
+              progreso: progressPercentage
             })
           );
         } else {
@@ -428,10 +440,14 @@ export const SpacedRepetitionStepsView: React.FC = () => {
    * Controla la lógica de inicio de sesión y actualización de progreso
    * Solo crea una nueva sesión cuando no se está reanudando una existente
    */
-  const completeStep = () => {
+  const completeStep = async () => {
     if (currentStep === 0 && !isResuming) {
       // Crear una nueva sesión solo si no se está reanudando una existente
-      startSession();
+      await startSession();
+      const hasActiveMethod = Boolean(localStorage.getItem('activeMethodId') || sessionData?.id_metodo_realizado);
+      if (!hasActiveMethod) {
+        return;
+      }
     }
 
     if (currentStep < steps.length - 1) {
@@ -489,7 +505,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
     return (
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-red-500 text-6xl mb-4"></div>
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
@@ -592,16 +608,14 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Enfócate en comprender los conceptos principales. No intentes memorizar todo de una vez.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Enfócate en comprender los conceptos principales. No intentes memorizar todo de una vez.
               </p>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> El espacio entre revisiones es crucial. Cada repaso espaciado fortalece las conexiones neuronales.
+              <p className="text-gray-300 text-sm"><strong>Recuerda:</strong> El espacio entre revisiones es crucial. Cada repaso espaciado fortalece las conexiones neuronales.
               </p>
             </div>
           )}
@@ -625,7 +639,7 @@ export const SpacedRepetitionStepsView: React.FC = () => {
           ) : (
             // Botón para avanzar al siguiente paso
             <button
-              onClick={completeStep}
+              onClick={() => void completeStep()}
               className="px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl"
               style={{
                 backgroundColor: methodColor,
@@ -669,3 +683,10 @@ export const SpacedRepetitionStepsView: React.FC = () => {
 };
 
 export default SpacedRepetitionStepsView;
+
+
+
+
+
+
+

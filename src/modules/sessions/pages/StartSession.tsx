@@ -23,17 +23,24 @@ import { getSongsByAlbumId } from '../../../utils/musicApi';
 import { MethodSelectionModal } from '../../../components/MethodSelectionModal';
 import { AlbumSelectionModal } from '../../../components/AlbumSelectionModal';
 import { LOCAL_METHOD_ASSETS, overrideMethodWithLocalAssets } from '../../../utils/methodAssets';
-import { CountdownOverlay } from '@shared/components/ui/CountdownOverlay';
-import { PageLayout } from '@shared/components/ui/PageLayout';
-import { Sidebar } from '../../../shared/components/ui/Sidebar';
+import { CountdownOverlay } from '@components/ui/CountdownOverlay';
+import { PageLayout } from '@components/ui/PageLayout';
+import { Sidebar } from '../../../components/ui/Sidebar';
 import type { SessionCreateDto, SessionDto, Song } from '../../../types/api';
 
 /**
  * Obtiene un método por ID desde los activos locales
  */
 const getMethodById = (id: number): any => {
-  const methodNames = Object.keys(LOCAL_METHOD_ASSETS);
-  const methodName = methodNames[id - 1]; // IDs start from 1
+  const METHOD_ID_TO_NAME: Record<number, string> = {
+    1: 'Método Pomodoro',
+    2: 'Mapas Mentales',
+    3: 'Repaso Espaciado',
+    4: 'Práctica Activa',
+    5: 'Método Feynman',
+    6: 'Método Cornell',
+  };
+  const methodName = METHOD_ID_TO_NAME[id];
   if (methodName) {
     const assets = LOCAL_METHOD_ASSETS[methodName];
     return overrideMethodWithLocalAssets({

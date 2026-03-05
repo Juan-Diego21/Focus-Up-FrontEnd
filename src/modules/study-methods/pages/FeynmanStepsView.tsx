@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Componente principal para la ejecución del método Feynman
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { apiClient } from "../../../shared/services/apiClient";
+import { apiClient } from "../../../utils/apiClient";
 import { API_ENDPOINTS } from "../../../utils/constants";
-import { ProgressCircle } from "../../../shared/components/ui/ProgressCircle";
+import { ProgressCircle } from "../../../components/ui/ProgressCircle";
 import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
 import { Clock as ClockIcon } from 'lucide-react';
 import {
@@ -17,8 +17,9 @@ import {
   isValidProgressForUpdate,
   isValidProgressForResume
 } from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../shared/components/ui/FinishLaterModal";
+import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
+import { ensureMethodSession } from "../services/methodSessionService";
 
 interface StudyMethod {
   id_metodo: number;
@@ -72,7 +73,7 @@ export const FeynmanStepsView: React.FC = () => {
 
   /**
    * Función pura que convierte el porcentaje de progreso al número de paso correspondiente
-   * Mapea: 20%→0, 40%→1, 60%→2, 80%→3, 100%→4
+   * Mapea: 20%?0, 40%?1, 60%?2, 80%?3, 100%?4
    */
   const getStepFromProgress = (progress: number): number => {
     if (progress === 20) return 0;
@@ -264,15 +265,13 @@ export const FeynmanStepsView: React.FC = () => {
     }
 
     try {
-      console.log('Iniciando nueva sesión del Método Feynman con id:', methodId);
-      const response = await apiClient.post(API_ENDPOINTS.ACTIVE_METHODS, {
-        id_metodo: parseInt(methodId),
-        estado: 'En_proceso',
-        progreso: 20
+      console.log('Iniciando o reanudando sesión del Método Feynman con id:', methodId);
+      const session = await ensureMethodSession({
+        methodId: parseInt(methodId, 10),
+        initialProgress: 20,
+        initialStatus: 'en_progreso',
       });
-      console.log('Sesión del Método Feynman iniciada respuesta:', response.data);
-      const session = response.data;
-      const id_metodo_realizado = session.id_metodo_realizado || session.data?.id_metodo_realizado;
+      const id_metodo_realizado = session.id_metodo_realizado;
 
       if (!id_metodo_realizado) {
         console.error('No se recibió id_metodo_realizado del backend');
@@ -280,26 +279,39 @@ export const FeynmanStepsView: React.FC = () => {
       }
 
       setSessionData({
-        id: session.id,
-        methodId: parseInt(methodId),
+        id: id_metodo_realizado.toString(),
+        methodId: parseInt(methodId, 10),
         id_metodo_realizado: id_metodo_realizado,
         startTime: new Date().toISOString(),
-        progress: 20,
-        status: 'En_proceso'
+        progress: session.progreso || 20,
+        status: session.estado || 'en_progreso'
       });
+
+      if (session.source === 'resumed') {
+        setIsResuming(true);
+        const resumedProgress = session.progreso || 20;
+        setCurrentStep(getStepFromProgress(resumedProgress));
+        setProgressPercentage(resumedProgress);
+      }
 
       // Almacenar el ID del método activo por separado para actualizaciones de progreso
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
       localStorage.setItem('feynman-session', JSON.stringify(session));
 
       // Poner en cola notificación de éxito
-      setAlertQueue({ type: 'started', message: `Sesión de ${method?.titulo || 'Método Feynman'} iniciada correctamente` });
+      setAlertQueue({
+        type: session.source === 'resumed' ? 'resumed' : 'started',
+        message: session.source === 'resumed'
+          ? `Sesión de ${method?.titulo || 'Método Feynman'} reanudada correctamente`
+          : `Sesión de ${method?.titulo || 'Método Feynman'} iniciada correctamente`
+      });
 
       // Activar actualización de reportes
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error al iniciar sesión del Método Feynman:', error);
-      setAlertQueue({ type: 'error', message: 'Error al iniciar la sesión del Método Feynman' });
+      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesión del Método Feynman';
+      setAlertQueue({ type: 'error', message: apiMessage });
     }
   };
 
@@ -331,10 +343,11 @@ export const FeynmanStepsView: React.FC = () => {
 
     try {
       console.log('Actualizando progreso del Método Feynman para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, {
-        progreso: progress,
-        estado: status
-      });
+      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
+      if (progress === 100) {
+        updatePayload.finalizar = true;
+      }
+      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
       console.log('Progreso del Método Feynman actualizado exitosamente');
 
       if (sessionData) {
@@ -409,8 +422,7 @@ export const FeynmanStepsView: React.FC = () => {
           // Actualizar progreso de forma síncrona antes de salir de la página
           navigator.sendBeacon(`${apiClient.defaults.baseURL}${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
             JSON.stringify({
-              progreso: progressPercentage,
-              estado: getFeynmanStatusByProgress(progressPercentage)
+              progreso: progressPercentage
             })
           );
         } else {
@@ -432,6 +444,10 @@ export const FeynmanStepsView: React.FC = () => {
     if (currentStep === 0 && !isResuming && !sessionData) {
       // Crear una nueva sesión solo si no se está reanudando una existente y no hay sesión activa
       await startSession();
+      const hasActiveMethod = Boolean(localStorage.getItem('activeMethodId') || sessionData?.id_metodo_realizado);
+      if (!hasActiveMethod) {
+        return;
+      }
     }
 
     if (currentStep < steps.length - 1) {
@@ -508,7 +524,7 @@ export const FeynmanStepsView: React.FC = () => {
     return (
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-red-500 text-6xl mb-4"></div>
           <h2 className="text-white text-xl font-semibold mb-4">Error al cargar datos</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
@@ -611,32 +627,28 @@ export const FeynmanStepsView: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Elige un tema que realmente te interese aprender. Esto hará que el proceso de enseñanza sea más atractivo y efectivo.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Elige un tema que realmente te interese aprender. Esto hará que el proceso de enseñanza sea más atractivo y efectivo.
               </p>
             </div>
           )}
 
           {currentStep === 1 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> Si no puedes explicarlo simplemente, no lo entiendes lo suficientemente bien. Este paso revela las lagunas en tu conocimiento.
+              <p className="text-gray-300 text-sm"><strong>Recuerda:</strong> Si no puedes explicarlo simplemente, no lo entiendes lo suficientemente bien. Este paso revela las lagunas en tu conocimiento.
               </p>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Tip:</strong> Sé honesto contigo mismo. Cada vez que uses jerga técnica o tengas dificultades para explicar, has encontrado un área que necesita más estudio.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Sé honesto contigo mismo. Cada vez que uses jerga técnica o tengas dificultades para explicar, has encontrado un área que necesita más estudio.
               </p>
             </div>
           )}
 
           {currentStep === 3 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm">
-                💡 <strong>Recuerda:</strong> Los grandes maestros crean analogías que perduran. Las mejores explicaciones usan conceptos familiares para iluminar los desconocidos.
+              <p className="text-gray-300 text-sm"><strong>Recuerda:</strong> Los grandes maestros crean analogías que perduran. Las mejores explicaciones usan conceptos familiares para iluminar los desconocidos.
               </p>
             </div>
           )}
@@ -649,7 +661,7 @@ export const FeynmanStepsView: React.FC = () => {
             disabled={currentStep === 0}
             className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
-            ← Anterior
+            Anterior
           </button>
 
           <div className="flex gap-2">
@@ -703,7 +715,7 @@ export const FeynmanStepsView: React.FC = () => {
                 e.currentTarget.style.backgroundColor = methodColor;
               }}
             >
-              Siguiente →
+              Siguiente
             </button>
           )}
         </div>
@@ -727,3 +739,10 @@ export const FeynmanStepsView: React.FC = () => {
 };
 
 export default FeynmanStepsView;
+
+
+
+
+
+
+

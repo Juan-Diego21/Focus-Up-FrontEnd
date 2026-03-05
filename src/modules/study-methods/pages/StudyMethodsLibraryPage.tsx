@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from "../../../components/ui/Sidebar";
 import { Card } from "../../../components/ui/Card";
@@ -42,7 +42,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
         // Obtener token del localStorage para autenticación
         const token = localStorage.getItem("token");
         if (!token) {
-          // ✅ Redirigir al login si no hay token
+          // 1. Redirigir al login si no hay token
           navigate("/login");
           return;
         }
@@ -223,7 +223,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
                   <BookOpen className="w-12 h-12 text-gray-500" />
                 </div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">📚</span>
+                  <span className="text-white text-xs">✨</span>
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-gray-300 mb-3">No hay métodos disponibles</h3>
@@ -257,3 +257,4 @@ export const StudyMethodsLibraryPage: React.FC = () => {
 };
 
 export default StudyMethodsLibraryPage;
+

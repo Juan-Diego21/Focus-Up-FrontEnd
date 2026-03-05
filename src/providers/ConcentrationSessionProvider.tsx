@@ -293,10 +293,10 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
       }));
 
       // Persistir
-      persistState(session);
+      persistState(sessionWithStartTime);
 
       // Broadcast a otras pestañas
-      broadcastChannel.broadcastSessionUpdate(session);
+      broadcastChannel.broadcastSessionUpdate(sessionWithStartTime);
 
     } catch (error) {
       console.error('Error iniciando sesión:', error);
@@ -329,8 +329,10 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
       // Calcular tiempo transcurrido correctamente
       // Fórmula: elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
-      const currentElapsedMs = (state.activeSession.elapsedMs || 0) +
-        (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
+      const currentElapsedMs = state.activeSession.isRunning
+        ? (state.activeSession.elapsedMs || 0) +
+          (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0)
+        : (state.activeSession.elapsedMs || 0);
 
       console.log('[PROVIDER] Pausing session with elapsedMs:', currentElapsedMs);
 
@@ -433,8 +435,10 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
       // Calcular tiempo transcurrido correctamente
       // Fórmula: elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
-      const currentElapsedMs = (state.activeSession.elapsedMs || 0) +
-        (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
+      const currentElapsedMs = state.activeSession.isRunning
+        ? (state.activeSession.elapsedMs || 0) +
+          (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0)
+        : (state.activeSession.elapsedMs || 0);
 
       if (navigator.onLine) {
         // Enviar PATCH con status "pending" y notas para marcar como aplazada
@@ -479,8 +483,10 @@ export const ConcentrationSessionProvider: React.FC<ConcentrationSessionProvider
 
       // Calcular tiempo transcurrido correctamente
       // Fórmula: elapsedMs = (sesión.elapsedMs || 0) + (Date.now() - sesión.startTime)
-      const currentElapsedMs = (state.activeSession.elapsedMs || 0) +
-        (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0);
+      const currentElapsedMs = state.activeSession.isRunning
+        ? (state.activeSession.elapsedMs || 0) +
+          (state.activeSession.startTime ? Date.now() - new Date(state.activeSession.startTime).getTime() : 0)
+        : (state.activeSession.elapsedMs || 0);
 
       if (navigator.onLine) {
         // Enviar PATCH con status "completed", duracion y notas
