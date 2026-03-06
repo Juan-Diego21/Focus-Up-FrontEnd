@@ -39,12 +39,18 @@ export interface IEventoCreate {
 
 export interface IEventoUpdate {
   nombre_evento?: string;
+  nombreEvento?: string;
   fecha_evento?: string; // ISO date string (YYYY-MM-DD)
+  fechaEvento?: string; // ISO date string (YYYY-MM-DD)
   hora_evento?: string;
+  horaEvento?: string;
   descripcion_evento?: string;
+  descripcionEvento?: string;
   estado?: string | null; // "completado" | "pendiente" | null
   id_metodo?: number;
+  idMetodo?: number;
   id_album?: number;
+  idAlbum?: number;
 }
 
 export interface IEventoStatusUpdate {

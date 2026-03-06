@@ -54,14 +54,88 @@ const distractions = [
 ];
 
 
+type ProfileFormData = {
+  nombre_usuario: string;
+  pais: string;
+  genero: string;
+  fecha_nacimiento: Date | null;
+  hours: string;
+  minutes: string;
+  period: string;
+  intereses: number[];
+  distraction1: string;
+  distraction2: string;
+  objective: string;
+};
+
+const formatDateForInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateFromInput = (value: string): Date | null => {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const parsed = new Date(year, month - 1, day);
+  return isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const parseUserDate = (rawDate: unknown): Date | null => {
+  if (rawDate instanceof Date) {
+    return isNaN(rawDate.getTime()) ? null : rawDate;
+  }
+
+  if (typeof rawDate !== "string" || !rawDate) {
+    return null;
+  }
+
+  // Parse YYYY-MM-DD as local date to avoid timezone shifts.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+    return parseDateFromInput(rawDate);
+  }
+
+  const parsed = new Date(rawDate);
+  if (isNaN(parsed.getTime())) return null;
+  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+};
+
+const parseHorarioFav = (rawHorario: unknown): { hours: string; minutes: string; period: string } => {
+  if (typeof rawHorario !== "string" || !rawHorario.trim()) {
+    return { hours: "", minutes: "", period: "" };
+  }
+
+  // Accept HH:MM, HH:MM:SS and datetime-like payloads that contain time.
+  const timeMatch = rawHorario.match(/(\d{1,2}):(\d{2})/);
+  if (!timeMatch) {
+    return { hours: "", minutes: "", period: "" };
+  }
+
+  const hour24 = parseInt(timeMatch[1], 10);
+  const minute = parseInt(timeMatch[2], 10);
+  if (isNaN(hour24) || isNaN(minute) || hour24 < 0 || hour24 > 23 || minute < 0 || minute > 59) {
+    return { hours: "", minutes: "", period: "" };
+  }
+
+  const period = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+  return {
+    hours: hour12.toString().padStart(2, "0"),
+    minutes: minute.toString().padStart(2, "0"),
+    period,
+  };
+};
+
 export const ProfilePage: React.FC = () => {
   const { user, loading: authLoading, updateUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormData>({
     nombre_usuario: "",
     pais: "",
     genero: "",
-    fecha_nacimiento: new Date(),
+    fecha_nacimiento: null,
     hours: "",
     minutes: "",
     period: "",
@@ -86,36 +160,19 @@ export const ProfilePage: React.FC = () => {
   // Temporary input values for free typing (like CreateEventModal)
   const [tempHours, setTempHours] = useState('01');
   const [tempMinutes, setTempMinutes] = useState('00');
+  const [birthDateInput, setBirthDateInput] = useState('');
 
   // Cargar datos del usuario al montar el componente
   useEffect(() => {
     if (user) {
       // Convertir horario_fav de formato HH:MM:SS a componentes separados si existe
-      let hours = "", minutes = "", period = "";
-      if (user.horario_fav) {
-        const [timePart] = user.horario_fav.split(' '); // Remover segundos si existen
-        const [hourStr, minuteStr] = timePart.split(':');
-        const hour = parseInt(hourStr);
-        hours = (hour === 0 ? 12 : hour > 12 ? hour - 12 : hour).toString().padStart(2, '0');
-        minutes = minuteStr;
-        period = hour >= 12 ? "PM" : "AM";
-      }
+      const parsedHorario = parseHorarioFav(user.horario_fav);
+      const hours = parsedHorario.hours;
+      const minutes = parsedHorario.minutes;
+      const period = parsedHorario.period;
 
       // Asegurar que fecha_nacimiento sea un objeto Date válido
-      let fechaNacimiento: Date;
-      if (user.fecha_nacimiento) {
-        if (user.fecha_nacimiento instanceof Date) {
-          fechaNacimiento = user.fecha_nacimiento;
-        } else if (typeof user.fecha_nacimiento === 'string') {
-          // Convertir string de fecha a objeto Date
-          const parsedDate = new Date(user.fecha_nacimiento);
-          fechaNacimiento = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
-        } else {
-          fechaNacimiento = new Date();
-        }
-      } else {
-        fechaNacimiento = new Date();
-      }
+      const fechaNacimiento = parseUserDate(user.fecha_nacimiento);
 
       // Convertir distracciones array a campos individuales para los dropdowns
       const distracciones = user.distracciones || [];
@@ -139,6 +196,7 @@ export const ProfilePage: React.FC = () => {
       // Inicializar valores temporales para los inputs de tiempo (como en CreateEventModal)
       setTempHours(hours || '01');
       setTempMinutes(minutes || '00');
+      setBirthDateInput(fechaNacimiento ? formatDateForInput(fechaNacimiento) : '');
     }
   }, [user]);
 
@@ -168,11 +226,10 @@ export const ProfilePage: React.FC = () => {
       }
 
       // Validar fecha de nacimiento
-      const dateError = validateDateOfBirth(formData.fecha_nacimiento);
-      if (dateError) {
+      if (!formData.fecha_nacimiento) {
         await Swal.fire({
-          title: 'Fecha de nacimiento inválida',
-          text: dateError,
+          title: 'Fecha de nacimiento requerida',
+          text: 'Selecciona una fecha de nacimiento valida en formato dd/mm/aaaa.',
           icon: 'error',
           confirmButtonText: 'Entendido',
           background: '#232323',
@@ -182,6 +239,19 @@ export const ProfilePage: React.FC = () => {
         return;
       }
 
+      const dateError = validateDateOfBirth(formData.fecha_nacimiento);
+      if (dateError) {
+        await Swal.fire({
+          title: 'Fecha de nacimiento invalida',
+          text: dateError,
+          icon: 'error',
+          confirmButtonText: 'Entendido',
+          background: '#232323',
+          color: '#ffffff',
+          confirmButtonColor: '#EF4444',
+        });
+        return;
+      }
       // Validar nombre de usuario si cambió - Validación solo en frontend ya que no existe endpoint check-username
       if (formData.nombre_usuario !== user.nombre_usuario) {
         const usernameError = validateUsername(formData.nombre_usuario);
@@ -301,11 +371,27 @@ export const ProfilePage: React.FC = () => {
 
       // Convertir componentes de tiempo a formato HH:MM si están completos
       let horarioFav: string | null = null;
-      if (formData.hours && formData.minutes && formData.period) {
-        const hours24 = formData.period === "PM" && formData.hours !== "12" ? parseInt(formData.hours) + 12 : formData.period === "AM" && formData.hours === "12" ? 0 : parseInt(formData.hours);
-        horarioFav = `${hours24.toString().padStart(2, '0')}:${formData.minutes.padStart(2, '0')}`;
+      // Build time from visible inputs too, so submit works even without blur.
+      const rawHours = (tempHours || formData.hours).trim();
+      const rawMinutes = (tempMinutes || formData.minutes).trim();
+      const effectivePeriod = formData.period || "AM";
+
+      if (rawHours && rawMinutes && effectivePeriod) {
+        const hours12 = parseInt(rawHours, 10);
+        const minutes = parseInt(rawMinutes, 10);
+
+        if (!isNaN(hours12) && !isNaN(minutes)) {
+          const safeHours12 = Math.min(Math.max(hours12, 1), 12);
+          const safeMinutes = Math.min(Math.max(minutes, 0), 59);
+          const hours24 = effectivePeriod === "PM" && safeHours12 !== 12
+            ? safeHours12 + 12
+            : effectivePeriod === "AM" && safeHours12 === 12
+              ? 0
+              : safeHours12;
+          horarioFav = `${hours24.toString().padStart(2, '0')}:${safeMinutes.toString().padStart(2, '0')}`;
+        }
       } else if (user?.horario_fav) {
-        // Mantener el horario existente si no se modificó, convirtiendo de HH:MM:SS a HH:MM si es necesario
+        // Mantener el horario existente si no se modifico, convirtiendo de HH:MM:SS a HH:MM si es necesario
         horarioFav = user.horario_fav.includes(':') ? user.horario_fav.split(':').slice(0, 2).join(':') : user.horario_fav;
       }
 
@@ -320,7 +406,7 @@ export const ProfilePage: React.FC = () => {
         nombre_usuario: formData.nombre_usuario,
         ...(formData.pais && { pais: formData.pais }),
         ...(formData.genero && { genero: formData.genero }),
-        fecha_nacimiento: formData.fecha_nacimiento.toISOString().split('T')[0], // YYYY-MM-DD
+        fecha_nacimiento: formatDateForInput(formData.fecha_nacimiento), // YYYY-MM-DD
         ...(horarioFav && { horario_fav: horarioFav }),
         intereses: formData.objective ? [parseInt(formData.objective)] : [],
         distracciones: distracciones,
@@ -586,29 +672,31 @@ export const ProfilePage: React.FC = () => {
                         // Validate and convert on blur
                         const numValue = parseInt(tempHours) || 0;
                         if (numValue < 1 || numValue > 12) {
-                          setFormData(prev => ({ ...prev, hours: '1' }));
+                          setFormData(prev => ({ ...prev, hours: '01' }));
                           setTempHours('01');
                         } else {
-                          setFormData(prev => ({ ...prev, hours: numValue.toString() }));
-                          setTempHours(numValue.toString().padStart(2, '0'));
+                          const normalizedHour = numValue.toString().padStart(2, '0');
+                          setFormData(prev => ({ ...prev, hours: normalizedHour }));
+                          setTempHours(normalizedHour);
                         }
                       }}
                       className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-left pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                       placeholder="HH"
                     />
                     <Listbox value={formData.hours} onChange={(value) => {
-                      setFormData(prev => ({ ...prev, hours: value }));
-                      setTempHours(value.toString().padStart(2, '0'));
+                      const hourValue = value.toString().padStart(2, '0');
+                      setFormData(prev => ({ ...prev, hours: hourValue }));
+                      setTempHours(hourValue);
                     }}>
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                         <Listbox.Button className="p-1 rounded hover:bg-gray-700">
                           <ChevronDown className="w-5 h-5 text-gray-400 pointer-events-none" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute bottom-full mb-1 -left-6 z-50 w-20 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-40 focus:outline-none">
+                        <Listbox.Options className="absolute bottom-full mb-1 -left-6 z-50 w-20 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-40 overflow-auto focus:outline-none">
                           {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
                             <Listbox.Option
                               key={hour}
-                              value={hour}
+                              value={hour.toString().padStart(2, '0')}
                               className={({ active }) =>
                                 `cursor-pointer select-none relative py-2 px-3 text-center transition-all duration-150 ${
                                   active ? 'bg-gray-700 text-white' : 'text-gray-200'
@@ -646,29 +734,31 @@ export const ProfilePage: React.FC = () => {
                         // Validate and convert on blur
                         const numValue = parseInt(tempMinutes) || 0;
                         if (numValue < 0 || numValue > 59) {
-                          setFormData(prev => ({ ...prev, minutes: '0' }));
+                          setFormData(prev => ({ ...prev, minutes: '00' }));
                           setTempMinutes('00');
                         } else {
-                          setFormData(prev => ({ ...prev, minutes: numValue.toString() }));
-                          setTempMinutes(numValue.toString().padStart(2, '0'));
+                          const normalizedMinutes = numValue.toString().padStart(2, '0');
+                          setFormData(prev => ({ ...prev, minutes: normalizedMinutes }));
+                          setTempMinutes(normalizedMinutes);
                         }
                       }}
                       className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-left pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                       placeholder="MM"
                     />
                     <Listbox value={formData.minutes} onChange={(value) => {
-                      setFormData(prev => ({ ...prev, minutes: value }));
-                      setTempMinutes(value.toString().padStart(2, '0'));
+                      const minuteValue = value.toString().padStart(2, '0');
+                      setFormData(prev => ({ ...prev, minutes: minuteValue }));
+                      setTempMinutes(minuteValue);
                     }}>
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                         <Listbox.Button className="p-1 rounded hover:bg-gray-700">
                           <ChevronDown className="w-5 h-5 text-gray-400 pointer-events-none" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute bottom-full mb-1 -left-6 z-50 w-20 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-40 focus:outline-none">
+                        <Listbox.Options className="absolute bottom-full mb-1 -left-6 z-50 w-20 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-40 overflow-auto focus:outline-none">
                           {Array.from({ length: 60 }, (_, i) => i).map(minute => (
                             <Listbox.Option
                               key={minute}
-                              value={minute}
+                              value={minute.toString().padStart(2, '0')}
                               className={({ active }) =>
                                 `cursor-pointer select-none relative py-2 px-3 text-center transition-all duration-150 ${
                                   active ? 'bg-gray-700 text-white' : 'text-gray-200'
@@ -689,7 +779,6 @@ export const ProfilePage: React.FC = () => {
                     </Listbox>
                   </div>
                 </div>
-
                 {/* AM/PM */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-400 mb-2">AM/PM</label>
@@ -744,15 +833,15 @@ export const ProfilePage: React.FC = () => {
                   type="date"
                   name="fecha_nacimiento"
                   className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 cursor-pointer hover:border-blue-400 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                  value={formData.fecha_nacimiento instanceof Date && !isNaN(formData.fecha_nacimiento.getTime()) ? formData.fecha_nacimiento.toISOString().split('T')[0] : ""}
+                  value={birthDateInput}
                   onChange={(e) => {
-                    const date = new Date(e.target.value);
-                    if (!isNaN(date.getTime())) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        fecha_nacimiento: date,
-                      }));
-                    }
+                    const inputValue = e.target.value;
+                    setBirthDateInput(inputValue);
+                    const date = parseDateFromInput(inputValue);
+                    setFormData((prev) => ({
+                      ...prev,
+                      fecha_nacimiento: date,
+                    }));
                   }}
                   disabled={loading}
                   ref={(input) => {
