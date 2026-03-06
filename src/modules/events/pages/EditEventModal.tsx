@@ -152,12 +152,24 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
     if (!formData.fechaEvento) {
       newErrors.fechaEvento = 'La fecha del evento es requerida';
     } else {
-      const eventDate = new Date(formData.fechaEvento);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Convertir hora de 12h a 24h formato para evaluar la fecha completa
+      const convertTo24HourForValidation = (hours: number, period: string): string => {
+        let hour24 = hours;
+        if (period === 'PM' && hours !== 12) {
+          hour24 = hours + 12;
+        } else if (period === 'AM' && hours === 12) {
+          hour24 = 0;
+        }
+        return `${hour24.toString().padStart(2, '0')}:${formData.minutes.toString().padStart(2, '0')}:00`;
+      };
 
-      if (eventDate < today) {
-        newErrors.fechaEvento = 'La fecha no puede ser anterior a hoy';
+      // Validar que la fecha y hora completas sean futuras
+      const eventDateTimeString = `${formData.fechaEvento}T${convertTo24HourForValidation(formData.hours, formData.period)}`;
+      const eventDateTime = new Date(eventDateTimeString);
+      const now = new Date();
+
+      if (eventDateTime <= now) {
+        newErrors.fechaEvento = 'No se pueden crear eventos en el pasado. Para eventos del mismo día, la hora debe ser futura.';
       }
     }
 
@@ -191,14 +203,18 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
 
     setLoading(true);
     try {
+      const normalizedDate = new Date(formData.fechaEvento).toISOString().split('T')[0];
+      const normalizedTime = convertTo24Hour(formData.hours, formData.period);
+      const normalizedDescription = formData.descripcionEvento.trim() || undefined;
       const eventData: IEventoUpdate = {
-        nombre_evento: formData.nombreEvento.trim(),
-        fecha_evento: new Date(formData.fechaEvento).toISOString().split('T')[0], // Enviar como cadena YYYY-MM-DD
-        hora_evento: convertTo24Hour(formData.hours, formData.period), // Convertir a formato HH:MM:00
-        descripcion_evento: formData.descripcionEvento.trim() || undefined,
+        // Use camelCase to match create-event contract and current backend mapper.
+        nombreEvento: formData.nombreEvento.trim(),
+        fechaEvento: normalizedDate,
+        horaEvento: normalizedTime,
+        descripcionEvento: normalizedDescription,
         // Include method and album if selected (for concentration sessions)
-        ...(selectedMethod && { id_metodo: selectedMethod.id_metodo }),
-        ...(selectedAlbum && { id_album: selectedAlbum.id_album }),
+        ...(selectedMethod && { idMetodo: selectedMethod.id_metodo }),
+        ...(selectedAlbum && { idAlbum: selectedAlbum.id_album }),
       };
 
       await onSave(getId(), eventData);

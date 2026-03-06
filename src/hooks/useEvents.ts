@@ -57,7 +57,7 @@ export const useEvents = () => {
     try {
       const updatedEvent = await eventsApi.updateEvent(eventId, updates);
       setEvents(prev => prev.map(event =>
-        event.id_evento === eventId ? updatedEvent : event
+        (event.id_evento ?? event.idEvento) === eventId ? updatedEvent : event
       ));
       return updatedEvent;
     } catch (err) {

@@ -96,6 +96,8 @@ export const EventsPage: React.FC = () => {
   // Manejar guardado de edición de evento
   const handleUpdateEvent = async (eventId: number, eventData: IEventoUpdate) => {
     await updateEvent(eventId, eventData);
+    // Refresh from backend to keep UI in sync with persisted values
+    await fetchEvents();
   };
 
   // Filtrar eventos según el filtro seleccionado
