@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Timer, Headphones, Bell, TrendingUp, Settings, ChevronDown, Play, Pause, SkipBack, SkipForward, CheckCircle, Target, Zap, Brain, Sparkles, Users, Award } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(0);
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -13,13 +11,6 @@ const LandingPage: React.FC = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(false);
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
-
-  // Redirigir a dashboard si el usuario ya está autenticado
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
 
   // Scroll listener para ocultar header
   useEffect(() => {
