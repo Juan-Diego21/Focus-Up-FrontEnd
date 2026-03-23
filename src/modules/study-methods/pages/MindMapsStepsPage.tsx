@@ -1,13 +1,13 @@
-Ôªø/**
- * Componente principal para la ejecuci√≥n del m√©todo Mapas Mentales
- * Gestiona la navegaci√≥n paso a paso y el progreso del usuario
+/**
+ * Componente principal para la ejecuciÛn del mÈtodo Mapas Mentales
+ * Gestiona la navegaciÛn paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
-import { ProgressCircle } from "../../../components/ui/ProgressCircle";
-import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
+import { ProgressCircle } from "@shared/components/ui/ProgressCircle";
+import { LOCAL_METHOD_ASSETS } from "@shared/utils/methodAssets";
 import { Clock as ClockIcon } from "lucide-react";
 import {
   getMindMapsColorByProgress,
@@ -16,8 +16,8 @@ import {
   isValidProgressForCreation,
   isValidProgressForUpdate,
   isValidProgressForResume
-} from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
+} from "@shared/utils/methodStatus";
+import { FinishLaterModal } from "@shared/components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
 import { ensureMethodSession } from "../services/methodSessionService";
 
@@ -30,8 +30,8 @@ interface StudyMethod {
 }
 
 /**
- * Componente que maneja la ejecuci√≥n paso a paso del m√©todo Mapas Mentales
- * Permite al usuario navegar entre los 5 pasos del m√©todo con progreso visual
+ * Componente que maneja la ejecuciÛn paso a paso del mÈtodo Mapas Mentales
+ * Permite al usuario navegar entre los 5 pasos del mÈtodo con progreso visual
  */
 export const MindMapsStepsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -46,9 +46,9 @@ export const MindMapsStepsPage: React.FC = () => {
     return null;
   }
 
-  // Estado para almacenar la informaci√≥n del m√©todo de estudio cargado
+  // Estado para almacenar la informaciÛn del mÈtodo de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
-  // Estado para controlar el paso actual en el flujo del m√©todo (0-4)
+  // Estado para controlar el paso actual en el flujo del mÈtodo (0-4)
   const [currentStep, setCurrentStep] = useState(0);
   // Estado para el porcentaje de progreso visual (20, 40, 60, 80, 100)
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -56,17 +56,17 @@ export const MindMapsStepsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   // Estado para manejar errores de carga o API
   const [error, setError] = useState<string>("");
-  // Estado para datos de la sesi√≥n activa en el backend
+  // Estado para datos de la sesiÛn activa en el backend
   const [sessionData, setSessionData] = useState<{ id: string; methodId: number; id_metodo_realizado: number; startTime: string; progress: number; status: string } | null>(null);
   // Estado para cola de notificaciones/alertas que se muestran al usuario
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
-  // Estado para saber si se est√° reanudando una sesi√≥n existente
+  // Estado para saber si se est· reanudando una sesiÛn existente
   const [isResuming, setIsResuming] = useState(false);
-  // Estado para controlar la visibilidad del modal "Terminar m√°s tarde"
+  // Estado para controlar la visibilidad del modal "Terminar m·s tarde"
   const [showFinishLaterModal, setShowFinishLaterModal] = useState(false);
 
   /**
-   * Funci√≥n pura que convierte el porcentaje de progreso al n√∫mero de paso correspondiente
+   * FunciÛn pura que convierte el porcentaje de progreso al n˙mero de paso correspondiente
    * Mapea: 20%?0, 40%?1, 60%?2, 80%?3, 100%?4
    */
   const getStepFromProgress = (progress: number): number => {
@@ -83,34 +83,34 @@ export const MindMapsStepsPage: React.FC = () => {
     return 4;
   };
 
-  // Pasos del m√©todo Mapas Mentales
+  // Pasos del mÈtodo Mapas Mentales
   const steps = [
     {
       id: 0,
       title: "1. Elige un tema central ",
-      description: "Selecciona el tema principal que quieres estudiar y escr√≠belo en el centro de tu hoja o lienzo digital.",
-      instruction: "Elige un tema espec√≠fico y escribe la palabra o frase principal en el centro de tu mapa.",
+      description: "Selecciona el tema principal que quieres estudiar y escrÌbelo en el centro de tu hoja o lienzo digital.",
+      instruction: "Elige un tema especÌfico y escribe la palabra o frase principal en el centro de tu mapa.",
       hasTimer: false,
     },
     {
       id: 1,
       title: "2. Crea ramas principales ",
-      description: "Dibuja l√≠neas desde el centro hacia afuera para las ideas principales relacionadas con el tema.",
+      description: "Dibuja lÌneas desde el centro hacia afuera para las ideas principales relacionadas con el tema.",
       instruction: "Identifica 3-5 ideas principales y dibuja ramas desde el centro hacia afuera.",
       hasTimer: false,
     },
     {
       id: 2,
-      title: "3. A√±ade colores y s√≠mbolos ",
-      description: "Utiliza colores, s√≠mbolos, dibujos e im√°genes para conectar conceptos y hacer el mapa m√°s memorable.",
-      instruction: "Asigna colores diferentes a cada rama y a√±ade s√≠mbolos o dibujos relacionados con cada idea.",
+      title: "3. AÒade colores y sÌmbolos ",
+      description: "Utiliza colores, sÌmbolos, dibujos e im·genes para conectar conceptos y hacer el mapa m·s memorable.",
+      instruction: "Asigna colores diferentes a cada rama y aÒade sÌmbolos o dibujos relacionados con cada idea.",
       hasTimer: false,
     },
     {
       id: 3,
       title: "4. Revisa y conecta conceptos ",
-      description: "Revisa tu mapa, a√±ade conexiones entre ideas relacionadas y completa cualquier rama faltante.",
-      instruction: "Busca conexiones entre diferentes ramas y a√±ade l√≠neas o flechas para mostrar relaciones.",
+      description: "Revisa tu mapa, aÒade conexiones entre ideas relacionadas y completa cualquier rama faltante.",
+      instruction: "Busca conexiones entre diferentes ramas y aÒade lÌneas o flechas para mostrar relaciones.",
       hasTimer: false,
     },
     {
@@ -122,7 +122,7 @@ export const MindMapsStepsPage: React.FC = () => {
     },
   ];
 
-  // Obtener datos del m√©todo de estudio desde la API
+  // Obtener datos del mÈtodo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -148,7 +148,7 @@ export const MindMapsStepsPage: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del m√©todo");
+          throw new Error("Error al cargar datos del mÈtodo");
         }
 
         const methodData = await response.json();
@@ -162,7 +162,7 @@ export const MindMapsStepsPage: React.FC = () => {
           // Validate progress for resume
           if (!isValidProgressForResume(progress, 'mindmaps')) {
             console.error('Invalid progress value for resume:', progress);
-            setAlertQueue({ type: 'error', message: 'Valor de progreso inv√°lido para reanudar sesi√≥n' });
+            setAlertQueue({ type: 'error', message: 'Valor de progreso inv·lido para reanudar sesiÛn' });
             return;
           }
 
@@ -182,10 +182,10 @@ export const MindMapsStepsPage: React.FC = () => {
           });
 
           // Show resumption message
-          setAlertQueue({ type: 'resumed', message: `Sesi√≥n de ${methodData.titulo || 'Mapas Mentales'} retomada correctamente` });
+          setAlertQueue({ type: 'resumed', message: `SesiÛn de ${methodData.titulo || 'Mapas Mentales'} retomada correctamente` });
         }
       } catch {
-        setError("Error al cargar los datos del m√©todo");
+        setError("Error al cargar los datos del mÈtodo");
       } finally {
         setLoading(false);
       }
@@ -253,15 +253,15 @@ export const MindMapsStepsPage: React.FC = () => {
   }, [methodId]);
 
   /**
-   * Inicia una nueva sesi√≥n en el backend para el m√©todo Mapas Mentales
+   * Inicia una nueva sesiÛn en el backend para el mÈtodo Mapas Mentales
    * Valida el progreso antes de enviar la solicitud y maneja errores
-   * Siempre crea una nueva sesi√≥n desde el flujo de ejecuci√≥n paso a paso
+   * Siempre crea una nueva sesiÛn desde el flujo de ejecuciÛn paso a paso
    */
   const startSession = async () => {
     // Validate progress for creation
     if (!isValidProgressForCreation(20, 'mindmaps')) {
       console.error('Invalid progress value for session creation');
-      setAlertQueue({ type: 'error', message: 'Valor de progreso inv√°lido para este m√©todo' });
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inv·lido para este mÈtodo' });
       return;
     }
 
@@ -303,28 +303,28 @@ export const MindMapsStepsPage: React.FC = () => {
       setAlertQueue({
         type: session.source === 'resumed' ? 'resumed' : 'started',
         message: session.source === 'resumed'
-          ? `Sesi√≥n de ${method?.titulo || 'Mapas Mentales'} reanudada correctamente`
-          : `Sesi√≥n de ${method?.titulo || 'Mapas Mentales'} iniciada correctamente`
+          ? `SesiÛn de ${method?.titulo || 'Mapas Mentales'} reanudada correctamente`
+          : `SesiÛn de ${method?.titulo || 'Mapas Mentales'} iniciada correctamente`
       });
 
       // Trigger reports refresh
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error starting Mind Maps session:', error);
-      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesi√≥n de Mapas Mentales';
+      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesiÛn de Mapas Mentales';
       setAlertQueue({ type: 'error', message: apiMessage });
     }
   };
 
   /**
-   * Actualiza el progreso de la sesi√≥n en el backend
+   * Actualiza el progreso de la sesiÛn en el backend
    * Valida el progreso antes de enviar y maneja sesiones reanudadas
    */
   const updateSessionProgress = async (progress: number, status: string = 'En_proceso'): Promise<boolean> => {
     // Validate progress for update
     if (!isValidProgressForUpdate(progress, 'mindmaps')) {
       console.error('Invalid progress value for update:', progress);
-      setAlertQueue({ type: 'error', message: 'Valor de progreso inv√°lido para este m√©todo' });
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inv·lido para este mÈtodo' });
       return false;
     }
 
@@ -361,7 +361,7 @@ export const MindMapsStepsPage: React.FC = () => {
       return true;
     } catch (error) {
       console.error('Error updating Mind Maps progress:', error);
-      // Se retorna false para que el flujo de finalizaci√≥n pueda reaccionar al fallo.
+      // Se retorna false para que el flujo de finalizaciÛn pueda reaccionar al fallo.
       return false;
     }
   };
@@ -396,7 +396,7 @@ export const MindMapsStepsPage: React.FC = () => {
         });
       } else if (type === 'completion') {
         Swal.fire({
-          title: 'Sesi√≥n guardada',
+          title: 'SesiÛn guardada',
           text: message,
           icon: 'success',
           confirmButtonText: 'OK',
@@ -437,13 +437,13 @@ export const MindMapsStepsPage: React.FC = () => {
   }, [sessionData, progressPercentage, isResuming, urlSessionId]);
 
   /**
-   * Maneja la navegaci√≥n al siguiente paso del m√©todo
-   * Controla la l√≥gica de inicio de sesi√≥n y actualizaci√≥n de progreso
-   * Solo crea una nueva sesi√≥n cuando no se est√° reanudando una existente
+   * Maneja la navegaciÛn al siguiente paso del mÈtodo
+   * Controla la lÛgica de inicio de sesiÛn y actualizaciÛn de progreso
+   * Solo crea una nueva sesiÛn cuando no se est· reanudando una existente
    */
   const nextStep = async () => {
     if (currentStep === 0 && !isResuming && !sessionData) {
-      // Crear una nueva sesi√≥n solo si no se est√° reanudando una existente y no hay sesi√≥n activa
+      // Crear una nueva sesiÛn solo si no se est· reanudando una existente y no hay sesiÛn activa
       await startSession();
       const hasActiveMethod = Boolean(localStorage.getItem('activeMethodId') || sessionData?.id_metodo_realizado);
       if (!hasActiveMethod) {
@@ -465,7 +465,7 @@ export const MindMapsStepsPage: React.FC = () => {
   };
 
   /**
-   * Maneja la navegaci√≥n al paso anterior del m√©todo
+   * Maneja la navegaciÛn al paso anterior del mÈtodo
    * Actualiza el progreso correspondiente al paso anterior
    */
   const prevStep = () => {
@@ -483,9 +483,9 @@ export const MindMapsStepsPage: React.FC = () => {
     }
   };
 
-  // Finalizar m√©todo
+  // Finalizar mÈtodo
   const finishMethod = async () => {
-    // Se usa el estado de finalizaci√≥n can√≥nico para evitar inconsistencias entre m√©todos.
+    // Se usa el estado de finalizaciÛn canÛnico para evitar inconsistencias entre mÈtodos.
     const completionStatus = getMindMapsStatusByProgress(100);
     setProgressPercentage(100);
     let isUpdated = await updateSessionProgress(100, completionStatus);
@@ -496,7 +496,7 @@ export const MindMapsStepsPage: React.FC = () => {
     }
 
     if (!isUpdated) {
-      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del m√©todo. Intenta nuevamente.' });
+      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del mÈtodo. Intenta nuevamente.' });
       return;
     }
 
@@ -506,7 +506,7 @@ export const MindMapsStepsPage: React.FC = () => {
     // Queue completion notification
     setAlertQueue({
       type: 'completion',
-      message: `Sesi√≥n de ${method?.titulo || 'Mapas Mentales'} guardada`
+      message: `SesiÛn de ${method?.titulo || 'Mapas Mentales'} guardada`
     });
   };
 
@@ -516,7 +516,7 @@ export const MindMapsStepsPage: React.FC = () => {
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Cargando m√©todo...</p>
+          <p className="text-white text-lg">Cargando mÈtodo...</p>
         </div>
       </div>
     );
@@ -533,20 +533,20 @@ export const MindMapsStepsPage: React.FC = () => {
             onClick={() => navigate("/study-methods")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
-            Volver a m√©todos
+            Volver a mÈtodos
           </button>
         </div>
       </div>
     );
   }
 
-  // Usar √∫nicamente colores locales del sistema de assets
+  // Usar ˙nicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS['Mapas Mentales'];
   const methodColor = localAssets?.color || "#10b981";
-  // Asegurar que currentStep est√© dentro de los l√≠mites v√°lidos para prevenir errores de acceso a array
+  // Asegurar que currentStep estÈ dentro de los lÌmites v·lidos para prevenir errores de acceso a array
   const clampedCurrentStep = Math.min(Math.max(currentStep, 0), steps.length - 1);
   const currentStepData = steps[clampedCurrentStep];
-  // Se usa un criterio √∫nico para evitar que el bot√≥n desaparezca en algunos flujos.
+  // Se usa un criterio ˙nico para evitar que el botÛn desaparezca en algunos flujos.
   const canShowFinishLater = Boolean((sessionData || (isResuming && urlSessionId)) && progressPercentage >= 20 && progressPercentage < 100);
 
 
@@ -557,7 +557,7 @@ export const MindMapsStepsPage: React.FC = () => {
         <button
           onClick={() => navigate(`/mind-maps/intro/${methodId}`)}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform focus:outline-none"
-          aria-label="Volver atr√°s"
+          aria-label="Volver atr·s"
         >
           <svg
             className="w-7 h-7 text-white"
@@ -579,15 +579,15 @@ export const MindMapsStepsPage: React.FC = () => {
         >
           {method.titulo}
         </h1>
-        {/* Bot√≥n "Terminar m√°s tarde" solo visible despu√©s de pasar el paso 2 (pasos seguros para guardar) y si no est√° completado */}
+        {/* BotÛn "Terminar m·s tarde" solo visible despuÈs de pasar el paso 2 (pasos seguros para guardar) y si no est· completado */}
         {canShowFinishLater && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-            aria-label="Terminar m√°s tarde"
+            aria-label="Terminar m·s tarde"
           >
             <ClockIcon className="w-4 h-4" />
-            Terminar m√°s tarde
+            Terminar m·s tarde
           </button>
         )}
       </header>
@@ -622,7 +622,7 @@ export const MindMapsStepsPage: React.FC = () => {
           </h2>
           <p className="text-gray-300 mb-3">{currentStepData.description}</p>
 
-          {/* Instrucci√≥n espec√≠fica */}
+          {/* InstrucciÛn especÌfica */}
           <div className="bg-[#1a1a1a]/50 p-3 rounded-lg mb-4">
             <p className="text-gray-400 text-sm italic">{currentStepData.instruction}</p>
           </div>
@@ -630,7 +630,7 @@ export const MindMapsStepsPage: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 2 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Usa colores para categorizar informaci√≥n. Por ejemplo: azul para conceptos, verde para ejemplos, rojo para ideas importantes.
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Usa colores para categorizar informaciÛn. Por ejemplo: azul para conceptos, verde para ejemplos, rojo para ideas importantes.
               </p>
             </div>
           )}
@@ -643,7 +643,7 @@ export const MindMapsStepsPage: React.FC = () => {
           )}
         </div>
 
-        {/* Navegaci√≥n entre pasos */}
+        {/* NavegaciÛn entre pasos */}
         <div className="flex justify-between items-center">
           <button
             onClick={prevStep}
@@ -681,7 +681,7 @@ export const MindMapsStepsPage: React.FC = () => {
                 boxShadow: `0 10px 15px -3px #22C55E30, 0 4px 6px -2px #22C55E20`,
               }}
             >
-              Terminar m√©todo
+              Terminar mÈtodo
             </button>
           ) : (
             <button
@@ -712,7 +712,7 @@ export const MindMapsStepsPage: React.FC = () => {
         {/* Recordatorio final */}
         <div className="text-center mt-8">
           <div className="bg-[#232323]/90 p-4 rounded-xl border" style={{ borderColor: `${methodColor}20` }}>
-            <p className="text-gray-300 text-sm leading-relaxed"><strong>Recuerda:</strong> Crear el mapa mental manualmente mejora significativamente la retenci√≥n de informaci√≥n.
+            <p className="text-gray-300 text-sm leading-relaxed"><strong>Recuerda:</strong> Crear el mapa mental manualmente mejora significativamente la retenciÛn de informaciÛn.
               El proceso de dibujar y organizar ideas fortalece las conexiones neuronales en tu cerebro.
             </p>
           </div>
@@ -737,6 +737,7 @@ export const MindMapsStepsPage: React.FC = () => {
 };
 
 export default MindMapsStepsPage;
+
 
 
 

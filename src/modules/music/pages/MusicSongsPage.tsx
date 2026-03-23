@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Sidebar } from '../../../components/ui/Sidebar';
-import { MusicPlayer } from '../../../components/ui/MusicPlayer';
-import { getSongsByAlbumId, getAlbumById } from '../../../utils/musicApi';
-import { useMusicPlayer } from '../../../contexts/MusicPlayerContext';
-import { getAlbumImage, formatDuration, getArtistName, preloadSongDurations } from '../../../utils/musicUtils';
+import { Sidebar } from '@shared/components/ui/Sidebar';
+import { MusicPlayer } from '@shared/components/ui/MusicPlayer';
+import { getSongsByAlbumId, getAlbumById } from '@shared/services/musicApi';
+import { useMusicPlayer } from '@shared/contexts/MusicPlayerContext';
+import { getAlbumImage, formatDuration, getArtistName, preloadSongDurations } from '@shared/utils/musicUtils';
 import type { Song, Album } from '../../../types/api';
 import { PlayIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 
@@ -336,3 +336,4 @@ export const MusicSongsPage: React.FC = () => {
     </div>
   );
 };
+

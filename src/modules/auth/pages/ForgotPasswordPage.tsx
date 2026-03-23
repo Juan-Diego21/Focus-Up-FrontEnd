@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Mail } from "lucide-react";
-import { apiClient } from "../../../shared/services/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -105,3 +105,5 @@ export const ForgotPasswordPage: React.FC = () => {
   );
 };
 export default ForgotPasswordPage;
+
+

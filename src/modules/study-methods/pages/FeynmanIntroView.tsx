@@ -1,8 +1,8 @@
-Ôªøimport React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
-import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
+import { LOCAL_METHOD_ASSETS } from "@shared/utils/methodAssets";
 import { BookOpen, MessageSquare, Search, Lightbulb } from 'lucide-react';
 
 interface StudyMethod {
@@ -25,7 +25,7 @@ export const FeynmanIntroView: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Obtener datos del m√©todo de estudio desde la API
+  // Obtener datos del mÈtodo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -51,14 +51,14 @@ export const FeynmanIntroView: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del m√©todo");
+          throw new Error("Error al cargar datos del mÈtodo");
         }
 
         const methodData = await response.json();
         const method = methodData.data || methodData;
         setMethod(method);
       } catch {
-        setError("Error al cargar los datos del m√©todo");
+        setError("Error al cargar los datos del mÈtodo");
       } finally {
         setLoading(false);
       }
@@ -85,8 +85,8 @@ export const FeynmanIntroView: React.FC = () => {
               <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
 
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando m√©todo...</h2>
-            <p className="text-gray-400">Preparando el m√©todo Feynman</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando mÈtodo...</h2>
+            <p className="text-gray-400">Preparando el mÈtodo Feynman</p>
           </div>
         </div>
       </div>
@@ -106,7 +106,7 @@ export const FeynmanIntroView: React.FC = () => {
           <div className="text-center max-w-md mx-auto">
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
-                <span className="text-4xl">‚ö†Ô∏è</span>
+                <span className="text-4xl">??</span>
               </div>
               <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
                 <span className="text-white text-xs">!</span>
@@ -121,7 +121,7 @@ export const FeynmanIntroView: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Volver a m√©todos
+              Volver a mÈtodos
             </button>
           </div>
         </div>
@@ -129,12 +129,12 @@ export const FeynmanIntroView: React.FC = () => {
     );
   }
 
-  // Usar √∫nicamente colores locales del sistema de assets
+  // Usar ˙nicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || "#FFD54F";
   const methodImage = localAssets?.image;
 
-  // Manejar inicio del m√©todo
+  // Manejar inicio del mÈtodo
   const handleStartMethod = () => {
     navigate(`/feynman/steps/${methodId}`);
   };
@@ -153,7 +153,7 @@ export const FeynmanIntroView: React.FC = () => {
         <button
           onClick={() => navigate("/study-methods")}
           className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-yellow-500/25"
-          aria-label="Volver atr√°s"
+          aria-label="Volver atr·s"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -171,7 +171,7 @@ export const FeynmanIntroView: React.FC = () => {
         </button>
         <div className="flex-1 text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-yellow-100 to-amber-100 bg-clip-text text-transparent">
-            M√©todo Feynman
+            MÈtodo Feynman
           </h1>
         </div>
         <div className="w-12"></div>
@@ -187,7 +187,7 @@ export const FeynmanIntroView: React.FC = () => {
           <div className="relative text-center">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 backdrop-blur-md rounded-full border border-yellow-500/30 mb-8">
               <Lightbulb className="w-6 h-6 text-yellow-400" />
-              <span className="text-yellow-300 text-sm font-medium">M√©todo Feynman</span>
+              <span className="text-yellow-300 text-sm font-medium">MÈtodo Feynman</span>
             </div>
 
             <div className="mb-8 flex justify-center">
@@ -209,7 +209,7 @@ export const FeynmanIntroView: React.FC = () => {
                         if (parent && !parent.querySelector(".fallback-emoji")) {
                           const emoji = document.createElement("span");
                           emoji.className = "fallback-emoji text-6xl md:text-8xl";
-                          emoji.textContent = "üéì";
+                          emoji.textContent = "??";
                           parent.appendChild(emoji);
                         }
                       }}
@@ -218,24 +218,24 @@ export const FeynmanIntroView: React.FC = () => {
                 </>
               ) : (
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20 backdrop-blur-md flex items-center justify-center border border-yellow-500/30 shadow-2xl">
-                  <span className="text-6xl md:text-8xl">üéì</span>
+                  <span className="text-6xl md:text-8xl">??</span>
                 </div>
               )}
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-yellow-100 to-amber-100 bg-clip-text text-transparent mb-6 leading-tight">
-              Aprende Ense√±ando
+              Aprende EnseÒando
             </h2>
 
             <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
-              Explica conceptos complejos en t√©rminos simples para identificar lagunas
-              en tu comprensi√≥n y fortalecer tu conocimiento de manera profunda.
+              Explica conceptos complejos en tÈrminos simples para identificar lagunas
+              en tu comprensiÛn y fortalecer tu conocimiento de manera profunda.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 text-yellow-300 rounded-full border border-yellow-500/20">
                 <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                Comprensi√≥n Profunda
+                ComprensiÛn Profunda
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-300 rounded-full border border-amber-500/20">
                 <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
@@ -243,7 +243,7 @@ export const FeynmanIntroView: React.FC = () => {
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-300 rounded-full border border-orange-500/20">
                 <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
-                Conocimiento S√≥lido
+                Conocimiento SÛlido
               </div>
             </div>
           </div>
@@ -253,10 +253,10 @@ export const FeynmanIntroView: React.FC = () => {
         <div className="space-y-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              ¬øC√≥mo Funciona el M√©todo?
+              øCÛmo Funciona el MÈtodo?
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Una t√©cnica revolucionaria que transforma c√≥mo aprendes y comprendes
+              Una tÈcnica revolucionaria que transforma cÛmo aprendes y comprendes
             </p>
           </div>
 
@@ -273,8 +273,8 @@ export const FeynmanIntroView: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Selecciona un concepto que quieres aprender y est√∫dialo a fondo
-                    desde fuentes confiables para tener una base s√≥lida.
+                    Selecciona un concepto que quieres aprender y est˙dialo a fondo
+                    desde fuentes confiables para tener una base sÛlida.
                   </p>
                 </div>
               </div>
@@ -288,12 +288,12 @@ export const FeynmanIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-amber-400 to-amber-500 bg-clip-text text-transparent">
-                      2. Ense√±arlo en palabras simples
+                      2. EnseÒarlo en palabras simples
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Explica el concepto como si lo ense√±aras a alguien que no sabe nada
-                    sobre el tema. Usa lenguaje simple y analog√≠as poderosas.
+                    Explica el concepto como si lo enseÒaras a alguien que no sabe nada
+                    sobre el tema. Usa lenguaje simple y analogÌas poderosas.
                   </p>
                 </div>
               </div>
@@ -311,8 +311,8 @@ export const FeynmanIntroView: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Revisa tu explicaci√≥n e identifica √°reas donde tuviste dificultades
-                    o usaste t√©rminos complejos. Regresa y aclara estas lagunas.
+                    Revisa tu explicaciÛn e identifica ·reas donde tuviste dificultades
+                    o usaste tÈrminos complejos. Regresa y aclara estas lagunas.
                   </p>
                 </div>
               </div>
@@ -326,11 +326,11 @@ export const FeynmanIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">
-                      4. Simplificar y crear analog√≠as
+                      4. Simplificar y crear analogÌas
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Simplifica a√∫n m√°s tu explicaci√≥n y crea analog√≠as poderosas
+                    Simplifica a˙n m·s tu explicaciÛn y crea analogÌas poderosas
                     que hagan cristalino el concepto para ti y otros.
                   </p>
                 </div>
@@ -344,10 +344,10 @@ export const FeynmanIntroView: React.FC = () => {
           <div className="space-y-8">
             <div className="text-center">
               <h3 className="text-3xl font-bold text-white mb-4">
-                Beneficios del M√©todo
+                Beneficios del MÈtodo
               </h3>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Descubre c√≥mo esta t√©cnica revolucionaria transforma tu aprendizaje
+                Descubre cÛmo esta tÈcnica revolucionaria transforma tu aprendizaje
               </p>
             </div>
 
@@ -381,7 +381,7 @@ export const FeynmanIntroView: React.FC = () => {
               boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
             }}
           >
-            <span>Comenzar M√©todo Feynman</span>
+            <span>Comenzar MÈtodo Feynman</span>
             <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -393,6 +393,7 @@ export const FeynmanIntroView: React.FC = () => {
 };
 
 export default FeynmanIntroView;
+
 
 
 

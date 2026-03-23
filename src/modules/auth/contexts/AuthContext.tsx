@@ -1,28 +1,21 @@
-// Contexto de autenticación para manejar el estado del usuario
 import React, { createContext, useContext, useState, useEffect } from "react";
-import type { IUser, ILoginRequest, IRegisterRequest } from "../../../types/domain/auth";
-import { apiClient } from "../../../shared/services/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
-
-// Tipo de respuesta de autenticación
-interface AuthResponse {
-  success: boolean;
-  message: string;
-  token: string;
-  userId: number;
-  username: string;
-  user: IUser;
-  timestamp: string;
-}
+import type {
+  User,
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+} from "../../../types/user";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
 
 interface AuthContextType {
-  user: IUser | null;
+  user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (credentials: ILoginRequest) => Promise<{ isFirstLogin: boolean }>;
-  register: (userData: IRegisterRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<{ isFirstLogin: boolean }>;
+  register: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
-  updateUser: (userData: Partial<IUser>) => void;
+  updateUser: (userData: Partial<User>) => void;
   loading: boolean;
   showFirstLoginModal: boolean;
   setShowFirstLoginModal: (show: boolean) => void;
@@ -35,7 +28,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<IUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );
@@ -53,7 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Intentar restaurar datos de usuario desde localStorage
         if (storedUserData) {
           try {
-            const parsedUserData = JSON.parse(storedUserData) as IUser;
+            const parsedUserData = JSON.parse(storedUserData) as User;
             // Validar que el usuario tenga ID válido
             if (parsedUserData && parsedUserData.id_usuario) {
               setUser(parsedUserData);
@@ -88,14 +81,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [token]);
 
   // Función para iniciar sesión del usuario
-  const login = async (credentials: ILoginRequest): Promise<{ isFirstLogin: boolean }> => {
+  const login = async (credentials: LoginRequest): Promise<{ isFirstLogin: boolean }> => {
     try {
       // Transformar credenciales para coincidir con expectativas del backend
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.identifier);
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.correo);
 
       const payload = isEmail
-        ? { correo: credentials.identifier, contrasena: credentials.password }
-        : { nombre_usuario: credentials.identifier, contrasena: credentials.password };
+        ? { correo: credentials.correo, contrasena: credentials.password }
+        : { nombre_usuario: credentials.correo, contrasena: credentials.password };
 
       const response = await apiClient.post(API_ENDPOINTS.LOGIN, payload) as AuthResponse;
 
@@ -132,14 +125,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Función para registrar un nuevo usuario
-  const register = async (userData: IRegisterRequest): Promise<void> => {
+  const register = async (userData: RegisterRequest): Promise<void> => {
     try {
       // Transformar datos para coincidir con expectativas del backend
       const payload = {
         nombre_usuario: userData.nombre_usuario,
         correo: userData.correo,
-        contrasena: userData.contrasena,
-        fecha_nacimiento: userData.fecha_nacimiento?.toISOString().split('T')[0], // YYYY-MM-DD
+        contrasena: userData.password,
+        fecha_nacimiento: userData.fecha_nacimiento.toISOString().split('T')[0], // YYYY-MM-DD
         pais: userData.pais || undefined,
         genero: userData.genero || undefined,
       };
@@ -165,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Función para actualizar datos del usuario
-  const updateUser = (userData: Partial<IUser>): void => {
+  const updateUser = (userData: Partial<User>): void => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
@@ -187,7 +180,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Nota: No podemos usar el sessionService aquí porque requiere el contexto de sesión
             // La sesión se mantendrá en estado "pending" y podrá reanudarse después del login
           }
-        } catch (sessionError) {
+        } catch {
           // Se eliminó console.warn para mantener código limpio en producción
         }
       }
@@ -208,7 +201,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         await Promise.race([logoutPromise, timeoutPromise]);
       }
-    } catch (error) {
+    } catch {
       // En caso de error (token expirado o inválido), continuar con el logout local
       // Se eliminó console.warn para mantener código limpio en producción
     } finally {
@@ -249,3 +242,4 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+

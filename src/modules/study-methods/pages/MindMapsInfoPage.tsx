@@ -1,8 +1,8 @@
-Ôªøimport React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
-import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
+import { LOCAL_METHOD_ASSETS } from "@shared/utils/methodAssets";
 import { Target, Sprout, Palette, Monitor, PenTool, Map } from 'lucide-react';
 
 interface StudyMethod {
@@ -25,7 +25,7 @@ export const MindMapsInfoPage: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Obtener datos del m√©todo de estudio desde la API
+  // Obtener datos del mÈtodo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -51,13 +51,13 @@ export const MindMapsInfoPage: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del m√©todo");
+          throw new Error("Error al cargar datos del mÈtodo");
         }
 
         const methodData = await response.json();
         setMethod(methodData.data || methodData);
       } catch {
-        setError("Error al cargar los datos del m√©todo");
+        setError("Error al cargar los datos del mÈtodo");
       } finally {
         setLoading(false);
       }
@@ -83,7 +83,7 @@ export const MindMapsInfoPage: React.FC = () => {
             <div className="relative mb-8">
               <div className="w-12 h-12 border-4 border-green-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando m√©todo...</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando mÈtodo...</h2>
             <p className="text-gray-400">Preparando mapas mentales</p>
           </div>
         </div>
@@ -104,7 +104,7 @@ export const MindMapsInfoPage: React.FC = () => {
           <div className="text-center max-w-md mx-auto">
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
-                <span className="text-4xl">‚ö†Ô∏è</span>
+                <span className="text-4xl">??</span>
               </div>
               <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
                 <span className="text-white text-xs">!</span>
@@ -119,7 +119,7 @@ export const MindMapsInfoPage: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Volver a m√©todos
+              Volver a mÈtodos
             </button>
           </div>
         </div>
@@ -127,7 +127,7 @@ export const MindMapsInfoPage: React.FC = () => {
     );
   }
 
-  // Usar √∫nicamente colores locales del sistema de assets
+  // Usar ˙nicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || "#10b981";
   const methodImage = localAssets?.image;
@@ -146,7 +146,7 @@ export const MindMapsInfoPage: React.FC = () => {
         <button
           onClick={() => navigate("/study-methods")}
           className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-green-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-green-500/25"
-          aria-label="Volver atr√°s"
+          aria-label="Volver atr·s"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -202,7 +202,7 @@ export const MindMapsInfoPage: React.FC = () => {
                         if (parent && !parent.querySelector(".fallback-emoji")) {
                           const emoji = document.createElement("span");
                           emoji.className = "fallback-emoji text-6xl md:text-8xl";
-                          emoji.textContent = "üó∫Ô∏è";
+                          emoji.textContent = "???";
                           parent.appendChild(emoji);
                         }
                       }}
@@ -211,7 +211,7 @@ export const MindMapsInfoPage: React.FC = () => {
                 </>
               ) : (
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md flex items-center justify-center border border-green-500/30 shadow-2xl">
-                  <span className="text-6xl md:text-8xl">üó∫Ô∏è</span>
+                  <span className="text-6xl md:text-8xl">???</span>
                 </div>
               )}
             </div>
@@ -226,13 +226,13 @@ export const MindMapsInfoPage: React.FC = () => {
 
             <div className="inline-flex items-center gap-2 px-6 py-3 bg-green-500/10 text-green-300 rounded-full border border-green-500/20 mb-8">
               <Target className="w-5 h-5" />
-              <span className="font-medium">Objetivo: organizar visualmente la informaci√≥n para fortalecer la comprensi√≥n y retenci√≥n del conocimiento</span>
+              <span className="font-medium">Objetivo: organizar visualmente la informaciÛn para fortalecer la comprensiÛn y retenciÛn del conocimiento</span>
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-300 rounded-full border border-green-500/20">
                 <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                Organizaci√≥n Visual
+                OrganizaciÛn Visual
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-300 rounded-full border border-emerald-500/20">
                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -250,10 +250,10 @@ export const MindMapsInfoPage: React.FC = () => {
         <div className="space-y-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              ¬øC√≥mo Crear un Mapa Mental?
+              øCÛmo Crear un Mapa Mental?
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Una gu√≠a paso a paso para organizar tus ideas de manera visual y efectiva
+              Una guÌa paso a paso para organizar tus ideas de manera visual y efectiva
             </p>
           </div>
 
@@ -270,8 +270,8 @@ export const MindMapsInfoPage: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Selecciona el tema principal que quieres estudiar y escr√≠belo en el centro
-                    de tu hoja o lienzo digital. Este ser√° el punto de partida de tu mapa mental.
+                    Selecciona el tema principal que quieres estudiar y escrÌbelo en el centro
+                    de tu hoja o lienzo digital. Este ser· el punto de partida de tu mapa mental.
                   </p>
                 </div>
               </div>
@@ -289,8 +289,8 @@ export const MindMapsInfoPage: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Dibuja l√≠neas desde el centro hacia afuera para las ideas principales
-                    relacionadas con el tema. Cada rama representa una categor√≠a importante.
+                    Dibuja lÌneas desde el centro hacia afuera para las ideas principales
+                    relacionadas con el tema. Cada rama representa una categorÌa importante.
                   </p>
                 </div>
               </div>
@@ -304,12 +304,12 @@ export const MindMapsInfoPage: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-teal-400 to-teal-500 bg-clip-text text-transparent">
-                      3. A√±ade colores y s√≠mbolos
+                      3. AÒade colores y sÌmbolos
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Utiliza colores, s√≠mbolos, dibujos e im√°genes para conectar conceptos
-                    y hacer el mapa m√°s memorable. Los colores mejoran la retenci√≥n visual.
+                    Utiliza colores, sÌmbolos, dibujos e im·genes para conectar conceptos
+                    y hacer el mapa m·s memorable. Los colores mejoran la retenciÛn visual.
                   </p>
                 </div>
               </div>
@@ -342,11 +342,11 @@ export const MindMapsInfoPage: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-lime-400 to-lime-500 bg-clip-text text-transparent">
-                      5. ¬°Hazlo t√∫ mismo!
+                      5. °Hazlo t˙ mismo!
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Crear el mapa mental manualmente mejora significativamente la retenci√≥n.
+                    Crear el mapa mental manualmente mejora significativamente la retenciÛn.
                     El proceso de dibujar y organizar ideas fortalece las conexiones neuronales.
                   </p>
                 </div>
@@ -363,7 +363,7 @@ export const MindMapsInfoPage: React.FC = () => {
                 Beneficios de los Mapas Mentales
               </h3>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Descubre c√≥mo esta t√©cnica visual revoluciona tu forma de aprender
+                Descubre cÛmo esta tÈcnica visual revoluciona tu forma de aprender
               </p>
             </div>
 
@@ -410,6 +410,7 @@ export const MindMapsInfoPage: React.FC = () => {
 };
 
 export default MindMapsInfoPage;
+
 
 
 

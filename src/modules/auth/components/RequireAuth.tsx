@@ -1,12 +1,12 @@
-// Componente que requiere autenticación para acceder al contenido
 import React from "react";
-import { useAuth } from "../../../contexts/AuthContext";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
+import { useAuth } from "../hooks/useAuth";
+import { LoadingSpinner } from "@shared/components/ui/LoadingSpinner";
 
 interface RequireAuthProps {
   children: React.ReactNode;
 }
 
+// Componente que requiere autenticación para acceder al contenido
 export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 

@@ -11,7 +11,7 @@
  * interrumpirse por problemas de conectividad.
  */
 
-import { sessionService } from '../../services/sessionService';
+import { sessionService } from '../services/sessionService';
 
 // Claves para localStorage
 const OFFLINE_QUEUE_KEY = 'focusup-offline-queue';

@@ -1,5 +1,5 @@
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
 
 type SessionSource = "created" | "resumed";
 
@@ -164,4 +164,5 @@ export const ensureMethodSession = async (
 
   throw new Error(lastErrorMessage);
 };
+
 

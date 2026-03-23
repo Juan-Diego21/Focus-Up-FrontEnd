@@ -13,19 +13,19 @@ import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { PlayIcon, ChevronDownIcon, XMarkIcon, BookOpenIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
-import { useConcentrationSession } from '../../../providers/ConcentrationSessionProvider';
-import { sessionService } from '../../../services/sessionService';
-import { mapServerSession } from '../../../utils/sessionMappers';
-import { useMusicPlayer } from '../../../contexts/MusicPlayerContext';
-import { replaceIfSessionAlbum } from '../../../services/audioService';
-import { getMethodType } from '../../../utils/methodStatus';
-import { getSongsByAlbumId } from '../../../utils/musicApi';
-import { MethodSelectionModal } from '../../../components/MethodSelectionModal';
-import { AlbumSelectionModal } from '../../../components/AlbumSelectionModal';
-import { LOCAL_METHOD_ASSETS, overrideMethodWithLocalAssets } from '../../../utils/methodAssets';
-import { CountdownOverlay } from '@components/ui/CountdownOverlay';
-import { PageLayout } from '@components/ui/PageLayout';
-import { Sidebar } from '../../../components/ui/Sidebar';
+import { useConcentrationSession } from '@shared/providers/ConcentrationSessionProvider';
+import { sessionService } from '@shared/services/sessionService';
+import { mapServerSession } from '@shared/utils/sessionMappers';
+import { useMusicPlayer } from '@shared/contexts/MusicPlayerContext';
+import { replaceIfSessionAlbum } from '@shared/services/audioService';
+import { getMethodType } from '@shared/utils/methodStatus';
+import { getSongsByAlbumId } from '@shared/services/musicApi';
+import { MethodSelectionModal } from '@shared/components/MethodSelectionModal';
+import { AlbumSelectionModal } from '@shared/components/AlbumSelectionModal';
+import { LOCAL_METHOD_ASSETS, overrideMethodWithLocalAssets } from '@shared/utils/methodAssets';
+import { CountdownOverlay } from '@shared/components/ui/CountdownOverlay';
+import { PageLayout } from '@shared/components/ui/PageLayout';
+import { Sidebar } from '@shared/components/ui/Sidebar';
 import type { SessionCreateDto, SessionDto, Song } from '../../../types/api';
 
 /**
@@ -929,3 +929,4 @@ export const StartSession: React.FC = () => {
 };
 
 export default StartSession;
+

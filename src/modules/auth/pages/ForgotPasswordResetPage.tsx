@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { apiClient } from "../../../shared/services/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
 import Swal from "sweetalert2";
 
 export const ForgotPasswordResetPage: React.FC = () => {
@@ -193,3 +193,5 @@ export const ForgotPasswordResetPage: React.FC = () => {
 };
 
 export default ForgotPasswordResetPage;
+
+

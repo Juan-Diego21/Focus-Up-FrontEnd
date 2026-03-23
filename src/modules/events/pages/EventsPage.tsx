@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, CalendarIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sidebar } from '../../../components/ui/Sidebar';
-import { EventCard } from '../../../components/ui/EventCard';
+import { Sidebar } from '@shared/components/ui/Sidebar';
+import { EventCard } from '@shared/components/ui/EventCard';
 import { CreateEventModal } from './CreateEventModal';
 import { EditEventModal } from './EditEventModal';
-import { useEvents } from '../../../hooks/useEvents';
-import { eventsApi } from '../../../utils/eventsApi';
+import { useEvents } from '@shared/hooks/useEvents';
+import { eventsApi } from '@shared/services/eventsApi';
 import type { IEvento, IEventoCreate, IEventoUpdate } from '../../../types/events';
 import Swal from 'sweetalert2';
 
@@ -435,3 +435,4 @@ export const EventsPage: React.FC = () => {
 };
 
 export default EventsPage;
+

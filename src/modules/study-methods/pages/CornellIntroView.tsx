@@ -1,8 +1,8 @@
-Ôªøimport React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
-import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
+import { LOCAL_METHOD_ASSETS } from "@shared/utils/methodAssets";
 import { CheckCircle, BookOpen, PenTool, FileText } from 'lucide-react';
 
 interface StudyMethod {
@@ -25,7 +25,7 @@ export const CornellIntroView: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Obtener datos del m√©todo de estudio desde la API
+  // Obtener datos del mÈtodo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -51,14 +51,14 @@ export const CornellIntroView: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del m√©todo");
+          throw new Error("Error al cargar datos del mÈtodo");
         }
 
         const methodData = await response.json();
         const method = methodData.data || methodData;
         setMethod(method);
       } catch {
-        setError("Error al cargar los datos del m√©todo");
+        setError("Error al cargar los datos del mÈtodo");
       } finally {
         setLoading(false);
       }
@@ -85,8 +85,8 @@ export const CornellIntroView: React.FC = () => {
               <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
 
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando m√©todo...</h2>
-            <p className="text-gray-400">Preparando el m√©todo Cornell</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando mÈtodo...</h2>
+            <p className="text-gray-400">Preparando el mÈtodo Cornell</p>
           </div>
         </div>
       </div>
@@ -106,7 +106,7 @@ export const CornellIntroView: React.FC = () => {
           <div className="text-center max-w-md mx-auto">
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
-                <span className="text-4xl">‚ö†Ô∏è</span>
+                <span className="text-4xl">??</span>
               </div>
               <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
                 <span className="text-white text-xs">!</span>
@@ -121,7 +121,7 @@ export const CornellIntroView: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Volver a m√©todos
+              Volver a mÈtodos
             </button>
           </div>
         </div>
@@ -129,12 +129,12 @@ export const CornellIntroView: React.FC = () => {
     );
   }
 
-  // Usar √∫nicamente colores locales del sistema de assets
+  // Usar ˙nicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || "#3B82F6";
   const methodImage = localAssets?.image;
 
-  // Manejar inicio del m√©todo
+  // Manejar inicio del mÈtodo
   const handleStartMethod = () => {
     navigate(`/cornell/steps/${methodId}`);
   };
@@ -153,7 +153,7 @@ export const CornellIntroView: React.FC = () => {
         <button
           onClick={() => navigate("/study-methods")}
           className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-blue-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-blue-500/25"
-          aria-label="Volver atr√°s"
+          aria-label="Volver atr·s"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -171,7 +171,7 @@ export const CornellIntroView: React.FC = () => {
         </button>
         <div className="flex-1 text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-blue-100 to-indigo-100 bg-clip-text text-transparent">
-            M√©todo Cornell
+            MÈtodo Cornell
           </h1>
         </div>
         <div className="w-12"></div>
@@ -187,7 +187,7 @@ export const CornellIntroView: React.FC = () => {
           <div className="relative text-center">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 backdrop-blur-md rounded-full border border-blue-500/30 mb-8">
               <PenTool className="w-6 h-6 text-blue-400" />
-              <span className="text-blue-300 text-sm font-medium">M√©todo Cornell</span>
+              <span className="text-blue-300 text-sm font-medium">MÈtodo Cornell</span>
             </div>
 
             <div className="mb-8 flex justify-center">
@@ -209,7 +209,7 @@ export const CornellIntroView: React.FC = () => {
                         if (parent && !parent.querySelector(".fallback-emoji")) {
                           const emoji = document.createElement("span");
                           emoji.className = "fallback-emoji text-6xl md:text-8xl";
-                          emoji.textContent = "üìù";
+                          emoji.textContent = "??";
                           parent.appendChild(emoji);
                         }
                       }}
@@ -218,7 +218,7 @@ export const CornellIntroView: React.FC = () => {
                 </>
               ) : (
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-md flex items-center justify-center border border-blue-500/30 shadow-2xl">
-                  <span className="text-6xl md:text-8xl">üìù</span>
+                  <span className="text-6xl md:text-8xl">??</span>
                 </div>
               )}
             </div>
@@ -228,8 +228,8 @@ export const CornellIntroView: React.FC = () => {
             </h2>
 
             <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
-              Organiza tus notas en secciones estructuradas para mejorar la comprensi√≥n
-              y la retenci√≥n de informaci√≥n de manera efectiva.
+              Organiza tus notas en secciones estructuradas para mejorar la comprensiÛn
+              y la retenciÛn de informaciÛn de manera efectiva.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
@@ -239,11 +239,11 @@ export const CornellIntroView: React.FC = () => {
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20">
                 <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
-                Mejor Organizaci√≥n
+                Mejor OrganizaciÛn
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-300 rounded-full border border-purple-500/20">
                 <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
-                Revisi√≥n Eficaz
+                RevisiÛn Eficaz
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@ export const CornellIntroView: React.FC = () => {
         <div className="space-y-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              ¬øC√≥mo Funciona el M√©todo?
+              øCÛmo Funciona el MÈtodo?
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               Un sistema probado para organizar y revisar tus notas de estudio
@@ -273,7 +273,7 @@ export const CornellIntroView: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Divide tu p√°gina en secciones: √°rea principal para notas, columna izquierda
+                    Divide tu p·gina en secciones: ·rea principal para notas, columna izquierda
                     para palabras clave, y parte inferior para el resumen.
                   </p>
                 </div>
@@ -292,8 +292,8 @@ export const CornellIntroView: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Identifica las ideas principales y palabras clave m√°s importantes.
-                    Escr√≠belas en la columna izquierda para facilitar la revisi√≥n.
+                    Identifica las ideas principales y palabras clave m·s importantes.
+                    EscrÌbelas en la columna izquierda para facilitar la revisiÛn.
                   </p>
                 </div>
               </div>
@@ -311,7 +311,7 @@ export const CornellIntroView: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Redacta un resumen breve de 3-5 frases que capture los puntos m√°s importantes
+                    Redacta un resumen breve de 3-5 frases que capture los puntos m·s importantes
                     de tus notas para reforzar el aprendizaje.
                   </p>
                 </div>
@@ -326,12 +326,12 @@ export const CornellIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-cyan-400 to-cyan-500 bg-clip-text text-transparent">
-                      4. Revisi√≥n
+                      4. RevisiÛn
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
                     Usa las palabras clave para hacer preguntas y revisar el material.
-                    Cubre las notas para probar tu memoria y comprensi√≥n.
+                    Cubre las notas para probar tu memoria y comprensiÛn.
                   </p>
                 </div>
               </div>
@@ -344,10 +344,10 @@ export const CornellIntroView: React.FC = () => {
           <div className="space-y-8">
             <div className="text-center">
               <h3 className="text-3xl font-bold text-white mb-4">
-                Beneficios del M√©todo
+                Beneficios del MÈtodo
               </h3>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Descubre c√≥mo esta t√©cnica revolucionaria transforma tu forma de estudiar
+                Descubre cÛmo esta tÈcnica revolucionaria transforma tu forma de estudiar
               </p>
             </div>
 
@@ -381,7 +381,7 @@ export const CornellIntroView: React.FC = () => {
               boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
             }}
           >
-            <span>Comenzar M√©todo Cornell</span>
+            <span>Comenzar MÈtodo Cornell</span>
             <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -393,6 +393,7 @@ export const CornellIntroView: React.FC = () => {
 };
 
 export default CornellIntroView;
+
 
 
 
