@@ -1,11 +1,11 @@
-﻿/**
- * Componente de tarjeta de concentraciÃ³n centrada
+/**
+ * Componente de tarjeta de concentración centrada
  *
- * Muestra la sesiÃ³n activa con timer, controles de pausa/reanudar,
- * y opciones para terminar mÃ¡s tarde o completar la sesiÃ³n.
- * Se minimiza automÃ¡ticamente cuando se ejecuta un mÃ©todo de estudio.
+ * Muestra la sesión activa con timer, controles de pausa/reanudar,
+ * y opciones para terminar más tarde o completar la sesión.
+ * Se minimiza automáticamente cuando se ejecuta un método de estudio.
  *
- * DiseÃ±o: Overlay centrado con glassmorphism, controles intuitivos y accesibilidad completa.
+ * Diseño: Overlay centrado con glassmorphism, controles intuitivos y accesibilidad completa.
  */
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -56,7 +56,7 @@ export const ConcentrationCard: React.FC = () => {
   }, [session, currentTime]);
 
   /**
-   * Maneja pausa/reanudar de la sesiÃ³n
+   * Maneja pausa/reanudar de la sesión
    */
   const handleTogglePause = async () => {
     if (!session || isUpdating) return;
@@ -76,7 +76,7 @@ export const ConcentrationCard: React.FC = () => {
   };
 
   /**
-   * Maneja terminar mÃ¡s tarde con alerta y redirecciÃ³n automÃ¡tica
+   * Maneja terminar más tarde con alerta y redirección automática
    */
   const handleFinishLater = async () => {
     if (!session || isUpdating) return;
@@ -85,10 +85,10 @@ export const ConcentrationCard: React.FC = () => {
       setIsUpdating(true);
       await finishLater();
 
-      // Mostrar alerta de sesiÃ³n aplazada y redirigir despuÃ©s de 3 segundos
+      // Mostrar alerta de sesión aplazada y redirigir después de 3 segundos
       Swal.fire({
-        title: 'SesiÃ³n aplazada',
-        text: 'SerÃ¡s redirigido a Reportes en 3 segundos.',
+        title: 'Sesión aplazada',
+        text: 'Serás redirigido a Reportes en 3 segundos.',
         icon: 'info',
         timer: 3000,
         timerProgressBar: true,
@@ -97,7 +97,7 @@ export const ConcentrationCard: React.FC = () => {
         color: '#ffffff',
         iconColor: '#3B82F6',
       }).then(() => {
-        // Redirigir a reportes despuÃ©s de que se cierre la alerta
+        // Redirigir a reportes después de que se cierre la alerta
         navigate('/reports/sessions');
       });
 
@@ -108,7 +108,7 @@ export const ConcentrationCard: React.FC = () => {
   };
 
   /**
-   * Maneja completar sesiÃ³n inmediatamente (sin confirmaciÃ³n)
+   * Maneja completar sesión inmediatamente (sin confirmación)
    */
   const handleComplete = async () => {
     if (!session || isUpdating) return;
@@ -117,10 +117,10 @@ export const ConcentrationCard: React.FC = () => {
       setIsUpdating(true);
       await completeSession();
 
-      // Mostrar alerta de sesiÃ³n completada y redirigir despuÃ©s de 3 segundos
+      // Mostrar alerta de sesión completada y redirigir después de 3 segundos
       Swal.fire({
-        title: 'SesiÃ³n completada',
-        text: 'SerÃ¡s redirigido a Reportes en 3 segundos.',
+        title: 'Sesión completada',
+        text: 'Serás redirigido a Reportes en 3 segundos.',
         icon: 'success',
         timer: 3000,
         timerProgressBar: true,
@@ -129,7 +129,7 @@ export const ConcentrationCard: React.FC = () => {
         color: '#ffffff',
         iconColor: '#10B981',
       }).then(() => {
-        // Redirigir a reportes despuÃ©s de que se cierre la alerta
+        // Redirigir a reportes después de que se cierre la alerta
         navigate('/reports');
       });
 
@@ -137,7 +137,7 @@ export const ConcentrationCard: React.FC = () => {
       console.error('Error completing session:', error);
       Swal.fire({
         title: 'Error',
-        text: 'No se pudo completar la sesiÃ³n. IntÃ©ntalo de nuevo.',
+        text: 'No se pudo completar la sesión. Inténtalo de nuevo.',
         icon: 'error',
         confirmButtonColor: '#EF4444',
         background: '#232323',
@@ -178,7 +178,7 @@ export const ConcentrationCard: React.FC = () => {
           animate={{ y: 0 }}
           className="w-full max-w-md bg-[#232323]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-[#333]/50 overflow-hidden"
         >
-          {/* Header con tÃ­tulo y botÃ³n minimizar */}
+          {/* Header con título y botón minimizar */}
           <div className="p-6 border-b border-[#333]/50">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -201,25 +201,25 @@ export const ConcentrationCard: React.FC = () => {
               <button
                 onClick={handleMinimize}
                 className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10 cursor-pointer"
-                aria-label="Minimizar sesiÃ³n"
+                aria-label="Minimizar sesión"
                 type="button"
               >
                 <XMarkIcon className="w-5 h-5" />
               </button>
             </div>
 
-            {/* InformaciÃ³n del mÃ©todo/Ã¡lbum si existen */}
+            {/* Información del método/álbum si existen */}
             <div className="flex items-center gap-4 mt-4">
               {session.methodId && (
                 <div className="flex items-center gap-2 text-sm text-blue-400">
                   <BookOpenIcon className="w-4 h-4" />
-                  <span>MÃ©todo activo</span>
+                  <span>Método activo</span>
                 </div>
               )}
               {session.albumId && (
                 <div className="flex items-center gap-2 text-sm text-purple-400">
                   <MusicalNoteIcon className="w-4 h-4" />
-                  <span>MÃºsica activa</span>
+                  <span>Música activa</span>
                 </div>
               )}
             </div>
@@ -238,7 +238,7 @@ export const ConcentrationCard: React.FC = () => {
                 {formattedTime}
               </div>
               <p className="text-gray-400 text-sm">
-                {session.isRunning ? 'SesiÃ³n activa' : 'SesiÃ³n pausada'}
+                {session.isRunning ? 'Sesión activa' : 'Sesión pausada'}
               </p>
             </div>
 
@@ -252,7 +252,7 @@ export const ConcentrationCard: React.FC = () => {
                     ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 } disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white/50`}
-                aria-label={session.isRunning ? 'Pausar sesiÃ³n' : 'Reanudar sesiÃ³n'}
+                aria-label={session.isRunning ? 'Pausar sesión' : 'Reanudar sesión'}
                 type="button"
               >
                 {session.isRunning ? (
@@ -274,13 +274,13 @@ export const ConcentrationCard: React.FC = () => {
                 >
                   <div className="flex items-center gap-2 text-yellow-400 text-sm">
                     <ClockIcon className="w-4 h-4" />
-                    <span>SesiÃ³n pausada - El tiempo se mantiene</span>
+                    <span>Sesión pausada - El tiempo se mantiene</span>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Botones de acciÃ³n */}
+            {/* Botones de acción */}
             <div className="flex gap-3">
               <button
                 onClick={handleFinishLater}
@@ -288,7 +288,7 @@ export const ConcentrationCard: React.FC = () => {
                 className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
                 type="button"
               >
-                Terminar mÃ¡s tarde
+                Terminar más tarde
               </button>
 
               <button
@@ -297,7 +297,7 @@ export const ConcentrationCard: React.FC = () => {
                 className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
                 type="button"
               >
-                {isUpdating ? 'Finalizando...' : 'Finalizar sesiÃ³n'}
+                {isUpdating ? 'Finalizando...' : 'Finalizar sesión'}
               </button>
             </div>
           </div>

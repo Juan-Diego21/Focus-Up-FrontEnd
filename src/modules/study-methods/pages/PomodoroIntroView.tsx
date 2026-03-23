@@ -37,7 +37,7 @@ export const PomodoroIntroView: React.FC = () => {
   });
 
 
-  // Obtener datos del método de estudio desde la API
+  // Obtener datos del mÃ©todo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -63,14 +63,14 @@ export const PomodoroIntroView: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del método");
+          throw new Error("Error al cargar datos del mÃ©todo");
         }
 
         const methodData = await response.json();
         const method = methodData.data || methodData;
         setMethod(method);
       } catch {
-        setError("Error al cargar los datos del método");
+        setError("Error al cargar los datos del mÃ©todo");
       } finally {
         setLoading(false);
       }
@@ -110,8 +110,8 @@ export const PomodoroIntroView: React.FC = () => {
               <div className="w-12 h-12 border-4 border-red-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
 
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando método...</h2>
-            <p className="text-gray-400">Preparando tu técnica Pomodoro</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando mÃ©todo...</h2>
+            <p className="text-gray-400">Preparando tu tÃ©cnica Pomodoro</p>
           </div>
         </div>
       </div>
@@ -146,7 +146,7 @@ export const PomodoroIntroView: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Volver a métodos
+              Volver a mÃ©todos
             </button>
           </div>
         </div>
@@ -154,7 +154,7 @@ export const PomodoroIntroView: React.FC = () => {
     );
   }
 
-  // Usar únicamente colores locales del sistema de assets
+  // Usar Ãºnicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || "#ef4444";
   const methodImage = localAssets?.image;
@@ -195,7 +195,7 @@ export const PomodoroIntroView: React.FC = () => {
         <button
           onClick={() => navigate("/study-methods")}
           className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-red-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-red-500/25"
-          aria-label="Volver atrás"
+          aria-label="Volver atrÃ¡s"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -213,7 +213,7 @@ export const PomodoroIntroView: React.FC = () => {
         </button>
         <div className="flex-1 text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-red-100 to-orange-100 bg-clip-text text-transparent">
-            Técnica Pomodoro
+            TÃ©cnica Pomodoro
           </h1>
         </div>
         <div className="w-12"></div>
@@ -229,7 +229,7 @@ export const PomodoroIntroView: React.FC = () => {
           <div className="relative text-center">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-600/20 to-orange-600/20 backdrop-blur-md rounded-full border border-red-500/30 mb-8">
               <Clock className="w-6 h-6 text-red-400" />
-              <span className="text-red-300 text-sm font-medium">Técnica Pomodoro</span>
+              <span className="text-red-300 text-sm font-medium">TÃ©cnica Pomodoro</span>
             </div>
 
             <div className="mb-8 flex justify-center">
@@ -276,7 +276,7 @@ export const PomodoroIntroView: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-300 rounded-full border border-red-500/20">
                 <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
-                Técnica Probada
+                TÃ©cnica Probada
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-300 rounded-full border border-orange-500/20">
                 <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
@@ -294,10 +294,10 @@ export const PomodoroIntroView: React.FC = () => {
         <div className="space-y-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              ¿Cómo Funciona la Técnica?
+              Â¿CÃ³mo Funciona la TÃ©cnica?
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Un método simple pero efectivo para mejorar tu concentración y productividad
+              Un mÃ©todo simple pero efectivo para mejorar tu concentraciÃ³n y productividad
             </p>
           </div>
 
@@ -310,12 +310,12 @@ export const PomodoroIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">
-                      1. Elige una tarea específica
+                      1. Elige una tarea especÃ­fica
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Selecciona una actividad concreta que quieras completar. Es importante que sea específica
-                    y alcanzable dentro del tiempo establecido para mantener la motivación.
+                    Selecciona una actividad concreta que quieras completar. Es importante que sea especÃ­fica
+                    y alcanzable dentro del tiempo establecido para mantener la motivaciÃ³n.
                   </p>
                 </div>
               </div>
@@ -333,8 +333,8 @@ export const PomodoroIntroView: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Configura un temporizador por 25 minutos y concéntrate completamente en tu tarea.
-                    Evita todas las distracciones posibles durante este período sagrado.
+                    Configura un temporizador por 25 minutos y concÃ©ntrate completamente en tu tarea.
+                    Evita todas las distracciones posibles durante este perÃ­odo sagrado.
                   </p>
                 </div>
               </div>
@@ -352,8 +352,8 @@ export const PomodoroIntroView: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Cuando suene el temporizador, toma un descanso de 5 minutos. Levántate, estírate,
-                    toma agua o haz algo que te relaje. Después de 4 pomodoros, toma un descanso más largo.
+                    Cuando suene el temporizador, toma un descanso de 5 minutos. LevÃ¡ntate, estÃ­rate,
+                    toma agua o haz algo que te relaje. DespuÃ©s de 4 pomodoros, toma un descanso mÃ¡s largo.
                   </p>
                 </div>
               </div>
@@ -366,10 +366,10 @@ export const PomodoroIntroView: React.FC = () => {
           <div className="space-y-8">
             <div className="text-center">
               <h3 className="text-3xl font-bold text-white mb-4">
-                Beneficios de la Técnica
+                Beneficios de la TÃ©cnica
               </h3>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Descubre por qué millones de estudiantes confían en este método
+                Descubre por quÃ© millones de estudiantes confÃ­an en este mÃ©todo
               </p>
             </div>
 
@@ -402,7 +402,7 @@ export const PomodoroIntroView: React.FC = () => {
               className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-gray-500/25 cursor-pointer hover:transform hover:-translate-y-1 border border-gray-600/50"
             >
               <Settings className="w-5 h-5" />
-              Configurar Técnica
+              Configurar TÃ©cnica
             </button>
             <button
               onClick={handleStartMethod}
@@ -411,7 +411,7 @@ export const PomodoroIntroView: React.FC = () => {
                 boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
               }}
             >
-              <span>Comenzar Técnica Pomodoro</span>
+              <span>Comenzar TÃ©cnica Pomodoro</span>
               <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -426,7 +426,7 @@ export const PomodoroIntroView: React.FC = () => {
           <div className="bg-gradient-to-br from-[#232323]/95 to-[#1a1a1a]/95 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md shadow-2xl border border-red-500/30">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-red-100 to-orange-100 bg-clip-text text-transparent">
-                Configurar Técnica
+                Configurar TÃ©cnica
               </h2>
               <button
                 onClick={handleCloseConfig}
@@ -479,7 +479,7 @@ export const PomodoroIntroView: React.FC = () => {
                 onClick={handleSaveConfig}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold transition-all duration-200 cursor-pointer hover:transform hover:scale-105 shadow-lg hover:shadow-red-500/25"
               >
-                Guardar Configuración
+                Guardar ConfiguraciÃ³n
               </button>
             </div>
           </div>

@@ -25,7 +25,7 @@ export const MindMapsInfoPage: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Obtener datos del método de estudio desde la API
+  // Obtener datos del mÃ©todo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -51,13 +51,13 @@ export const MindMapsInfoPage: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del método");
+          throw new Error("Error al cargar datos del mÃ©todo");
         }
 
         const methodData = await response.json();
         setMethod(methodData.data || methodData);
       } catch {
-        setError("Error al cargar los datos del método");
+        setError("Error al cargar los datos del mÃ©todo");
       } finally {
         setLoading(false);
       }
@@ -83,7 +83,7 @@ export const MindMapsInfoPage: React.FC = () => {
             <div className="relative mb-8">
               <div className="w-12 h-12 border-4 border-green-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando método...</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando mÃ©todo...</h2>
             <p className="text-gray-400">Preparando mapas mentales</p>
           </div>
         </div>
@@ -119,7 +119,7 @@ export const MindMapsInfoPage: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Volver a métodos
+              Volver a mÃ©todos
             </button>
           </div>
         </div>
@@ -127,7 +127,7 @@ export const MindMapsInfoPage: React.FC = () => {
     );
   }
 
-  // Usar únicamente colores locales del sistema de assets
+  // Usar Ãºnicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || "#10b981";
   const methodImage = localAssets?.image;
@@ -146,7 +146,7 @@ export const MindMapsInfoPage: React.FC = () => {
         <button
           onClick={() => navigate("/study-methods")}
           className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-green-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-green-500/25"
-          aria-label="Volver atrás"
+          aria-label="Volver atrÃ¡s"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -226,13 +226,13 @@ export const MindMapsInfoPage: React.FC = () => {
 
             <div className="inline-flex items-center gap-2 px-6 py-3 bg-green-500/10 text-green-300 rounded-full border border-green-500/20 mb-8">
               <Target className="w-5 h-5" />
-              <span className="font-medium">Objetivo: organizar visualmente la información para fortalecer la comprensión y retención del conocimiento</span>
+              <span className="font-medium">Objetivo: organizar visualmente la informaciÃ³n para fortalecer la comprensiÃ³n y retenciÃ³n del conocimiento</span>
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-300 rounded-full border border-green-500/20">
                 <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                Organización Visual
+                OrganizaciÃ³n Visual
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-300 rounded-full border border-emerald-500/20">
                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -250,10 +250,10 @@ export const MindMapsInfoPage: React.FC = () => {
         <div className="space-y-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              ¿Cómo Crear un Mapa Mental?
+              Â¿CÃ³mo Crear un Mapa Mental?
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Una guía paso a paso para organizar tus ideas de manera visual y efectiva
+              Una guÃ­a paso a paso para organizar tus ideas de manera visual y efectiva
             </p>
           </div>
 
@@ -270,8 +270,8 @@ export const MindMapsInfoPage: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Selecciona el tema principal que quieres estudiar y escríbelo en el centro
-                    de tu hoja o lienzo digital. Este será el punto de partida de tu mapa mental.
+                    Selecciona el tema principal que quieres estudiar y escrÃ­belo en el centro
+                    de tu hoja o lienzo digital. Este serÃ¡ el punto de partida de tu mapa mental.
                   </p>
                 </div>
               </div>
@@ -289,8 +289,8 @@ export const MindMapsInfoPage: React.FC = () => {
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Dibuja líneas desde el centro hacia afuera para las ideas principales
-                    relacionadas con el tema. Cada rama representa una categoría importante.
+                    Dibuja lÃ­neas desde el centro hacia afuera para las ideas principales
+                    relacionadas con el tema. Cada rama representa una categorÃ­a importante.
                   </p>
                 </div>
               </div>
@@ -304,12 +304,12 @@ export const MindMapsInfoPage: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-teal-400 to-teal-500 bg-clip-text text-transparent">
-                      3. Añade colores y símbolos
+                      3. AÃ±ade colores y sÃ­mbolos
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Utiliza colores, símbolos, dibujos e imágenes para conectar conceptos
-                    y hacer el mapa más memorable. Los colores mejoran la retención visual.
+                    Utiliza colores, sÃ­mbolos, dibujos e imÃ¡genes para conectar conceptos
+                    y hacer el mapa mÃ¡s memorable. Los colores mejoran la retenciÃ³n visual.
                   </p>
                 </div>
               </div>
@@ -342,11 +342,11 @@ export const MindMapsInfoPage: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-lime-400 to-lime-500 bg-clip-text text-transparent">
-                      5. ¡Hazlo tú mismo!
+                      5. Â¡Hazlo tÃº mismo!
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Crear el mapa mental manualmente mejora significativamente la retención.
+                    Crear el mapa mental manualmente mejora significativamente la retenciÃ³n.
                     El proceso de dibujar y organizar ideas fortalece las conexiones neuronales.
                   </p>
                 </div>
@@ -363,7 +363,7 @@ export const MindMapsInfoPage: React.FC = () => {
                 Beneficios de los Mapas Mentales
               </h3>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Descubre cómo esta técnica visual revoluciona tu forma de aprender
+                Descubre cÃ³mo esta tÃ©cnica visual revoluciona tu forma de aprender
               </p>
             </div>
 

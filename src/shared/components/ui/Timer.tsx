@@ -1,33 +1,60 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
+import {
+  playSoftTimerEndAlarm,
+  primeNotificationAudio,
+  startTimerEndTabAttention,
+} from "@shared/utils/soundNotifications";
 
 interface TimerProps {
   initialMinutes: number;
   onComplete?: () => void;
   color?: string;
+  enableEndSound?: boolean;
+  endSoundVolume?: number;
+  endSoundRepeats?: number;
+  enableTabBlinkOnComplete?: boolean;
 }
 
-export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color = "#ef4444" }) => {
+export const Timer: React.FC<TimerProps> = ({
+  initialMinutes,
+  onComplete,
+  color = "#ef4444",
+  enableEndSound = true,
+  endSoundVolume = 0.22,
+  endSoundRepeats = 4,
+  enableTabBlinkOnComplete = true,
+}) => {
   const [seconds, setSeconds] = useState(initialMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const endTimeMsRef = useRef<number | null>(null);
 
   // Formatear tiempo como MM:SS
   const formatTime = (totalSeconds: number): string => {
-    const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-    const secs = (totalSeconds % 60).toString().padStart(2, '0');
+    const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+    const secs = (totalSeconds % 60).toString().padStart(2, "0");
     return `${minutes}:${secs}`;
   };
 
   // Iniciar temporizador
   const startTimer = () => {
     if (!isRunning && seconds > 0) {
+      // Se prepara el contexto de audio dentro del gesto del usuario para evitar bloqueos.
+      void primeNotificationAudio();
+      // Se usa hora objetivo real para evitar deriva cuando la pestaña queda en segundo plano.
+      endTimeMsRef.current = Date.now() + seconds * 1000;
       setIsRunning(true);
     }
   };
 
   // Pausar temporizador
   const pauseTimer = () => {
+    if (endTimeMsRef.current !== null) {
+      const remainingMs = Math.max(0, endTimeMsRef.current - Date.now());
+      setSeconds(Math.ceil(remainingMs / 1000));
+      endTimeMsRef.current = null;
+    }
     setIsRunning(false);
   };
 
@@ -36,49 +63,77 @@ export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color 
     setIsRunning(false);
     setSeconds(initialMinutes * 60);
     setHasCompleted(false);
+    endTimeMsRef.current = null;
   };
 
-  // Efecto para manejar el conteo del temporizador
+  // Efecto para manejar el conteo del temporizador basado en tiempo real.
   useEffect(() => {
-    if (isRunning && seconds > 0) {
-      intervalRef.current = setInterval(() => {
-        setSeconds(prev => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            setHasCompleted(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
+    if (!isRunning) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      return;
     }
+
+    const syncRemainingTime = () => {
+      if (endTimeMsRef.current === null) return;
+
+      const remainingMs = endTimeMsRef.current - Date.now();
+      if (remainingMs <= 0) {
+        endTimeMsRef.current = null;
+        setSeconds(0);
+        setIsRunning(false);
+        setHasCompleted(true);
+        return;
+      }
+
+      setSeconds(Math.ceil(remainingMs / 1000));
+    };
+
+    // Sincroniza inmediatamente para reflejar el tiempo real al volver a la pestaña.
+    syncRemainingTime();
+    intervalRef.current = setInterval(syncRemainingTime, 250);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [isRunning, seconds]);
+  }, [isRunning]);
 
-  // Efecto separado para llamar onComplete después de que el estado se haya actualizado
+  // Si cambia la duración inicial desde el padre, resetea el temporizador.
   useEffect(() => {
-    if (hasCompleted && onComplete) {
-      onComplete();
-      setHasCompleted(false); // Reset para evitar llamadas múltiples
+    setIsRunning(false);
+    setSeconds(initialMinutes * 60);
+    setHasCompleted(false);
+    endTimeMsRef.current = null;
+  }, [initialMinutes]);
+
+  // Llama onComplete y reproduce alarma cuando el temporizador termina.
+  useEffect(() => {
+    if (!hasCompleted) return;
+
+    if (enableEndSound) {
+      playSoftTimerEndAlarm({ volume: endSoundVolume, repeatCount: endSoundRepeats });
     }
-  }, [hasCompleted, onComplete]);
+
+    if (enableTabBlinkOnComplete) {
+      startTimerEndTabAttention();
+    }
+
+    if (onComplete) {
+      onComplete();
+    }
+
+    // Reset para evitar llamadas múltiples
+    setHasCompleted(false);
+  }, [hasCompleted, onComplete, enableEndSound, endSoundVolume, endSoundRepeats, enableTabBlinkOnComplete]);
 
   return (
     <div className="flex items-center justify-between">
-      <span
-        className="text-3xl font-bold"
-        style={{ color }}
-      >
+      <span className="text-3xl font-bold" style={{ color }}>
         {formatTime(seconds)}
       </span>
       <div className="space-x-3">
@@ -87,10 +142,10 @@ export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color 
           className="px-3 py-1 rounded-lg font-medium transition-all duration-200 hover:transform hover:scale-105"
           style={{
             backgroundColor: `${color}E6`, // 90% opacity
-            color: 'white'
+            color: "white",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = color}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${color}E6`}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = color)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${color}E6`)}
         >
           Reiniciar
         </button>
@@ -99,12 +154,12 @@ export const Timer: React.FC<TimerProps> = ({ initialMinutes, onComplete, color 
           className="px-3 py-1 rounded-lg font-medium transition-all duration-200 hover:transform hover:scale-105"
           style={{
             backgroundColor: `${color}E6`, // 90% opacity
-            color: 'white'
+            color: "white",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = color}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${color}E6`}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = color)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = `${color}E6`)}
         >
-          {isRunning ? 'Pausar' : seconds === initialMinutes * 60 ? 'Iniciar' : 'Reanudar'}
+          {isRunning ? "Pausar" : seconds === initialMinutes * 60 ? "Iniciar" : "Reanudar"}
         </button>
       </div>
     </div>

@@ -1,127 +1,284 @@
 ﻿# Focus Up Frontend
 
-Aplicacion web en React + TypeScript para gestion de estudio, sesiones de concentracion y musica de fondo durante la navegacion.
+Frontend SPA de Focus Up construido con React + TypeScript + Vite. Este documento esta pensado como guia tecnica de estudio para cualquier desarrollador (incluyendo aprendices) que quiera entender, mantener y escalar el proyecto.
 
-## Refactor Mobile-First (Marzo 2026)
+## 1. Objetivo del frontend
 
-Se realizo un refactor por modulos y vistas para priorizar experiencia movil sin degradar escritorio.
+La aplicacion resuelve flujos de productividad y estudio:
 
-### Modulos ajustados
+- autenticacion y registro
+- sesiones de concentracion
+- metodos de estudio guiados (pomodoro y otros)
+- musica de apoyo durante sesiones
+- eventos y recordatorios
+- reportes de progreso
+- perfil de usuario
 
-- Sesiones de concentracion
-- Biblioteca de metodos de estudio
-- Musica (albumes y canciones)
-- Eventos y recordatorios
-- Reportes y analiticas
-- Perfil de usuario
-- Landing page
-- Navegacion base (sidebar y layout compartido)
+## 2. Stack tecnico
 
-### Decisiones de arquitectura responsive
-
-- Se eliminaron restricciones globales heredadas (`#root` con `max-width` y `padding`) que forzaban comportamientos no responsivos.
-- Se normalizo la base para prevenir overflow horizontal con reglas globales en `html`, `body` y `#root`.
-- Se ajustaron layouts a `mobile-first` usando `px`/`py` fluidos y escalado tipografico por breakpoints.
-- Se redujo el uso de offsets rigidos en desktop (`ml-64`) que provocaban recortes en movil.
-- Se mejoro el sidebar para movil con area tactil mayor, cierre por overlay y cierre automatico al navegar.
-
-### Accesibilidad y contraste
-
-- Se subio contraste en textos secundarios y subtitulos para mejorar lectura en exteriores.
-- Se ajusto jerarquia visual de titulos en pantallas pequenas (evitando escalas excesivas).
-- Se incrementaron alturas minimas en botones clave para interaccion tactil (`min-h`).
-
-### Correccion funcional incluida
-
-- Eliminacion de cuenta:
-  - primero limpia estado de autenticacion (`logout`)
-  - luego redirige estrictamente a `/` con `replace: true`
-  - evita rutas anidadas y reduce riesgo de bucles de navegacion
-
-### Integridad de escritorio preservada
-
-- Se mantuvo comportamiento funcional y visual en desktop.
-- Los cambios se enfocaron en responsive y accesibilidad sin remover features ni alterar logica de backend.
-
-## Stack
+Base:
 
 - React 19
 - TypeScript
-- Vite
-- React Router
-- Zustand
-- React Query
+- Vite 7
+- React Router DOM
 - Tailwind CSS
 
-## Requisitos
+Estado y datos:
 
-- Node.js 18 o superior
-- npm
-- Backend disponible en una URL valida
+- TanStack React Query (cache de datos remotos)
+- React Context (estado global de auth, musica y sesiones)
 
-## Instalacion
+HTTP y utilidades:
 
-```bash
-npm install
+- Axios (cliente principal centralizado)
+- Fetch nativo (en algunos servicios legacy)
+- SweetAlert2
+- Framer Motion
+
+Calidad:
+
+- ESLint (flat config)
+- Vitest + Testing Library (tests en carpetas de modulo e integracion)
+
+## 3. Arquitectura actual: `modules + shared`
+
+La arquitectura sigue separacion por dominio:
+
+- `src/modules`: funcionalidad de negocio por modulo (auth, sessions, study-methods, etc).
+- `src/shared`: piezas reutilizables transversales (ui, hooks, servicios, providers, utilidades).
+- `src/types`: contratos y tipos de datos.
+- `src/lib`: infraestructura base (query client, schemas).
+
+### 3.1 Flujo de alto nivel
+
+```text
+main.tsx
+  -> monta providers globales
+  -> renderiza App.tsx
+      -> define rutas (publicas/protegidas)
+      -> carga paginas por lazy loading
+          -> cada pagina usa hooks/servicios/shared
+              -> servicios llaman API backend
 ```
 
-## Variables de entorno
+### 3.2 Regla mental rapida
 
-Crea un archivo `.env` en la raiz (puedes copiar `.env.example`):
+- Si es especifico de un dominio: va en `modules/<dominio>`.
+- Si es reutilizable por varios dominios: va en `shared`.
+- Si es contrato de datos: va en `types`.
+
+## 4. Estructura de carpetas y responsabilidades
+
+### Raiz del proyecto
+
+- `public/`: recursos estaticos publicos.
+- `dist/`: salida del build de produccion.
+- `staticwebapp.config.json`: fallback SPA para despliegue estatico.
+- `vite.config.js`: bundling, alias, proxy dev y code splitting.
+- `tailwind.config.js` + `postcss.config.js`: pipeline de estilos.
+- `tsconfig*.json`: configuracion TypeScript.
+
+### `src/`
+
+- `main.tsx`: punto de entrada. Monta `QueryClientProvider`, `MusicPlayerProvider`, `BrowserRouter`, `AuthProvider`, `ConcentrationSessionProvider`, y renderiza `App`, `MusicPlayer` y `SessionsUI`.
+- `App.tsx`: mapa de rutas y proteccion de rutas con `RequireAuth`. Carga paginas con `lazy` + `Suspense`.
+- `index.css` / `App.css`: estilos globales base.
+- `integration/`: pruebas de flujos completos (registro, sesiones).
+- `lib/`: infraestructura comun (`queryClient`, schemas).
+- `types/`: tipos y contratos TypeScript.
+
+### `src/modules/`
+
+Cada modulo contiene su API publica con `index.ts` y organiza `pages`, `components`, `hooks`, `contexts` segun necesidad.
+
+- `auth/`
+  - Login, registro, recuperacion de password, guard de rutas.
+  - Expone `AuthProvider`, `useAuth`, `RequireAuth`.
+- `dashboard/`
+  - Pantalla principal del usuario autenticado.
+- `events/`
+  - Vista de eventos y modales de crear/editar evento.
+- `landing/`
+  - Vista publica inicial.
+- `music/`
+  - Paginas de albumes y canciones.
+- `notifications/`
+  - Configuracion de notificaciones.
+- `profile/`
+  - Gestion de perfil de usuario.
+- `reports/`
+  - Reportes de metodos y sesiones.
+- `sessions/`
+  - Inicio de sesion de concentracion + UI flotante persistente.
+- `study-methods/`
+  - Biblioteca y ejecucion de metodos de estudio.
+  - Incluye servicio de sesion/metodo (`methodSessionService`).
+
+### `src/shared/`
+
+Zona transversal reusable. Debe ser la base comun de la app.
+
+- `components/`
+  - Componentes reutilizables.
+  - `components/ui/`: primitives y widgets visuales (`Button`, `Card`, `Timer`, `Sidebar`, etc).
+- `config/`
+  - Constantes globales (`API_BASE_URL`, `API_ENDPOINTS`).
+- `contexts/`
+  - Contextos globales compartidos (`MusicPlayerContext`).
+- `hooks/`
+  - Hooks reutilizables (`useApi`, `useEvents`, `useNotifications`, etc).
+- `providers/`
+  - Providers de estado global complejo (`ConcentrationSessionProvider`).
+- `services/`
+  - Integraciones HTTP y servicios de dominio transversal (`apiClient`, `sessionService`, `reportsService`, etc).
+- `utils/`
+  - Funciones utilitarias, mappers, sincronizacion multi-tab y cola offline.
+- `index.ts`
+  - Barrel export central de shared.
+
+### `src/types/`
+
+Contratos TypeScript:
+
+- `api.ts`: contratos API usados por varios modulos.
+- `domain/`: tipos por dominio (auth, sessions, study-methods, etc).
+- `ui/`, `utils/`, `services/`, `repositories/`, `shared/`, `middleware/`: contratos de soporte y arquitectura.
+- `index.ts`: export central de tipos.
+
+## 5. Como interactuan las capas
+
+Direccion recomendada de dependencias:
+
+```text
+modules/*  --> shared/*
+modules/*  --> types/*
+shared/*   --> types/*
+App/main   --> modules + shared + lib
+```
+
+Reglas practicas:
+
+- Un modulo no deberia depender internamente de otro modulo (evita acoplamiento cruzado).
+- `shared` no deberia importar desde `modules`.
+- Los tipos deben vivir en `types`, no duplicarse en paginas o servicios.
+- Los accesos HTTP deben pasar por servicios (`shared/services` o `modules/<x>/services`).
+
+## 6. Routing y carga diferida
+
+- `BrowserRouter` habilita SPA.
+- `App.tsx` define rutas publicas y protegidas.
+- `RequireAuth` protege vistas autenticadas.
+- `lazy` + `Suspense` divide bundle por rutas y mejora carga inicial.
+- `staticwebapp.config.json` reescribe rutas a `index.html` para evitar 404 al refrescar.
+
+## 7. Estado global y datos remotos
+
+Estado global principal:
+
+- `AuthProvider`: sesion de usuario, token y estado de autenticacion.
+- `MusicPlayerProvider`: reproductor global persistente.
+- `ConcentrationSessionProvider`: sesion activa, pausa/reanudar/completar, persistencia local, multi-tab y soporte offline.
+
+Datos remotos:
+
+- `QueryClientProvider` configura cache y reintentos globales de React Query.
+- `shared/services/apiClient.ts` centraliza Axios:
+  - base URL por entorno
+  - inyeccion de JWT en requests
+  - normalizacion de errores API
+
+Nota tecnica:
+
+- Hay servicios legacy que usan `fetch` directamente (`eventsApi`, `notificationsApi`), mientras que otros usan Axios. Funciona, pero a futuro conviene estandarizar en un solo cliente.
+
+## 8. Configuracion de entorno
+
+Requisitos:
+
+- Node.js 18+
+- npm
+
+Variables:
 
 ```env
 VITE_API_URL=https://api.example.com/api/v1
 ```
 
-## Ejecutar en desarrollo
+Comportamiento:
+
+- En desarrollo, si `VITE_API_URL` es absoluta (`http...`), Vite usa proxy para `/api` y reduce problemas de CORS.
+- En produccion se consume la URL configurada.
+
+## 9. Comandos de trabajo diario
 
 ```bash
+npm install
 npm run dev
-```
-
-## Scripts disponibles
-
-```bash
-npm run dev              # Servidor de desarrollo
-npm run build            # Build de produccion
-npm run preview          # Preview del build
-npm run lint             # Lint del proyecto
-```
-
-## Estructura principal
-
-```text
-src/
-  modules/       # Modulos por dominio (auth, music, sessions, study-methods, etc.)
-  pages/         # Paginas globales
-  components/    # Componentes compartidos/legacy
-  contexts/      # Contextos globales (auth, music)
-  providers/     # Providers de estado complejo
-  stores/        # Zustand stores
-  services/      # Servicios de API y logica de negocio
-  shared/        # Recursos reutilizables
-  types/         # Tipos TypeScript
-  utils/         # Utilidades
-```
-
-## Enrutamiento SPA
-
-El proyecto usa `BrowserRouter` y tiene fallback configurado en `staticwebapp.config.json`:
-
-- Reescribe rutas a `/index.html`
-- Excluye `/assets/*`, `/images/*` y `/favicon.ico`
-
-Esto evita errores 404 al recargar rutas internas en despliegues estaticos.
-
-## Build y despliegue
-
-```bash
+npm run lint
 npm run build
+npm run preview
 ```
 
-La salida se genera en `dist/`.
+Tests:
 
-## Notas
+- El repo tiene tests con Vitest y Testing Library en:
+  - `src/integration`
+  - `src/modules/auth/pages/*.test.tsx`
+  - `src/shared/services/*.test.ts`
+  - `src/shared/utils/*.test.ts`
+- Si quieres ejecutarlos manualmente:
 
-- La URL del backend depende de `VITE_API_URL`.
-- Si falla autenticacion o carga de datos, revisa primero el valor de `.env` y la disponibilidad del backend.
+```bash
+npx vitest run
+```
+
+## 10. Convenciones del proyecto
+
+- Arquitectura por modulo + capa shared.
+- Exports publicos via `index.ts` (barrel exports).
+- Tipado estricto con TypeScript.
+- Alias principales en TS: `@/*`, `@modules/*`, `@shared/*`, `@types`.
+- Se mantiene compatibilidad con algunos alias legacy en `vite.config.js`.
+
+## 11. Ruta sugerida de estudio (onboarding)
+
+Para entender el sistema de forma progresiva:
+
+1. Leer `src/main.tsx` y `src/App.tsx`.
+2. Revisar `src/shared/config/constants.ts` y `src/shared/services/apiClient.ts`.
+3. Estudiar `src/modules/auth` para flujo de autenticacion.
+4. Estudiar `src/shared/providers/ConcentrationSessionProvider.tsx`.
+5. Revisar `src/modules/study-methods` y `src/modules/sessions`.
+6. Cerrar con tests de `src/integration`.
+
+## 12. Glosario tecnico (explicado simple)
+
+- SPA: aplicacion web de una sola pagina. Cambia vistas sin recargar todo el navegador.
+- Provider: componente que expone estado/funciones globales a sus hijos.
+- Context: mecanismo de React para compartir estado sin prop drilling.
+- Hook: funcion reutilizable de React para encapsular logica.
+- Lazy loading: cargar codigo solo cuando se necesita.
+- Code splitting: dividir el bundle en chunks mas pequenos.
+- Bundle: archivo compilado que se envia al navegador.
+- Chunk: parte del bundle final.
+- DTO: objeto de transferencia de datos entre frontend y backend.
+- Mapper: funcion que transforma datos (ejemplo: snake_case <-> camelCase).
+- Interceptor: logica que se ejecuta antes/despues de cada request HTTP.
+- CORS: politica del navegador para controlar peticiones entre dominios distintos.
+- Proxy de desarrollo: puente local de Vite para redirigir peticiones API.
+- Cache: almacenamiento temporal para evitar llamadas repetidas al backend.
+- Stale time: tiempo durante el cual React Query considera frescos los datos.
+- GC time: tiempo que React Query mantiene datos sin uso antes de limpiarlos.
+- Offline queue: cola local de acciones que se sincronizan cuando vuelve internet.
+- Multi-tab sync: sincronizacion de estado entre varias pestanas del navegador.
+
+## 13. Estado actual de la arquitectura
+
+Veredicto tecnico resumido:
+
+- La base `modules + shared` esta bien encaminada y ya operativa.
+- El proyecto tiene separacion clara por dominio y buenos puntos de entrada.
+- Aun existen detalles por homogenizar (cliente HTTP unico y limpieza de alias legacy), pero no bloquean el desarrollo.
+
+En otras palabras: es una arquitectura valida para crecer, siempre que se mantengan las reglas de dependencia descritas arriba.

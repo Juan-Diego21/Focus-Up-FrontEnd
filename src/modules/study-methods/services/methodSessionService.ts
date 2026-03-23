@@ -23,11 +23,21 @@ interface ActiveMethodReport {
 
 export interface EnsuredMethodSession {
   source: SessionSource;
+  // Se usa como identificador principal para actualizaciones de progreso.
   id_metodo_realizado: number;
   id_metodo: number;
   progreso: number;
   estado: string;
+  // IDs alternos devueltos por backend (id_reporte, id_metodo_realizado, etc.).
+  candidateIds: number[];
   raw: unknown;
+}
+
+interface UpdateMethodProgressParams {
+  sessionId: string | number;
+  progress: number;
+  status?: string;
+  finalize?: boolean;
 }
 
 const COMPLETED_STATUSES = new Set([
@@ -40,6 +50,19 @@ const COMPLETED_STATUSES = new Set([
 const toNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const toUniquePositiveNumbers = (values: unknown[]): number[] => {
+  const unique = new Set<number>();
+
+  values.forEach((value) => {
+    const parsed = toNumber(value, 0);
+    if (parsed > 0) {
+      unique.add(parsed);
+    }
+  });
+
+  return Array.from(unique);
 };
 
 const getStatus = (item: ActiveMethodReport): string => {
@@ -62,10 +85,15 @@ const normalizeResponseArray = (payload: any): ActiveMethodReport[] => {
 
 const normalizeCreatedSession = (payload: any): EnsuredMethodSession | null => {
   const data = payload?.data ?? payload;
-  const id = toNumber(
-    data?.id_metodo_realizado ?? data?.idMetodoRealizado ?? data?.id_reporte ?? data?.id,
-    0
-  );
+  // Se prioriza id_reporte para updates porque PATCH /reports/methods/{id}/progress
+  // usa normalmente el ID del reporte activo.
+  const candidateIds = toUniquePositiveNumbers([
+    data?.id_reporte,
+    data?.id_metodo_realizado,
+    data?.idMetodoRealizado,
+    data?.id,
+  ]);
+  const id = candidateIds[0] || 0;
 
   if (!id) return null;
 
@@ -75,15 +103,18 @@ const normalizeCreatedSession = (payload: any): EnsuredMethodSession | null => {
     id_metodo: toNumber(data?.id_metodo ?? data?.idMetodo, 0),
     progreso: toNumber(data?.progreso ?? data?.progress, 0),
     estado: String(data?.estado ?? data?.status ?? "en_progreso"),
+    candidateIds,
     raw: data,
   };
 };
 
 const normalizeResumedSession = (item: ActiveMethodReport): EnsuredMethodSession | null => {
-  const id = toNumber(
-    item.id_reporte ?? item.id_metodo_realizado ?? item.idMetodoRealizado,
-    0
-  );
+  const candidateIds = toUniquePositiveNumbers([
+    item.id_reporte,
+    item.id_metodo_realizado,
+    item.idMetodoRealizado,
+  ]);
+  const id = candidateIds[0] || 0;
 
   if (!id) return null;
 
@@ -93,6 +124,7 @@ const normalizeResumedSession = (item: ActiveMethodReport): EnsuredMethodSession
     id_metodo: toNumber(item.id_metodo ?? item.idMetodo, 0),
     progreso: toNumber(item.progreso ?? item.progress, 0),
     estado: getStatus(item),
+    candidateIds,
     raw: item,
   };
 };
@@ -158,6 +190,123 @@ export const ensureMethodSession = async (
         if (existing) return existing;
       } catch {
         // Keep trying next payload variant.
+      }
+    }
+  }
+
+  throw new Error(lastErrorMessage);
+};
+
+const normalizeServerStatus = (status: string | undefined, progress: number): "pending" | "completed" => {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  if (progress >= 100 || COMPLETED_STATUSES.has(normalized)) return "completed";
+  return "pending";
+};
+
+const normalizeClientStatus = (status: string | undefined, progress: number): string => {
+  const normalized = String(status ?? "").trim();
+  if (normalized) return normalized;
+  return progress >= 100 ? "completado" : "en_progreso";
+};
+
+const getStoredCandidateIds = (): number[] => {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const raw = localStorage.getItem("activeMethodCandidateIds");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return toUniquePositiveNumbers(parsed);
+  } catch {
+    return [];
+  }
+};
+
+const getPayloadVariants = (params: UpdateMethodProgressParams, sessionId: number): Array<Record<string, unknown>> => {
+  const shouldFinalize = params.finalize ?? params.progress >= 100;
+  const serverStatus = normalizeServerStatus(params.status, params.progress);
+  const clientStatus = normalizeClientStatus(params.status, params.progress);
+  const legacyStatus = serverStatus === "completed" ? "completado" : "activo";
+  const timestamp = new Date().toISOString();
+
+  const rawVariants: Array<Record<string, unknown>> = [
+    { progreso: params.progress },
+    { progreso: params.progress, finalizar: shouldFinalize },
+    { progreso: params.progress, estado: clientStatus },
+    { progreso: params.progress, status: serverStatus, estado: serverStatus, finalizar: shouldFinalize },
+    { progreso: params.progress, status: serverStatus },
+    { progress: params.progress, status: serverStatus, estado: serverStatus, finalizar: shouldFinalize },
+    {
+      idMetodoActivo: sessionId,
+      progreso: params.progress,
+      estado: legacyStatus,
+      fechaActualizacion: timestamp,
+    },
+  ];
+
+  const seen = new Set<string>();
+  const variants: Array<Record<string, unknown>> = [];
+
+  rawVariants.forEach((variant) => {
+    const sanitized = Object.fromEntries(
+      Object.entries(variant).filter(([, value]) => value !== undefined)
+    );
+    const key = JSON.stringify(sanitized);
+    if (seen.has(key)) return;
+    seen.add(key);
+    variants.push(sanitized);
+  });
+
+  return variants;
+};
+
+const getProgressEndpointCandidates = (sessionId: number): string[] => {
+  return [
+    `${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`,
+    `${API_ENDPOINTS.ACTIVE_METHODS}/${sessionId}/progress`,
+    `${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}`,
+    `${API_ENDPOINTS.ACTIVE_METHODS}/${sessionId}`,
+  ];
+};
+
+export const persistMethodCandidateIds = (candidateIds: number[]): void => {
+  if (typeof window === "undefined") return;
+
+  const ids = toUniquePositiveNumbers(candidateIds);
+  if (!ids.length) return;
+  localStorage.setItem("activeMethodCandidateIds", JSON.stringify(ids));
+};
+
+export const clearMethodCandidateIds = (): void => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("activeMethodCandidateIds");
+};
+
+export const updateMethodProgress = async (params: UpdateMethodProgressParams): Promise<void> => {
+  const sessionIds = toUniquePositiveNumbers([
+    params.sessionId,
+    ...getStoredCandidateIds(),
+  ]);
+
+  if (!sessionIds.length) {
+    throw new Error("No se encontró un identificador válido para actualizar el progreso.");
+  }
+
+  let lastErrorMessage = "No se pudo actualizar el progreso del método.";
+
+  for (const sessionId of sessionIds) {
+    const endpoints = getProgressEndpointCandidates(sessionId);
+    const payloads = getPayloadVariants(params, sessionId);
+
+    for (const endpoint of endpoints) {
+      for (const payload of payloads) {
+        try {
+          await apiClient.patch(endpoint, payload);
+          return;
+        } catch (error: any) {
+          lastErrorMessage = error?.message || lastErrorMessage;
+        }
       }
     }
   }

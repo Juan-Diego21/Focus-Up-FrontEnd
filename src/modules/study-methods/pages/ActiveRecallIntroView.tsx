@@ -25,7 +25,7 @@ export const ActiveRecallIntroView: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Obtener datos del m閠odo de estudio desde la API
+  // Obtener datos del m茅todo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -51,14 +51,14 @@ export const ActiveRecallIntroView: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del m閠odo");
+          throw new Error("Error al cargar datos del m茅todo");
         }
 
         const methodData = await response.json();
         const method = methodData.data || methodData;
         setMethod(method);
       } catch {
-        setError("Error al cargar los datos del m閠odo");
+        setError("Error al cargar los datos del m茅todo");
       } finally {
         setLoading(false);
       }
@@ -84,8 +84,8 @@ export const ActiveRecallIntroView: React.FC = () => {
             <div className="relative mb-8">
               <div className="w-12 h-12 border-4 border-green-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando m閠odo...</h2>
-            <p className="text-gray-400">Preparando tu t閏nica de pr醕tica activa</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando m茅todo...</h2>
+            <p className="text-gray-400">Preparando tu t茅cnica de pr谩ctica activa</p>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export const ActiveRecallIntroView: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Volver a m閠odos
+              Volver a m茅todos
             </button>
           </div>
         </div>
@@ -128,12 +128,12 @@ export const ActiveRecallIntroView: React.FC = () => {
     );
   }
 
-  // Usar 鷑icamente colores locales del sistema de assets
+  // Usar 煤nicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || "#43A047";
   const methodImage = localAssets?.image;
 
-  // Manejar inicio del m閠odo
+  // Manejar inicio del m茅todo
   const handleStartMethod = () => {
     navigate(`/active-recall/steps/${methodId}`);
   };
@@ -152,7 +152,7 @@ export const ActiveRecallIntroView: React.FC = () => {
         <button
           onClick={() => navigate("/study-methods")}
           className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-green-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-green-500/25"
-          aria-label="Volver atr醩"
+          aria-label="Volver atr谩s"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -170,7 +170,7 @@ export const ActiveRecallIntroView: React.FC = () => {
         </button>
         <div className="flex-1 text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-green-100 to-emerald-100 bg-clip-text text-transparent">
-            Pr醕tica Activa
+            Pr谩ctica Activa
           </h1>
         </div>
         <div className="w-12"></div>
@@ -186,7 +186,7 @@ export const ActiveRecallIntroView: React.FC = () => {
           <div className="relative text-center">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 backdrop-blur-md rounded-full border border-green-500/30 mb-8">
               <Brain className="w-6 h-6 text-green-400" />
-              <span className="text-green-300 text-sm font-medium">Pr醕tica Activa</span>
+              <span className="text-green-300 text-sm font-medium">Pr谩ctica Activa</span>
             </div>
 
             <div className="mb-8 flex justify-center">
@@ -227,8 +227,8 @@ export const ActiveRecallIntroView: React.FC = () => {
             </h2>
 
             <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
-              Practica la recuperaci髇 de informaci髇 sin mirar tus notas para fortalecer la memoria
-              y profundizar la comprensi髇 de manera efectiva.
+              Practica la recuperaci贸n de informaci贸n sin mirar tus notas para fortalecer la memoria
+              y profundizar la comprensi贸n de manera efectiva.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
@@ -238,11 +238,11 @@ export const ActiveRecallIntroView: React.FC = () => {
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-300 rounded-full border border-emerald-500/20">
                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                Comprensi髇 Profunda
+                Comprensi贸n Profunda
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 text-teal-300 rounded-full border border-teal-500/20">
                 <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></span>
-                Retenci髇 Duradera
+                Retenci贸n Duradera
               </div>
             </div>
           </div>
@@ -252,10 +252,10 @@ export const ActiveRecallIntroView: React.FC = () => {
         <div className="space-y-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              緾髆o Funciona la Pr醕tica Activa?
+              驴C贸mo Funciona la Pr谩ctica Activa?
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Un proceso sistem醫ico para fortalecer tu memoria y comprensi髇
+              Un proceso sistem谩tico para fortalecer tu memoria y comprensi贸n
             </p>
           </div>
 
@@ -292,7 +292,7 @@ export const ActiveRecallIntroView: React.FC = () => {
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
                     Compara tu recuerdo con las notas. Identifica errores o puntos faltantes
-                    para corregir y completar tu comprensi髇.
+                    para corregir y completar tu comprensi贸n.
                   </p>
                 </div>
               </div>
@@ -306,12 +306,12 @@ export const ActiveRecallIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-teal-400 to-teal-500 bg-clip-text text-transparent">
-                      3. Segunda sesi髇 de recuerdo
+                      3. Segunda sesi贸n de recuerdo
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
                     Intenta un segundo recuerdo, idealmente verbalizando o resumiendo.
-                    La pr醕tica repetida consolida el aprendizaje.
+                    La pr谩ctica repetida consolida el aprendizaje.
                   </p>
                 </div>
               </div>
@@ -325,12 +325,12 @@ export const ActiveRecallIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-cyan-400 to-cyan-500 bg-clip-text text-transparent">
-                      4. Sesi髇 final de recuerdo
+                      4. Sesi贸n final de recuerdo
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Sesi髇 final de recuerdo para confirmar la retenci髇 a largo plazo.
-                    Eval鷄 cu醤to has mejorado tu memoria.
+                    Sesi贸n final de recuerdo para confirmar la retenci贸n a largo plazo.
+                    Eval煤a cu谩nto has mejorado tu memoria.
                   </p>
                 </div>
               </div>
@@ -343,10 +343,10 @@ export const ActiveRecallIntroView: React.FC = () => {
           <div className="space-y-8">
             <div className="text-center">
               <h3 className="text-3xl font-bold text-white mb-4">
-                Beneficios de la Pr醕tica Activa
+                Beneficios de la Pr谩ctica Activa
               </h3>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Descubre c髆o esta t閏nica transforma tu capacidad de aprendizaje
+                Descubre c贸mo esta t茅cnica transforma tu capacidad de aprendizaje
               </p>
             </div>
 
@@ -380,7 +380,7 @@ export const ActiveRecallIntroView: React.FC = () => {
               boxShadow: `0 10px 15px -3px ${methodColor}30, 0 4px 6px -2px ${methodColor}20`,
             }}
           >
-            <span>Comenzar Pr醕tica Activa</span>
+            <span>Comenzar Pr谩ctica Activa</span>
             <svg className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

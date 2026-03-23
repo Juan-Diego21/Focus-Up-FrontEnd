@@ -1,11 +1,11 @@
-﻿/**
- * Modal para continuar una sesiÃ³n de concentraciÃ³n anterior
+/**
+ * Modal para continuar una sesión de concentración anterior
  *
- * Este modal aparece cuando se detecta una sesiÃ³n persistida al cargar la app.
- * Permite al usuario elegir entre continuar la sesiÃ³n anterior o descartarla.
+ * Este modal aparece cuando se detecta una sesión persistida al cargar la app.
+ * Permite al usuario elegir entre continuar la sesión anterior o descartarla.
  *
- * Es crÃ­tico para la experiencia de usuario, permitiendo recuperar sesiones
- * despuÃ©s de cerrar el navegador o recargar la pÃ¡gina.
+ * Es crítico para la experiencia de usuario, permitiendo recuperar sesiones
+ * después de cerrar el navegador o recargar la página.
  */
 
 import React from 'react';
@@ -18,7 +18,7 @@ import { getSongsByAlbumId } from '@shared/services/musicApi';
 import { replaceIfSessionAlbum } from '@shared/services/audioService';
 
 /**
- * Modal para continuar sesiÃ³n anterior
+ * Modal para continuar sesión anterior
  */
 export const ContinueSessionModal: React.FC = () => {
   const { getState, minimize, hideContinueModal, finishLater } = useConcentrationSession();
@@ -34,17 +34,17 @@ export const ContinueSessionModal: React.FC = () => {
   const formattedTime = formatTime(visibleTime);
 
   /**
-   * ContinÃºa la sesiÃ³n anterior
+   * Continúa la sesión anterior
    */
   const handleContinue = async () => {
     try {
-      console.log('Continuando sesiÃ³n anterior');
+      console.log('Continuando sesión anterior');
 
-      // Verificar que la sesiÃ³n tenga un ID vÃ¡lido antes de continuar
+      // Verificar que la sesión tenga un ID válido antes de continuar
       if (!activeSession?.sessionId) {
-        console.error('SesiÃ³n sin ID vÃ¡lido, no se puede continuar');
-        // Mostrar error al usuario y descartar la sesiÃ³n
-        alert('La sesiÃ³n guardada no es vÃ¡lida. Se descartarÃ¡ automÃ¡ticamente.');
+        console.error('Sesión sin ID válido, no se puede continuar');
+        // Mostrar error al usuario y descartar la sesión
+        alert('La sesión guardada no es válida. Se descartará automáticamente.');
         await handleDiscard();
         return;
       }
@@ -55,60 +55,60 @@ export const ContinueSessionModal: React.FC = () => {
       // Minimizar inicialmente para no interrumpir el flujo del usuario
       minimize();
 
-      // Restaurar reproducciÃ³n de mÃºsica si hay un Ã¡lbum seleccionado
+      // Restaurar reproducción de música si hay un álbum seleccionado
       if (activeSession.albumId) {
         try {
-          console.log('Restaurando mÃºsica del Ã¡lbum seleccionado:', activeSession.albumId);
+          console.log('Restaurando música del álbum seleccionado:', activeSession.albumId);
 
-          // Cargar canciones del Ã¡lbum especÃ­fico desde la API
+          // Cargar canciones del álbum específico desde la API
           const albumSongs = await getSongsByAlbumId(activeSession.albumId);
 
           if (albumSongs.length === 0) {
-            console.warn(`El Ã¡lbum ${activeSession.albumId} no tiene canciones disponibles`);
+            console.warn(`El álbum ${activeSession.albumId} no tiene canciones disponibles`);
             return;
           }
 
-          // Usar funciÃ³n pura para iniciar reproducciÃ³n del Ã¡lbum
+          // Usar función pura para iniciar reproducción del álbum
           await replaceIfSessionAlbum(
             {
               playPlaylist,
-              currentAlbum: currentAlbum, // Ãlbum actualmente reproduciendo
-              isPlaying: isPlaying,       // Estado de reproducciÃ³n actual
+              currentAlbum: currentAlbum, // Álbum actualmente reproduciendo
+              isPlaying: isPlaying,       // Estado de reproducción actual
               togglePlayPause: () => {}, // No usado en este contexto
             },
             activeSession.albumId,
-            albumSongs, // Ahora pasamos directamente las canciones del Ã¡lbum
+            albumSongs, // Ahora pasamos directamente las canciones del álbum
             {
               id_album: activeSession.albumId,
-              nombre_album: `Ãlbum ${activeSession.albumId}` // Nombre genÃ©rico ya que no tenemos el nombre exacto
+              nombre_album: `Álbum ${activeSession.albumId}` // Nombre genérico ya que no tenemos el nombre exacto
             }
           );
 
-          console.log(`MÃºsica del Ã¡lbum ${activeSession.albumId} restaurada correctamente`);
+          console.log(`Música del álbum ${activeSession.albumId} restaurada correctamente`);
         } catch (musicError) {
-          // Se registra el error pero no se interrumpe la sesiÃ³n
-          console.error('Error restaurando mÃºsica del Ã¡lbum:', musicError);
+          // Se registra el error pero no se interrumpe la sesión
+          console.error('Error restaurando música del álbum:', musicError);
         }
       } else {
-        console.log('SesiÃ³n continuada sin Ã¡lbum - manteniendo reproducciÃ³n actual si existe');
+        console.log('Sesión continuada sin álbum - manteniendo reproducción actual si existe');
       }
     } catch (error) {
-      console.error('Error continuando sesiÃ³n:', error);
-      // En caso de error, intentar descartar la sesiÃ³n
+      console.error('Error continuando sesión:', error);
+      // En caso de error, intentar descartar la sesión
       try {
         await handleDiscard();
       } catch (discardError) {
-        console.error('Error descartando sesiÃ³n tras fallo en continuar:', discardError);
+        console.error('Error descartando sesión tras fallo en continuar:', discardError);
       }
     }
   };
 
   /**
-   * Descarta la sesiÃ³n anterior
+   * Descarta la sesión anterior
    */
   const handleDiscard = async () => {
     try {
-      console.log('Descartando sesiÃ³n anterior');
+      console.log('Descartando sesión anterior');
 
       // Ocultar el modal primero para feedback inmediato al usuario
       hideContinueModal();
@@ -118,23 +118,23 @@ export const ContinueSessionModal: React.FC = () => {
       localStorage.removeItem('focusup:activeSession');
       localStorage.removeItem('focusup:directResume');
 
-      // Usar finishLater para marcar la sesiÃ³n como terminada mÃ¡s tarde en el servidor
-      // Esto es opcional y no deberÃ­a impedir que el usuario continÃºe
+      // Usar finishLater para marcar la sesión como terminada más tarde en el servidor
+      // Esto es opcional y no debería impedir que el usuario continúe
       try {
         await finishLater();
       } catch (finishError) {
-        console.warn('Error marcando sesiÃ³n como terminada en servidor, pero estado local limpiado:', finishError);
-        // No relanzar el error, el estado local ya estÃ¡ limpio
+        console.warn('Error marcando sesión como terminada en servidor, pero estado local limpiado:', finishError);
+        // No relanzar el error, el estado local ya está limpio
       }
     } catch (error) {
-      console.error('Error descartando sesiÃ³n:', error);
-      // Fallback: recargar la pÃ¡gina si hay error crÃ­tico
+      console.error('Error descartando sesión:', error);
+      // Fallback: recargar la página si hay error crítico
       window.location.reload();
     }
   };
 
   /**
-   * Maneja el clic en el fondo del modal para descartar la sesiÃ³n
+   * Maneja el clic en el fondo del modal para descartar la sesión
    */
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -165,17 +165,17 @@ export const ContinueSessionModal: React.FC = () => {
               <ClockIcon className="w-8 h-8 text-blue-400" />
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">
-              SesiÃ³n pendiente
+              Sesión pendiente
             </h2>
             <p className="text-gray-300 text-sm">
-              Tienes una sesiÃ³n de concentraciÃ³n sin terminar
+              Tienes una sesión de concentración sin terminar
             </p>
           </div>
 
-          {/* Detalles de la sesiÃ³n */}
+          {/* Detalles de la sesión */}
           <div className="bg-[#1a1a1a]/50 rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-400 text-sm">SesiÃ³n:</span>
+              <span className="text-gray-400 text-sm">Sesión:</span>
               <span className="text-white font-medium">{activeSession.title}</span>
             </div>
 
@@ -217,7 +217,7 @@ export const ContinueSessionModal: React.FC = () => {
 
           {/* Nota informativa */}
           <p className="text-gray-400 text-xs text-center mt-4">
-            Las sesiones se guardan automÃ¡ticamente para continuarlas mÃ¡s tarde
+            Las sesiones se guardan automáticamente para continuarlas más tarde
           </p>
         </motion.div>
       </motion.div>

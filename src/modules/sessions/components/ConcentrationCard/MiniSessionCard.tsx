@@ -1,13 +1,13 @@
-﻿/**
- * Componente de tarjeta de sesiÃ³n minimizada
+/**
+ * Componente de tarjeta de sesión minimizada
  *
- * Muestra una versiÃ³n compacta de la sesiÃ³n activa en la esquina superior derecha,
- * posicionada visualmente debajo del botÃ³n flotante "SesiÃ³n de concentraciÃ³n".
+ * Muestra una versión compacta de la sesión activa en la esquina superior derecha,
+ * posicionada visualmente debajo del botón flotante "Sesión de concentración".
  * Expande hacia abajo para mantener consistencia visual con el flujo de la UI.
- * Permite acceso rÃ¡pido a controles bÃ¡sicos y restaurar la vista completa.
- * Se oculta automÃ¡ticamente cuando no hay sesiÃ³n activa.
+ * Permite acceso rápido a controles básicos y restaurar la vista completa.
+ * Se oculta automáticamente cuando no hay sesión activa.
  *
- * DiseÃ±o: Posicionamiento fijo top-right, glassmorphism, animaciones suaves hacia abajo.
+ * Diseño: Posicionamiento fijo top-right, glassmorphism, animaciones suaves hacia abajo.
  */
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -61,7 +61,7 @@ export const MiniSessionCard: React.FC = () => {
   }, [session, currentTime]);
 
   /**
-   * Maneja pausa/reanudar de la sesiÃ³n
+   * Maneja pausa/reanudar de la sesión
    */
   const handleTogglePause = async () => {
     if (!session || isUpdating) return;
@@ -81,7 +81,7 @@ export const MiniSessionCard: React.FC = () => {
   };
 
   /**
-   * Maneja terminar mÃ¡s tarde con alerta y redirecciÃ³n automÃ¡tica
+   * Maneja terminar más tarde con alerta y redirección automática
    */
   const handleFinishLater = async () => {
     if (!session || isUpdating) return;
@@ -90,10 +90,10 @@ export const MiniSessionCard: React.FC = () => {
       setIsUpdating(true);
       await finishLater();
 
-      // Mostrar alerta de sesiÃ³n aplazada y redirigir despuÃ©s de 3 segundos
+      // Mostrar alerta de sesión aplazada y redirigir después de 3 segundos
       Swal.fire({
-        title: 'SesiÃ³n aplazada',
-        text: 'Tu sesiÃ³n de concentraciÃ³n ha sido guardada para continuar mÃ¡s tarde.',
+        title: 'Sesión aplazada',
+        text: 'Tu sesión de concentración ha sido guardada para continuar más tarde.',
         icon: 'info',
         timer: 3000,
         timerProgressBar: true,
@@ -102,7 +102,7 @@ export const MiniSessionCard: React.FC = () => {
         color: '#ffffff',
         iconColor: '#3B82F6',
       }).then(() => {
-        // Redirigir a reportes despuÃ©s de que se cierre la alerta
+        // Redirigir a reportes después de que se cierre la alerta
         navigate('/reports/');
       });
 
@@ -113,7 +113,7 @@ export const MiniSessionCard: React.FC = () => {
   };
 
   /**
-   * Maneja completar sesiÃ³n inmediatamente
+   * Maneja completar sesión inmediatamente
    */
   const handleComplete = async () => {
     if (!session || isUpdating) return;
@@ -122,10 +122,10 @@ export const MiniSessionCard: React.FC = () => {
       setIsUpdating(true);
       await completeSession();
 
-      // Mostrar alerta de sesiÃ³n completada y redirigir despuÃ©s de 3 segundos
+      // Mostrar alerta de sesión completada y redirigir después de 3 segundos
       Swal.fire({
-        title: 'SesiÃ³n completada',
-        text: 'SerÃ¡s redirigido a Reportes en 3 segundos.',
+        title: 'Sesión completada',
+        text: 'Serás redirigido a Reportes en 3 segundos.',
         icon: 'success',
         timer: 3000,
         timerProgressBar: true,
@@ -134,7 +134,7 @@ export const MiniSessionCard: React.FC = () => {
         color: '#ffffff',
         iconColor: '#10B981',
       }).then(() => {
-        // Redirigir a reportes despuÃ©s de que se cierre la alerta
+        // Redirigir a reportes después de que se cierre la alerta
         navigate('/reports');
       });
 
@@ -186,7 +186,7 @@ export const MiniSessionCard: React.FC = () => {
                   session.isRunning ? 'bg-green-500' : 'bg-yellow-500'
                 }`} />
 
-                {/* TÃ­tulo truncado */}
+                {/* Título truncado */}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-white truncate">
                     {session.title}
@@ -204,8 +204,8 @@ export const MiniSessionCard: React.FC = () => {
                   onClick={handleFinishLater}
                   disabled={isUpdating}
                   className="p-1 text-gray-400 hover:text-red-400 transition-colors rounded hover:bg-red-500/20 disabled:opacity-50 cursor-pointer"
-                  aria-label="Terminar mÃ¡s tarde"
-                  title="Terminar mÃ¡s tarde"
+                  aria-label="Terminar más tarde"
+                  title="Terminar más tarde"
                   type="button"
                 >
                   <ClockIcon className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const MiniSessionCard: React.FC = () => {
                 <button
                   onClick={handleMaximize}
                   className="p-1 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10 cursor-pointer"
-                  aria-label="Maximizar sesiÃ³n"
+                  aria-label="Maximizar sesión"
                   type="button"
                 >
                   <XMarkIcon className="w-4 h-4" />
@@ -244,9 +244,9 @@ export const MiniSessionCard: React.FC = () => {
                 transition={{ duration: 0.2 }}
                 className="border-t border-[#333]/50"
               >
-                {/* InformaciÃ³n adicional */}
+                {/* Información adicional */}
                 <div className="p-4 space-y-3">
-                  {/* Estado de la sesiÃ³n */}
+                  {/* Estado de la sesión */}
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-gray-400">Estado:</span>
                     <span className={`font-medium ${
@@ -256,18 +256,18 @@ export const MiniSessionCard: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* MÃ©todo y Ã¡lbum activos */}
+                  {/* Método y álbum activos */}
                   <div className="space-y-2">
                     {session.methodId && (
                       <div className="flex items-center gap-2 text-sm text-blue-400">
                         <BookOpenIcon className="w-4 h-4" />
-                        <span>MÃ©todo activo</span>
+                        <span>Método activo</span>
                       </div>
                     )}
                     {session.albumId && (
                       <div className="flex items-center gap-2 text-sm text-purple-400">
                         <MusicalNoteIcon className="w-4 h-4" />
-                        <span>MÃºsica activa</span>
+                        <span>Música activa</span>
                       </div>
                     )}
                   </div>

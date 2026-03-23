@@ -1,6 +1,6 @@
 /**
- * Componente principal para la ejecuciÛn del mÈtodo Pomodoro
- * Maneja la lÛgica de temporizaciÛn, progreso y navegaciÛn entre pasos
+ * Componente principal para la ejecuci√≥n del m√©todo Pomodoro
+ * Maneja la l√≥gica de temporizaci√≥n, progreso y navegaci√≥n entre pasos
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -16,7 +16,7 @@ import {
   isValidProgressForResume
 } from "@shared/utils/methodStatus";
 import { FinishLaterModal } from "@shared/components/ui/FinishLaterModal";
-import { ensureMethodSession } from "../services/methodSessionService";
+import { ensureMethodSession, updateMethodProgress, persistMethodCandidateIds, clearMethodCandidateIds } from "../services/methodSessionService";
 
 // Preload SweetAlert2 for instant alerts
 Swal.mixin({
@@ -48,8 +48,8 @@ interface StudyMethod {
 }
 
 /**
- * Componente principal que maneja la ejecuciÛn completa del mÈtodo Pomodoro
- * Incluye temporizaciÛn, navegaciÛn de pasos y gestiÛn de sesiones
+ * Componente principal que maneja la ejecuci√≥n completa del m√©todo Pomodoro
+ * Incluye temporizaci√≥n, navegaci√≥n de pasos y gesti√≥n de sesiones
  */
 export const PomodoroExecutionView: React.FC = () => {
   const navigate = useNavigate();
@@ -58,9 +58,9 @@ export const PomodoroExecutionView: React.FC = () => {
   const urlProgress = searchParams.get('progreso');
   const urlSessionId = searchParams.get('sessionId');
 
-  // Estado para almacenar la informaciÛn del mÈtodo de estudio cargado
+  // Estado para almacenar la informaci√≥n del m√©todo de estudio cargado
   const [method, setMethod] = useState<StudyMethod | null>(null);
-  // Estado para controlar el paso actual en el flujo del mÈtodo (0, 1, 2)
+  // Estado para controlar el paso actual en el flujo del m√©todo (0, 1, 2)
   const [currentStep, setCurrentStep] = useState(0);
   // Estado para el porcentaje de progreso visual (0, 50, 100)
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -68,19 +68,19 @@ export const PomodoroExecutionView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   // Estado para manejar errores de carga o API
   const [error, setError] = useState<string>("");
-  // Estado para configuraciÛn personalizada del usuario (tiempos de trabajo y descanso)
+  // Estado para configuraci√≥n personalizada del usuario (tiempos de trabajo y descanso)
   const [config, setConfig] = useState<PomodoroConfig>({ workTime: 25, breakTime: 5 });
-  // Estado para datos de la sesiÛn activa en el backend
+  // Estado para datos de la sesi√≥n activa en el backend
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   // Estado para saber si el temporizador actual ha completado su ciclo
   const [timerCompleted, setTimerCompleted] = useState(false);
-  // Estado para habilitar el botÛn de finalizar mÈtodo despuÈs del primer ciclo completo
+  // Estado para habilitar el bot√≥n de finalizar m√©todo despu√©s del primer ciclo completo
   const [canFinishMethod, setCanFinishMethod] = useState(false);
   // Estado para cola de notificaciones/alertas que se muestran al usuario
   const [alertQueue, setAlertQueue] = useState<{ type: string; message: string } | null>(null);
-  // Estado para saber si se est· reanudando una sesiÛn existente
+  // Estado para saber si se est√° reanudando una sesi√≥n existente
   const [isResuming, setIsResuming] = useState(false);
-  // Estado para controlar la visibilidad del modal "Terminar m·s tarde"
+  // Estado para controlar la visibilidad del modal "Terminar m√°s tarde"
   const [showFinishLaterModal, setShowFinishLaterModal] = useState(false);
 
   // Load config and session from localStorage or URL params
@@ -102,7 +102,7 @@ export const PomodoroExecutionView: React.FC = () => {
       // Validate progress for resume
       if (!isValidProgressForResume(progress, 'pomodoro')) {
         console.error('Invalid progress value for resume:', progress);
-        setAlertQueue({ type: 'error', message: 'Valor de progreso inv·lido para reanudar sesiÛn' });
+        setAlertQueue({ type: 'error', message: 'Valor de progreso inv√°lido para reanudar sesi√≥n' });
         return;
       }
 
@@ -134,7 +134,7 @@ export const PomodoroExecutionView: React.FC = () => {
       });
 
       // Show resumption message
-      setAlertQueue({ type: 'resumed', message: `SesiÛn de Pomodoro retomada correctamente` });
+      setAlertQueue({ type: 'resumed', message: `Sesi√≥n de Pomodoro retomada correctamente` });
     } else {
       // Fallback to localStorage resumption
       const resumeMethodId = localStorage.getItem('resume-method');
@@ -169,21 +169,21 @@ export const PomodoroExecutionView: React.FC = () => {
     }
   }, [methodId, urlSessionId, urlProgress]);
 
-  // Pasos del mÈtodo Pomodoro
+  // Pasos del m√©todo Pomodoro
   const steps = [
     {
       id: 0,
       title: "1. Elige una tarea",
       icon: CheckCircle,
-      description: "Escoge una actividad especÌfica que quieras completar en esta sesiÛn de concentraciÛn.",
-      instruction: "Selecciona una tarea concreta y especÌfica que puedas completar.",
+      description: "Escoge una actividad espec√≠fica que quieras completar en esta sesi√≥n de concentraci√≥n.",
+      instruction: "Selecciona una tarea concreta y espec√≠fica que puedas completar.",
       hasTimer: false,
     },
     {
       id: 1,
       title: `2. Trabaja durante ${config.workTime} minutos`,
       icon: Clock,
-      description: "Evita distracciones y concÈntrate completamente hasta que el temporizador acabe.",
+      description: "Evita distracciones y conc√©ntrate completamente hasta que el temporizador acabe.",
       instruction: `Trabaja sin interrupciones durante ${config.workTime} minutos.`,
       hasTimer: true,
       timerMinutes: config.workTime,
@@ -192,14 +192,14 @@ export const PomodoroExecutionView: React.FC = () => {
       id: 2,
       title: `3. Toma un descanso de ${config.breakTime} minutos`,
       icon: Coffee,
-      description: "Descansa, lev·ntate, estÌrate o haz algo que te relaje.",
-      instruction: `Toma un descanso de ${config.breakTime} minutos para recargar energÌas.`,
+      description: "Descansa, lev√°ntate, est√≠rate o haz algo que te relaje.",
+      instruction: `Toma un descanso de ${config.breakTime} minutos para recargar energ√≠as.`,
       hasTimer: true,
       timerMinutes: config.breakTime,
     },
   ];
 
-  // Obtener datos del mÈtodo de estudio desde la API
+  // Obtener datos del m√©todo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -225,14 +225,14 @@ export const PomodoroExecutionView: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del mÈtodo");
+          throw new Error("Error al cargar datos del m√©todo");
         }
 
         const methodData = await response.json();
         const method = methodData.data || methodData;
         setMethod(method);
       } catch {
-        setError("Error al cargar los datos del mÈtodo");
+        setError("Error al cargar los datos del m√©todo");
       } finally {
         setLoading(false);
       }
@@ -244,15 +244,15 @@ export const PomodoroExecutionView: React.FC = () => {
   }, [methodId]);
 
   /**
-   * Inicia una nueva sesiÛn en el backend para el mÈtodo Pomodoro
+   * Inicia una nueva sesi√≥n en el backend para el m√©todo Pomodoro
    * Valida el progreso antes de enviar la solicitud y maneja errores
-   * Siempre crea una nueva sesiÛn desde el flujo de ejecuciÛn paso a paso
+   * Siempre crea una nueva sesi√≥n desde el flujo de ejecuci√≥n paso a paso
    */
   const startSession = async () => {
     // Validate progress for creation
     if (!isValidProgressForCreation(20, 'pomodoro')) {
       console.error('Invalid progress value for session creation');
-      setAlertQueue({ type: 'error', message: 'Valor de progreso inv·lido para este mÈtodo' });
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inv√°lido para este m√©todo' });
       return;
     }
 
@@ -281,6 +281,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
       // Store the active method ID separately for progress updates
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
+      persistMethodCandidateIds(session.candidateIds || [id_metodo_realizado]);
       localStorage.setItem('pomodoro-session', JSON.stringify(session));
 
       // Update visual progress to match created or resumed session
@@ -290,28 +291,28 @@ export const PomodoroExecutionView: React.FC = () => {
       setAlertQueue({
         type: session.source === 'resumed' ? 'resumed' : 'started',
         message: session.source === 'resumed'
-          ? 'SesiÛn de Pomodoro reanudada correctamente'
-          : 'SesiÛn de Pomodoro iniciada correctamente'
+          ? 'Sesi√≥n de Pomodoro reanudada correctamente'
+          : 'Sesi√≥n de Pomodoro iniciada correctamente'
       });
 
       // Trigger reports refresh
       window.dispatchEvent(new Event('refreshReports'));
     } catch (error) {
       console.error('Error starting Pomodoro session:', error);
-      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesiÛn de Pomodoro';
+      const apiMessage = error instanceof Error ? error.message : 'Error al iniciar la sesi√≥n de Pomodoro';
       setAlertQueue({ type: 'error', message: apiMessage });
     }
   };
 
   /**
-   * Actualiza el progreso de la sesiÛn en el backend
+   * Actualiza el progreso de la sesi√≥n en el backend
    * Valida el progreso antes de enviar y maneja sesiones reanudadas
    */
   const updateSessionProgress = async (progress: number, status: 'en_progreso' | 'completado' = 'en_progreso'): Promise<boolean> => {
     // Validate progress for update
     if (!isValidProgressForUpdate(progress, 'pomodoro')) {
       console.error('Invalid progress value for update:', progress);
-      setAlertQueue({ type: 'error', message: 'Valor de progreso inv·lido para este mÈtodo' });
+      setAlertQueue({ type: 'error', message: 'Valor de progreso inv√°lido para este m√©todo' });
       return false;
     }
 
@@ -325,11 +326,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
     try {
       console.log('Updating Pomodoro progress for session ID:', sessionId, 'progress:', progress, 'status:', status);
-      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
-      if (progress === 100) {
-        updatePayload.finalizar = true;
-      }
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
+      await updateMethodProgress({ sessionId, progress, status, finalize: progress === 100 });
       console.log('Pomodoro progress updated successfully');
 
       if (sessionData) {
@@ -347,29 +344,29 @@ export const PomodoroExecutionView: React.FC = () => {
     }
   };
 
-  // Manejar completaciÛn del temporizador
+  // Manejar completaci√≥n del temporizador
   const handleTimerComplete = () => {
     setTimerCompleted(true);
 
-    // Habilitar botÛn de finalizar despuÈs de que termine el primer descanso
+    // Habilitar bot√≥n de finalizar despu√©s de que termine el primer descanso
     if (currentStep === 2) {
       setCanFinishMethod(true);
     }
 
     // Nota: Las actualizaciones de progreso ahora se manejan solo cuando el usuario avanza manualmente
-    // La completaciÛn del temporizador solo habilita el botÛn "Siguiente Paso"
+    // La completaci√≥n del temporizador solo habilita el bot√≥n "Siguiente Paso"
   };
 
   /**
-   * Maneja la navegaciÛn al siguiente paso del mÈtodo
-   * Controla la lÛgica de inicio de sesiÛn y actualizaciÛn de progreso
-   * Solo crea una nueva sesiÛn cuando no se est· reanudando una existente
+   * Maneja la navegaci√≥n al siguiente paso del m√©todo
+   * Controla la l√≥gica de inicio de sesi√≥n y actualizaci√≥n de progreso
+   * Solo crea una nueva sesi√≥n cuando no se est√° reanudando una existente
    */
   const nextStep = () => {
-    if (!timerCompleted && currentStep > 0) return; // No permitir avanzar si el timer no completÛ
+    if (!timerCompleted && currentStep > 0) return; // No permitir avanzar si el timer no complet√≥
 
     if (currentStep === 0 && !isResuming) {
-      // Crear una nueva sesiÛn solo si no se est· reanudando una existente
+      // Crear una nueva sesi√≥n solo si no se est√° reanudando una existente
       setCurrentStep(1);
       setTimerCompleted(false);
       startSession();
@@ -405,7 +402,7 @@ export const PomodoroExecutionView: React.FC = () => {
     }
   };
 
-  // Finalizar mÈtodo
+  // Finalizar m√©todo
   const finishMethod = async () => {
     // Se usa estado "completado" para cierre definitivo de Pomodoro.
     const completionStatus: 'completado' = 'completado';
@@ -413,17 +410,18 @@ export const PomodoroExecutionView: React.FC = () => {
     const isUpdated = await updateSessionProgress(100, completionStatus);
 
     if (!isUpdated) {
-      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del mÈtodo. Intenta nuevamente.' });
+      setAlertQueue({ type: 'error', message: 'No se pudo guardar el progreso final del m√©todo. Intenta nuevamente.' });
       return;
     }
 
     localStorage.removeItem('pomodoro-session');
     localStorage.removeItem('activeMethodId');
+    clearMethodCandidateIds();
 
     // Queue completion notification
     setAlertQueue({
       type: 'completion',
-      message: `SesiÛn de ${method?.titulo || 'MÈtodo Pomodoro'} guardada`
+      message: `Sesi√≥n de ${method?.titulo || 'M√©todo Pomodoro'} guardada`
     });
   };
 
@@ -457,7 +455,7 @@ export const PomodoroExecutionView: React.FC = () => {
         });
       } else if (type === 'completion') {
         Swal.fire({
-          title: 'SesiÛn guardada',
+          title: 'Sesi√≥n guardada',
           text: message,
           icon: 'success',
           confirmButtonText: 'OK',
@@ -502,7 +500,7 @@ export const PomodoroExecutionView: React.FC = () => {
       <div className="bg-gradient-to-br from-[#171717] via-[#1a1a1a] to-[#171717] min-h-screen flex items-center justify-center p-5">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Cargando mÈtodo...</p>
+          <p className="text-white text-lg">Cargando m√©todo...</p>
         </div>
       </div>
     );
@@ -519,7 +517,7 @@ export const PomodoroExecutionView: React.FC = () => {
             onClick={() => navigate("/study-methods")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
           >
-            Volver a mÈtodos
+            Volver a m√©todos
           </button>
         </div>
       </div>
@@ -528,7 +526,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
   const methodColor = method.color_hexa || "#ef4444";
   const currentStepData = steps[currentStep];
-  // Criterio unificado: permitir "Terminar m·s tarde" desde que la sesiÛn est· iniciada o reanudada.
+  // Criterio unificado: permitir "Terminar m√°s tarde" desde que la sesi√≥n est√° iniciada o reanudada.
   const canShowFinishLater = Boolean((sessionData || (isResuming && urlSessionId)) && progressPercentage >= 20 && progressPercentage < 100);
 
   // Custom color function for Pomodoro: blue at 60%, green at 100%
@@ -546,7 +544,7 @@ export const PomodoroExecutionView: React.FC = () => {
         <button
           onClick={() => navigate(`/pomodoro/intro/${methodId}`)}
           className="p-2 bg-none cursor-pointer hover:scale-110 transition-transform"
-          aria-label="Volver atr·s"
+          aria-label="Volver atr√°s"
         >
           <svg
             className="w-7 h-7 text-white"
@@ -568,15 +566,15 @@ export const PomodoroExecutionView: React.FC = () => {
         >
           {method.titulo}
         </h1>
-        {/* BotÛn "Terminar m·s tarde" solo visible despuÈs de pasar el paso 2 (pasos seguros para guardar) */}
+        {/* Bot√≥n "Terminar m√°s tarde" solo visible despu√©s de pasar el paso 2 (pasos seguros para guardar) */}
         {canShowFinishLater && (
           <button
             onClick={() => setShowFinishLaterModal(true)}
             className="px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-            aria-label="Terminar m·s tarde"
+            aria-label="Terminar m√°s tarde"
           >
             <ClockIcon className="w-4 h-4" />
-            Terminar m·s tarde
+            Terminar m√°s tarde
           </button>
         )}
       </header>
@@ -608,7 +606,7 @@ export const PomodoroExecutionView: React.FC = () => {
           </div>
           <p className="text-gray-300 mb-3">{currentStepData.description}</p>
 
-          {/* InstrucciÛn especÌfica */}
+          {/* Instrucci√≥n espec√≠fica */}
           <div className="bg-[#1a1a1a]/50 p-3 rounded-lg mb-4">
             <p className="text-gray-400 text-sm italic">{currentStepData.instruction}</p>
           </div>
@@ -616,8 +614,8 @@ export const PomodoroExecutionView: React.FC = () => {
           {/* Consejos adicionales para algunos pasos */}
           {currentStep === 0 && (
             <div className="bg-[#1a1a1a]/30 p-3 rounded-lg mb-4 border-l-4" style={{ borderColor: methodColor }}>
-              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Elige una tarea especÌfica y medible. En lugar de "estudiar matem·ticas",
-                opta por "resolver 10 ejercicios de ·lgebra lineal".
+              <p className="text-gray-300 text-sm"><strong>Tip:</strong> Elige una tarea espec√≠fica y medible. En lugar de "estudiar matem√°ticas",
+                opta por "resolver 10 ejercicios de √°lgebra lineal".
               </p>
             </div>
           )}
@@ -701,7 +699,7 @@ export const PomodoroExecutionView: React.FC = () => {
                 }}
               >
                 <CheckCircle className="w-5 h-5" style={{ color: 'white' }} />
-                <span>Finalizar MÈtodo</span>
+                <span>Finalizar M√©todo</span>
               </button>
             </div>
           )}
@@ -740,7 +738,7 @@ export const PomodoroExecutionView: React.FC = () => {
                 }}
               >
                 <CheckCircle className="w-5 h-5" style={{ color: canFinishMethod ? '#22C55E' : '#6B7280' }} />
-                <span>Finalizar MÈtodo</span>
+                <span>Finalizar M√©todo</span>
               </button>
             </div>
           )}
@@ -750,7 +748,7 @@ export const PomodoroExecutionView: React.FC = () => {
       {/* Finish Later Modal */}
       <FinishLaterModal
         isOpen={showFinishLaterModal}
-        methodName={method?.titulo || "MÈtodo Pomodoro"}
+        methodName={method?.titulo || "M√©todo Pomodoro"}
         onConfirm={() => {
           setShowFinishLaterModal(false);
           navigate("/reports");

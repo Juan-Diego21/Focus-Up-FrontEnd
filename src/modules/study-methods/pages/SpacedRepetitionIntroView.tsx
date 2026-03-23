@@ -25,7 +25,7 @@ export const SpacedRepetitionIntroView: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Obtener datos del método de estudio desde la API
+  // Obtener datos del mÃ©todo de estudio desde la API
   useEffect(() => {
     const fetchMethodData = async () => {
       try {
@@ -51,14 +51,14 @@ export const SpacedRepetitionIntroView: React.FC = () => {
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar datos del método");
+          throw new Error("Error al cargar datos del mÃ©todo");
         }
 
         const methodData = await response.json();
         const method = methodData.data || methodData;
         setMethod(method);
       } catch {
-        setError("Error al cargar los datos del método");
+        setError("Error al cargar los datos del mÃ©todo");
       } finally {
         setLoading(false);
       }
@@ -84,7 +84,7 @@ export const SpacedRepetitionIntroView: React.FC = () => {
             <div className="relative mb-8">
               <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando método...</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando mÃ©todo...</h2>
             <p className="text-gray-400">Preparando el repaso espaciado</p>
           </div>
         </div>
@@ -120,7 +120,7 @@ export const SpacedRepetitionIntroView: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Volver a métodos
+              Volver a mÃ©todos
             </button>
           </div>
         </div>
@@ -128,12 +128,12 @@ export const SpacedRepetitionIntroView: React.FC = () => {
     );
   }
 
-  // Usar únicamente colores locales del sistema de assets
+  // Usar Ãºnicamente colores locales del sistema de assets
   const localAssets = LOCAL_METHOD_ASSETS[method.nombre_metodo];
   const methodColor = localAssets?.color || "#7E57C2";
   const methodImage = localAssets?.image;
 
-  // Manejar inicio del método
+  // Manejar inicio del mÃ©todo
   const handleStartMethod = () => {
     navigate(`/spaced-repetition/steps/${methodId}`);
   };
@@ -152,7 +152,7 @@ export const SpacedRepetitionIntroView: React.FC = () => {
         <button
           onClick={() => navigate("/study-methods")}
           className="p-3 bg-gradient-to-br from-[#232323]/80 to-[#1a1a1a]/80 backdrop-blur-md rounded-xl border border-[#333]/60 hover:border-purple-500/50 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg hover:shadow-purple-500/25"
-          aria-label="Volver atrás"
+          aria-label="Volver atrÃ¡s"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -227,18 +227,18 @@ export const SpacedRepetitionIntroView: React.FC = () => {
             </h2>
 
             <p className="text-gray-300 text-xl leading-relaxed max-w-3xl mx-auto mb-8">
-              Refuerza la información a través de intervalos espaciados para mejorar
-              la retención a largo plazo de manera efectiva.
+              Refuerza la informaciÃ³n a travÃ©s de intervalos espaciados para mejorar
+              la retenciÃ³n a largo plazo de manera efectiva.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-300 rounded-full border border-purple-500/20">
                 <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
-                Retención Duradera
+                RetenciÃ³n Duradera
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20">
                 <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
-                Intervalos Óptimos
+                Intervalos Ã“ptimos
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 text-violet-300 rounded-full border border-violet-500/20">
                 <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></span>
@@ -252,10 +252,10 @@ export const SpacedRepetitionIntroView: React.FC = () => {
         <div className="space-y-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              ¿Cómo Funciona el Repaso?
+              Â¿CÃ³mo Funciona el Repaso?
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Un sistema científico para consolidar el aprendizaje a largo plazo
+              Un sistema cientÃ­fico para consolidar el aprendizaje a largo plazo
             </p>
           </div>
 
@@ -268,7 +268,7 @@ export const SpacedRepetitionIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent">
-                      1. Revisión inmediata
+                      1. RevisiÃ³n inmediata
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
@@ -287,12 +287,12 @@ export const SpacedRepetitionIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-indigo-400 to-indigo-500 bg-clip-text text-transparent">
-                      2. Después de unas horas
+                      2. DespuÃ©s de unas horas
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Revisa el material más tarde hoy para reforzar las conexiones
-                    neuronales mientras la información aún está fresca.
+                    Revisa el material mÃ¡s tarde hoy para reforzar las conexiones
+                    neuronales mientras la informaciÃ³n aÃºn estÃ¡ fresca.
                   </p>
                 </div>
               </div>
@@ -306,11 +306,11 @@ export const SpacedRepetitionIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-violet-400 to-violet-500 bg-clip-text text-transparent">
-                      3. Al día siguiente
+                      3. Al dÃ­a siguiente
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Revisa el contenido mañana para fortalecer la codificación
+                    Revisa el contenido maÃ±ana para fortalecer la codificaciÃ³n
                     a largo plazo y combatir el olvido natural.
                   </p>
                 </div>
@@ -325,12 +325,12 @@ export const SpacedRepetitionIntroView: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-3">
                     <span className="bg-gradient-to-r from-pink-400 to-pink-500 bg-clip-text text-transparent">
-                      4. Revisión final
+                      4. RevisiÃ³n final
                     </span>
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Realiza la revisión final espaciada para consolidar la información
-                    y asegurar la retención permanente.
+                    Realiza la revisiÃ³n final espaciada para consolidar la informaciÃ³n
+                    y asegurar la retenciÃ³n permanente.
                   </p>
                 </div>
               </div>
@@ -346,7 +346,7 @@ export const SpacedRepetitionIntroView: React.FC = () => {
                 Beneficios del Repaso
               </h3>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Descubre cómo esta técnica probada revoluciona tu capacidad de recordar
+                Descubre cÃ³mo esta tÃ©cnica probada revoluciona tu capacidad de recordar
               </p>
             </div>
 

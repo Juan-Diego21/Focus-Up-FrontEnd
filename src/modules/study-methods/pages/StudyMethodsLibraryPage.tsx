@@ -25,21 +25,21 @@ interface StudyMethod {
 }
 
 
-// Página que muestra la biblioteca de métodos de estudio
+// PÃ¡gina que muestra la biblioteca de mÃ©todos de estudio
 export const StudyMethodsLibraryPage: React.FC = () => {
   const navigate = useNavigate();
   const [studyMethods, setStudyMethods] = useState<StudyMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
-  // Obtener métodos de estudio y sus beneficios desde la API
+  // Obtener mÃ©todos de estudio y sus beneficios desde la API
   useEffect(() => {
     const fetchStudyMethods = async () => {
       try {
         setLoading(true);
         setError("");
 
-        // Obtener token del localStorage para autenticación
+        // Obtener token del localStorage para autenticaciÃ³n
         const token = localStorage.getItem("token");
         if (!token) {
           // 1. Redirigir al login si no hay token
@@ -47,7 +47,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
           return;
         }
 
-        // Obtener todos los métodos de estudio con token de autorización
+        // Obtener todos los mÃ©todos de estudio con token de autorizaciÃ³n
         const methodsResponse = await fetch(`${API_BASE_URL}${API_ENDPOINTS.STUDY_METHODS}`, {
           headers: {
             "Content-Type": "application/json",
@@ -57,14 +57,14 @@ export const StudyMethodsLibraryPage: React.FC = () => {
 
         if (!methodsResponse.ok) {
           if (methodsResponse.status === 401) {
-            // Token expirado o inválido, limpiar datos y redirigir al login
+            // Token expirado o invÃ¡lido, limpiar datos y redirigir al login
             localStorage.removeItem("token");
             localStorage.removeItem("userId");
             localStorage.removeItem("userData");
             navigate("/login");
             return;
           }
-          throw new Error("Error al cargar métodos de estudio");
+          throw new Error("Error al cargar mÃ©todos de estudio");
         }
 
         const apiResponse = await methodsResponse.json();
@@ -74,7 +74,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
         const methodsWithLocalAssets = overrideMethodsWithLocalAssets(methods);
         setStudyMethods(methodsWithLocalAssets);
       } catch {
-        setError("Error al cargar los métodos de estudio. Por favor, intenta de nuevo.");
+        setError("Error al cargar los mÃ©todos de estudio. Por favor, intenta de nuevo.");
       } finally {
         setLoading(false);
       }
@@ -83,7 +83,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
     fetchStudyMethods();
   }, []);
 
-  // Manejar navegación a vista paso a paso del método
+  // Manejar navegaciÃ³n a vista paso a paso del mÃ©todo
   const handleViewStepByStep = (method: StudyMethod) => {
     if (method.nombre_metodo.toLowerCase().includes('pomodoro')) {
       navigate(`/pomodoro/intro/${method.id_metodo}`);
@@ -91,14 +91,14 @@ export const StudyMethodsLibraryPage: React.FC = () => {
       navigate(`/mind-maps/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('repaso') && method.nombre_metodo.toLowerCase().includes('espaciado')) {
       navigate(`/spaced-repetition/intro/${method.id_metodo}`);
-    } else if (method.nombre_metodo.toLowerCase().includes('práctica') && method.nombre_metodo.toLowerCase().includes('activa')) {
+    } else if (method.nombre_metodo.toLowerCase().includes('prÃ¡ctica') && method.nombre_metodo.toLowerCase().includes('activa')) {
       navigate(`/active-recall/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('feynman')) {
       navigate(`/feynman/intro/${method.id_metodo}`);
     } else if (method.nombre_metodo.toLowerCase().includes('cornell')) {
       navigate(`/cornell/intro/${method.id_metodo}`);
     }
-    // TODO: Implementar navegación a vista paso a paso para otros métodos
+    // TODO: Implementar navegaciÃ³n a vista paso a paso para otros mÃ©todos
   };
 
 
@@ -118,7 +118,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
             <div className="relative mb-8">
               <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Cargando métodos de estudio...</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando mÃ©todos de estudio...</h2>
             <p className="text-gray-400">Preparando tu biblioteca de aprendizaje</p>
           </div>
         </div>
@@ -186,7 +186,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
             <div className="relative text-center">
 
               <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
-                Biblioteca de Métodos
+                Biblioteca de MÃ©todos
                 <br />
                 <span className="text-3xl sm:text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
                   de Estudio
@@ -194,18 +194,18 @@ export const StudyMethodsLibraryPage: React.FC = () => {
               </h1>
 
               <p className="text-gray-200 text-base sm:text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-8">
-                Descubre técnicas probadas científicamente para potenciar tu concentración,
-                mejorar la retención de información y optimizar tu tiempo de estudio
+                Descubre tÃ©cnicas probadas cientÃ­ficamente para potenciar tu concentraciÃ³n,
+                mejorar la retenciÃ³n de informaciÃ³n y optimizar tu tiempo de estudio
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 text-sm">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-300 rounded-full border border-blue-500/20">
                   <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-                  Técnicas Probadas
+                  TÃ©cnicas Probadas
                 </div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-300 rounded-full border border-purple-500/20">
                   <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
-                  Mejor Concentración
+                  Mejor ConcentraciÃ³n
                 </div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20">
                   <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
@@ -226,8 +226,8 @@ export const StudyMethodsLibraryPage: React.FC = () => {
                   <span className="text-white text-xs">?</span>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-300 mb-3">No hay métodos disponibles</h3>
-              <p className="text-gray-500 text-lg mb-8">Estamos preparando nuevos métodos de estudio para ti</p>
+              <h3 className="text-2xl font-bold text-gray-300 mb-3">No hay mÃ©todos disponibles</h3>
+              <p className="text-gray-500 text-lg mb-8">Estamos preparando nuevos mÃ©todos de estudio para ti</p>
               <div className="flex justify-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
