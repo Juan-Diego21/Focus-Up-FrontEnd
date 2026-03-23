@@ -5,8 +5,8 @@ import { Listbox } from '@headlessui/react';
 import { Scrollbar } from 'react-scrollbars-custom';
 import Swal from 'sweetalert2';
 import type { IEvento, IEventoUpdate } from '../../../types/events';
-import { MethodSelectionModal } from '../../../components/MethodSelectionModal';
-import { AlbumSelectionModal } from '../../../components/AlbumSelectionModal';
+import { MethodSelectionModal } from '@shared/components/MethodSelectionModal';
+import { AlbumSelectionModal } from '@shared/components/AlbumSelectionModal';
 
 interface EditEventModalProps {
   isOpen: boolean;
@@ -825,3 +825,4 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
 };
 
 export default EditEventModal;
+

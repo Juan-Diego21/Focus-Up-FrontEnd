@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock de todos los servicios y contextos necesarios
-vi.mock('../contexts/MusicPlayerContext', () => ({
+vi.mock('@shared/contexts/MusicPlayerContext', () => ({
   useMusicPlayer: () => ({
     playPlaylist: vi.fn(),
     currentAlbum: null,
@@ -17,7 +17,7 @@ vi.mock('../contexts/MusicPlayerContext', () => ({
   }),
 }));
 
-vi.mock('../services/sessionService', () => ({
+vi.mock('@shared/services/sessionService', () => ({
   sessionService: {
     startSession: vi.fn(),
     pauseSession: vi.fn(),
@@ -28,15 +28,15 @@ vi.mock('../services/sessionService', () => ({
   },
 }));
 
-vi.mock('../services/audioService', () => ({
+vi.mock('@shared/services/audioService', () => ({
   replaceIfSessionAlbum: vi.fn(),
 }));
 
-vi.mock('../utils/musicApi', () => ({
+vi.mock('@shared/services/musicApi', () => ({
   getSongsByAlbumId: vi.fn(),
 }));
 
-vi.mock('../providers/ConcentrationSessionProvider', () => ({
+vi.mock('@shared/providers/ConcentrationSessionProvider', () => ({
   useConcentrationSession: () => ({
     startSession: vi.fn(),
     startSessionWithCountdown: vi.fn(),

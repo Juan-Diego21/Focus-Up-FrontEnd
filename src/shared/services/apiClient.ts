@@ -14,9 +14,12 @@ const getSafeApiMessage = (statusCode: number): string => {
 };
 
 const envApiUrl = import.meta.env.VITE_API_URL?.trim();
+const isDev = import.meta.env.DEV;
+const useDevProxy = isDev && !!envApiUrl && envApiUrl.startsWith("http");
 
 // Evita dependencia transversal a src/utils/constants que puede formar ciclos de chunks en build.
-const API_BASE_URL = (envApiUrl || "/api/v1").replace(/\/+$/, "");
+// En desarrollo, cuando VITE_API_URL es absoluta, se fuerza ruta relativa para usar proxy de Vite y evitar CORS.
+const API_BASE_URL = (useDevProxy ? "/api/v1" : envApiUrl || "/api/v1").replace(/\/+$/, "");
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

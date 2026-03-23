@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sidebar } from '../../../components/ui/Sidebar';
-import { MusicPlayer } from '../../../components/ui/MusicPlayer';
-import { getAlbums } from '../../../utils/musicApi';
-import { getAlbumImage } from '../../../utils/musicUtils';
+import { Sidebar } from '@shared/components/ui/Sidebar';
+import { MusicPlayer } from '@shared/components/ui/MusicPlayer';
+import { getAlbums } from '@shared/services/musicApi';
+import { getAlbumImage } from '@shared/utils/musicUtils';
 import type { Album } from '../../../types/api';
 import { MusicalNoteIcon } from '@heroicons/react/24/outline';
 
@@ -204,3 +204,4 @@ export const MusicAlbumsPage: React.FC = () => {
     </div>
   );
 };
+

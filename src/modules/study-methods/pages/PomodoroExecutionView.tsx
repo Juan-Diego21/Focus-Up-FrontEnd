@@ -1,22 +1,22 @@
-﻿/**
+/**
  * Componente principal para la ejecución del método Pomodoro
  * Maneja la lógica de temporización, progreso y navegación entre pasos
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Timer } from "../../../components/ui/Timer";
-import { ProgressCircle } from "../../../components/ui/ProgressCircle";
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
+import { Timer } from "@shared/components/ui/Timer";
+import { ProgressCircle } from "@shared/components/ui/ProgressCircle";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
 import Swal from 'sweetalert2';
 import { CheckCircle, Clock, Coffee, SkipForward, Clock as ClockIcon } from 'lucide-react';
 import {
   isValidProgressForCreation,
   isValidProgressForUpdate,
   isValidProgressForResume
-} from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
-import { ensureMethodSession } from "../services/methodSessionService";
+} from "@shared/utils/methodStatus";
+import { FinishLaterModal } from "@shared/components/ui/FinishLaterModal";
+import { ensureMethodSession, updateMethodProgress, persistMethodCandidateIds, clearMethodCandidateIds } from "../services/methodSessionService";
 
 // Preload SweetAlert2 for instant alerts
 Swal.mixin({
@@ -281,6 +281,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
       // Store the active method ID separately for progress updates
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
+      persistMethodCandidateIds(session.candidateIds || [id_metodo_realizado]);
       localStorage.setItem('pomodoro-session', JSON.stringify(session));
 
       // Update visual progress to match created or resumed session
@@ -325,11 +326,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
     try {
       console.log('Updating Pomodoro progress for session ID:', sessionId, 'progress:', progress, 'status:', status);
-      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
-      if (progress === 100) {
-        updatePayload.finalizar = true;
-      }
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
+      await updateMethodProgress({ sessionId, progress, status, finalize: progress === 100 });
       console.log('Pomodoro progress updated successfully');
 
       if (sessionData) {
@@ -419,6 +416,7 @@ export const PomodoroExecutionView: React.FC = () => {
 
     localStorage.removeItem('pomodoro-session');
     localStorage.removeItem('activeMethodId');
+    clearMethodCandidateIds();
 
     // Queue completion notification
     setAlertQueue({
@@ -761,6 +759,7 @@ export const PomodoroExecutionView: React.FC = () => {
 };
 
 export default PomodoroExecutionView;
+
 
 
 

@@ -1,8 +1,8 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
-import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
+import { LOCAL_METHOD_ASSETS } from "@shared/utils/methodAssets";
 import { CheckCircle, RotateCcw, BookOpen, Brain } from 'lucide-react';
 
 interface StudyMethod {
@@ -105,7 +105,7 @@ export const ActiveRecallIntroView: React.FC = () => {
           <div className="text-center max-w-md mx-auto">
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
-                <span className="text-4xl">⚠️</span>
+                <span className="text-4xl">??</span>
               </div>
               <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
                 <span className="text-white text-xs">!</span>
@@ -208,7 +208,7 @@ export const ActiveRecallIntroView: React.FC = () => {
                         if (parent && !parent.querySelector(".fallback-emoji")) {
                           const emoji = document.createElement("span");
                           emoji.className = "fallback-emoji text-6xl md:text-8xl";
-                          emoji.textContent = "🧠";
+                          emoji.textContent = "??";
                           parent.appendChild(emoji);
                         }
                       }}
@@ -217,7 +217,7 @@ export const ActiveRecallIntroView: React.FC = () => {
                 </>
               ) : (
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md flex items-center justify-center border border-green-500/30 shadow-2xl">
-                  <span className="text-6xl md:text-8xl">🧠</span>
+                  <span className="text-6xl md:text-8xl">??</span>
                 </div>
               )}
             </div>
@@ -392,6 +392,7 @@ export const ActiveRecallIntroView: React.FC = () => {
 };
 
 export default ActiveRecallIntroView;
+
 
 
 

@@ -1,9 +1,9 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import { Sidebar } from "../../../components/ui/Sidebar";
-import { Card } from "../../../components/ui/Card";
-import { API_BASE_URL, API_ENDPOINTS } from "../../../utils/constants";
-import { overrideMethodsWithLocalAssets } from "../../../utils/methodAssets";
+import { Sidebar } from "@shared/components/ui/Sidebar";
+import { Card } from "@shared/components/ui/Card";
+import { API_BASE_URL, API_ENDPOINTS } from "@shared/config/constants";
+import { overrideMethodsWithLocalAssets } from "@shared/utils/methodAssets";
 import { BookOpen } from 'lucide-react';
 
 interface Benefit {
@@ -140,7 +140,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
           <div className="text-center max-w-md mx-auto">
             <div className="relative mb-8">
               <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-red-500/30 shadow-2xl">
-                <span className="text-4xl">⚠️</span>
+                <span className="text-4xl">??</span>
               </div>
               <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
                 <span className="text-white text-xs">!</span>
@@ -223,7 +223,7 @@ export const StudyMethodsLibraryPage: React.FC = () => {
                   <BookOpen className="w-12 h-12 text-gray-500" />
                 </div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">✨</span>
+                  <span className="text-white text-xs">?</span>
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-gray-300 mb-3">No hay métodos disponibles</h3>
@@ -257,4 +257,5 @@ export const StudyMethodsLibraryPage: React.FC = () => {
 };
 
 export default StudyMethodsLibraryPage;
+
 

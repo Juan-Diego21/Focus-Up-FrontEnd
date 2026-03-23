@@ -1,8 +1,8 @@
 import React from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
-import { Sidebar } from '../../../components/ui/Sidebar';
-import { NotificationToggle } from '../../../components/ui/NotificationToggle';
-import { useNotifications } from '../../../hooks/useNotifications';
+import { Sidebar } from '@shared/components/ui/Sidebar';
+import { NotificationToggle } from '@shared/components/ui/NotificationToggle';
+import { useNotifications } from '@shared/hooks/useNotifications';
 import type { NotificationConfigUpdate } from '../../../types/api';
 
 /**
@@ -117,3 +117,4 @@ export const NotificationPage: React.FC = () => {
 };
 
 export default NotificationPage;
+

@@ -1,13 +1,13 @@
-﻿/**
+/**
  * Componente principal para la ejecución del método Feynman
  * Gestiona la navegación paso a paso y el progreso del usuario
  */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { apiClient } from "../../../utils/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
-import { ProgressCircle } from "../../../components/ui/ProgressCircle";
-import { LOCAL_METHOD_ASSETS } from "../../../utils/methodAssets";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
+import { ProgressCircle } from "@shared/components/ui/ProgressCircle";
+import { LOCAL_METHOD_ASSETS } from "@shared/utils/methodAssets";
 import { Clock as ClockIcon } from 'lucide-react';
 import {
   getFeynmanColorByProgress,
@@ -16,10 +16,10 @@ import {
   isValidProgressForCreation,
   isValidProgressForUpdate,
   isValidProgressForResume
-} from "../../../utils/methodStatus";
-import { FinishLaterModal } from "../../../components/ui/FinishLaterModal";
+} from "@shared/utils/methodStatus";
+import { FinishLaterModal } from "@shared/components/ui/FinishLaterModal";
 import Swal from 'sweetalert2';
-import { ensureMethodSession } from "../services/methodSessionService";
+import { ensureMethodSession, updateMethodProgress, persistMethodCandidateIds, clearMethodCandidateIds } from "../services/methodSessionService";
 
 interface StudyMethod {
   id_metodo: number;
@@ -296,6 +296,7 @@ export const FeynmanStepsView: React.FC = () => {
 
       // Almacenar el ID del método activo por separado para actualizaciones de progreso
       localStorage.setItem('activeMethodId', id_metodo_realizado.toString());
+      persistMethodCandidateIds(session.candidateIds || [id_metodo_realizado]);
       localStorage.setItem('feynman-session', JSON.stringify(session));
 
       // Poner en cola notificación de éxito
@@ -343,11 +344,7 @@ export const FeynmanStepsView: React.FC = () => {
 
     try {
       console.log('Actualizando progreso del Método Feynman para ID de sesión:', sessionId, 'progreso:', progress, 'estado:', status);
-      const updatePayload: { progreso: number; finalizar?: boolean } = { progreso: progress };
-      if (progress === 100) {
-        updatePayload.finalizar = true;
-      }
-      await apiClient.patch(`${API_ENDPOINTS.METHOD_PROGRESS}/${sessionId}/progress`, updatePayload);
+      await updateMethodProgress({ sessionId, progress, status, finalize: progress === 100 });
       console.log('Progreso del Método Feynman actualizado exitosamente');
 
       if (sessionData) {
@@ -501,6 +498,7 @@ export const FeynmanStepsView: React.FC = () => {
 
     localStorage.removeItem('feynman-session');
     localStorage.removeItem('activeMethodId');
+    clearMethodCandidateIds();
 
     // Queue completion notification
     setAlertQueue({
@@ -739,6 +737,7 @@ export const FeynmanStepsView: React.FC = () => {
 };
 
 export default FeynmanStepsView;
+
 
 
 

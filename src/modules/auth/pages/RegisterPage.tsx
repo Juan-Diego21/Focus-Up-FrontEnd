@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { validateUsername, validateEmail, validatePassword } from "../../../utils/validationUtils";
-import { API_ENDPOINTS } from "../../../utils/constants";
+import { validateUsername, validateEmail, validatePassword } from "@shared/utils/validationUtils";
+import { API_ENDPOINTS } from "@shared/config/constants";
 
 // Componente para el primer paso del registro: recopilar datos básicos
 export const RegisterPage: React.FC = () => {
@@ -90,7 +90,7 @@ export const RegisterPage: React.FC = () => {
       localStorage.setItem("focusup:register:email", formData.correo);
 
       // Solicitar código de verificación al backend
-      const { apiClient } = await import("../../../shared/services/apiClient");
+      const { apiClient } = await import("@shared/services/apiClient");
 
       await apiClient.post(API_ENDPOINTS.REQUEST_VERIFICATION_CODE, {
         email: formData.correo,
@@ -281,4 +281,6 @@ export const RegisterPage: React.FC = () => {
   );
 };
 export default RegisterPage;
+
+
 

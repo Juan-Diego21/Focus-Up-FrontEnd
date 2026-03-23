@@ -1,8 +1,8 @@
 // Importaciones de contextos y componentes
-import { RequireAuth } from "./components/auth/RequireAuth";
+import { RequireAuth } from "./modules/auth/components";
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { useAuth } from "./contexts/AuthContext";
-import { FirstLoginModal } from "./components/FirstLoginModal";
+import { useAuth } from "./modules/auth/hooks";
+import { FirstLoginModal } from "./modules/auth/components";
 import { Suspense, lazy } from 'react';
 
 // Implementación de code splitting basado en rutas para mejorar el rendimiento inicial
@@ -10,7 +10,7 @@ import { Suspense, lazy } from 'react';
 // Se eliminaron las importaciones síncronas y se reemplazaron por lazy loading
 
 // Páginas públicas con lazy loading
-const LandingPage = lazy(() => import("./pages/LandingPage").then(module => ({ default: module.default })));
+const LandingPage = lazy(() => import("./modules/landing/pages").then(module => ({ default: module.LandingPage })));
 const LoginPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.RegisterPage })));
 const RegisterStep2 = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.RegisterStep2 })));
@@ -19,9 +19,9 @@ const ForgotPasswordCodePage = lazy(() => import("./modules/auth/pages").then(mo
 const ForgotPasswordResetPage = lazy(() => import("./modules/auth/pages").then(module => ({ default: module.ForgotPasswordResetPage })));
 
 // Páginas protegidas con lazy loading
-const DashboardPage = lazy(() => import("./pages/DashboardPage").then(module => ({ default: module.DashboardPage })));
+const DashboardPage = lazy(() => import("./modules/dashboard/pages").then(module => ({ default: module.DashboardPage })));
 const StudyMethodsLibraryPage = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.StudyMethodsLibraryPage })));
-const ProfilePage = lazy(() => import("./pages/ProfilePage").then(module => ({ default: module.ProfilePage })));
+const ProfilePage = lazy(() => import("./modules/profile/pages").then(module => ({ default: module.ProfilePage })));
 const PomodoroIntroView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.PomodoroIntroView })));
 const PomodoroExecutionView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.PomodoroExecutionView })));
 const MindMapsInfoPage = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.MindMapsInfoPage })));
@@ -34,7 +34,7 @@ const FeynmanIntroView = lazy(() => import("./modules/study-methods/pages").then
 const FeynmanStepsView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.FeynmanStepsView })));
 const CornellIntroView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.CornellIntroView })));
 const CornellStepsView = lazy(() => import("./modules/study-methods/pages").then(module => ({ default: module.CornellStepsView })));
-const ReportsPage = lazy(() => import("./pages/ReportsPage").then(module => ({ default: module.ReportsPage })));
+const ReportsPage = lazy(() => import("./modules/reports/pages").then(module => ({ default: module.ReportsPage })));
 const StartSession = lazy(() => import("./modules/sessions/pages").then(module => ({ default: module.StartSession })));
 const MusicAlbumsPage = lazy(() => import("./modules/music/pages").then(module => ({ default: module.MusicAlbumsPage })));
 const MusicSongsPage = lazy(() => import("./modules/music/pages").then(module => ({ default: module.MusicSongsPage })));

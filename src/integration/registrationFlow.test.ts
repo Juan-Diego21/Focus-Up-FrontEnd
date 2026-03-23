@@ -8,13 +8,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock de todos los servicios y contextos necesarios
-vi.mock('../utils/apiClient', () => ({
+vi.mock('@shared/services/apiClient', () => ({
   apiClient: {
     post: vi.fn(),
   },
 }));
 
-vi.mock('../contexts/AuthContext', () => ({
+vi.mock('../modules/auth/contexts/AuthContext', () => ({
   useAuth: () => ({
     showFirstLoginModal: false,
     setShowFirstLoginModal: vi.fn(),

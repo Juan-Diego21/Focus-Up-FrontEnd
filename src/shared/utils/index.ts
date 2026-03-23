@@ -6,3 +6,5 @@ export * from './sessionMappers';
 export * from './broadcastChannel';
 export * from './sleepDetector';
 export * from './offlineQueue';
+export * from './methodAssets';
+export * from './methodStatus';

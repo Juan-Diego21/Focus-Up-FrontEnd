@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { apiClient } from "../../../shared/services/apiClient";
-import { API_ENDPOINTS } from "../../../utils/constants";
+import { apiClient } from "@shared/services/apiClient";
+import { API_ENDPOINTS } from "@shared/config/constants";
 
 // Componente para el segundo paso del registro: verificación del código y registro final
 // Este componente maneja la verificación del código enviado por email y el registro completo del usuario
@@ -255,3 +255,5 @@ export const RegisterStep2: React.FC = () => {
 };
 
 export default RegisterStep2;
+
+
